@@ -82,7 +82,7 @@ public:
 };
 
 //Demo
-// tyepdef typedef Factory<Base,
+// tyepdef typedef Factory_Complie<Base,
 //                 CreateObj<1, A>,
 //                 CreateObj<2, B>,
 //                 CreateObj<3, C>,

@@ -23,9 +23,6 @@ static int demangle_status;
 #define __CLASS__ __class__
 #define __class__ abi::__cxa_demangle(typeid(*this).name(), 0, 0, &demangle_status)
 
-
-
-
 #define INFO_LOG(fmt, ...) fprintf(stdout, "[INFO]  " fmt "\n", ##__VA_ARGS__)
 #define WARN_LOG(fmt, ...) fprintf(stdout, "[WARN]  " fmt "\n", ##__VA_ARGS__)
 #define ERROR_LOG(fmt, ...) fprintf(stdout, "[ERROR] " fmt "\n", ##__VA_ARGS__)

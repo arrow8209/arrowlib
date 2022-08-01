@@ -7,7 +7,6 @@
 #include <atomic>
 #include <condition_variable>
 #include <chrono>
-#include "../../ArrowDefine.h"
 
 namespace Arrow
 {

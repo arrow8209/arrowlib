@@ -8,7 +8,7 @@
 #include "Pattern/Observer/Observer.h"
 #include "Pattern/Observer/Subject.h"
 #include "Pattern/Singleton/Singleton.h"
-#include "Pattern/Task/TaskOneThread.h"
+#include "Task/TaskOneThread.h"
 #include <functional>
 #include <stdio.h>
 #include "typelist/typelist_demo.h"
