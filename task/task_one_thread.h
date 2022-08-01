@@ -14,7 +14,7 @@ namespace Arrow
 namespace Pattern
 {
 
-// 此类类似框架类，接口函数都比较特殊，所以不提供访问接口，只有之类能对其进行访问 [zhuyb 2022-07-05 08:57:47]
+// 此类类似框架类，接口函数都比较特殊，所以不提供访问接口，只有子类能对其进行访问 [zhuyb 2022-07-05 08:57:47]
 class TaskOneThread
 {
 protected:

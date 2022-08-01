@@ -1,12 +1,12 @@
 /*
- * @FilePath: /plugin-based_streaming_data_analysis/ShareCode/Pattern/Factory/Factory.h
+ * @FilePath: /plugin-based_streaming_data_analysis/ShareCode/arrow/pattern/factory/factory.h
  * @Author: arrow arrow8209@foxmail.com
  * @Date: 2022-07-07 13:45:37
  * @Description: 运行期抽象工厂，在运行期创建工厂和对应的CreateObj
  */
 #pragma once
 #include <map>
-#include "Create.h"
+#include "create.h"
 
 namespace Arrow
 {

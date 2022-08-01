@@ -4,11 +4,11 @@
  * @Date: 2022-06-30 09:31:52
  * @Description:
  */
-#include "Pattern/Factory/FactoryTest.h"
-#include "Pattern/Observer/Observer.h"
-#include "Pattern/Observer/Subject.h"
-#include "Pattern/Singleton/Singleton.h"
-#include "Task/TaskOneThread.h"
+#include "pattern/factory/factory_test.h"
+#include "pattern/observer/observer.h"
+#include "pattern/observer/subject.h"
+#include "pattern/singleton/singleton.h"
+#include "task/task_one_thread.h"
 #include <functional>
 #include <stdio.h>
 #include "typelist/typelist_demo.h"

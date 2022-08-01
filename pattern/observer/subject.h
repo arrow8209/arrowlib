@@ -3,7 +3,7 @@
 #include <thread>
 #include <mutex>
 #include <algorithm>
-#include "Observer.h"
+#include "observer.h"
 
 namespace Arrow
 {

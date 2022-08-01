@@ -8,6 +8,51 @@ namespace Arrow
 namespace Log
 {
 
+
+
+#define INFO_LOG(fmt, ...) fprintf(stdout, "[INFO]  " fmt "\n", ##__VA_ARGS__)
+#define WARN_LOG(fmt, ...) fprintf(stdout, "[WARN]  " fmt "\n", ##__VA_ARGS__)
+#define ERROR_LOG(fmt, ...) fprintf(stdout, "[ERROR] " fmt "\n", ##__VA_ARGS__)
+
+#define g_logger ""
+
+#define ARROW_LOG_TRACE(logEvent) LOG4CPLUS_TRACE(g_logger, logEvent)
+#define ARROW_LOG_TRACE_FMT(...) LOG4CPLUS_TRACE_FMT(g_logger, __VA_ARGS__)
+
+#define ARROW_LOG_DEBUG(logEvent) LOG4CPLUS_DEBUG(g_logger, logEvent)
+#define ARROW_LOG_DEBUG_FMT(...) LOG4CPLUS_DEBUG_FMT(g_logger, __VA_ARGS__)
+
+#define ARROW_LOG_INFO(logEvent) LOG4CPLUS_INFO(g_logger, logEvent)
+#define ARROW_LOG_INFO_FMT(...) LOG4CPLUS_INFO_FMT(g_logger, __VA_ARGS__)
+
+#define ARROW_LOG_WARN(logEvent) LOG4CPLUS_WARN(g_logger, logEvent)
+#define ARROW_LOG_WARN_FMT(...) LOG4CPLUS_WARN_FMT(g_logger, __VA_ARGS__)
+
+#define ARROW_LOG_ERROR(logEvent) LOG4CPLUS_ERROR(g_logger, logEvent)
+#define ARROW_LOG_ERROR_FMT(...) LOG4CPLUS_ERROR_FMT(g_logger, __VA_ARGS__)
+
+#define ARROW_LOG_FATAL(logEvent) LOG4CPLUS_FATAL(g_logger, logEvent)
+#define ARROW_LOG_FATAL_FMT(...) LOG4CPLUS_FATAL_FMT(g_logger, __VA_ARGS__)
+
+
+// #define ARROW_LOG_TRACE(logEvent) 
+// #define ARROW_LOG_TRACE_FMT(...)
+
+// #define ARROW_LOG_DEBUG(logEvent) 
+// #define ARROW_LOG_DEBUG_FMT(...) 
+
+// #define ARROW_LOG_INFO(logEvent) 
+// #define ARROW_LOG_INFO_FMT(...) 
+
+// #define ARROW_LOG_WARN(logEvent)
+// #define ARROW_LOG_WARN_FMT(...) 
+
+// #define ARROW_LOG_ERROR(logEvent) 
+// #define ARROW_LOG_ERROR_FMT(...) 
+
+// #define ARROW_LOG_FATAL(logEvent) 
+// #define ARROW_LOG_FATAL_FMT(...)
+
 class LogImplLog4Cplus
 {
 protected:
