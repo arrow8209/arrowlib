@@ -5,7 +5,7 @@
 void test_typelist_type()
 {
     // length find [zhuyb 2022-07-29 11:37:56]
-    typedef Arrow::typelist::typelist<float, int, double> typelist_type1;
+    typedef Arrow::typelist::typelist<int, float, int, double, int> typelist_type1;
     std::cout << "typelist_type1 count:" << typelist_type1::length << std::endl;
     std::cout << "float index:" << Arrow::typelist::find<float, typelist_type1>::value << std::endl;
     std::cout << "char index:" << Arrow::typelist::find<char, typelist_type1>::value << std::endl;
@@ -35,7 +35,10 @@ void test_typelist_type()
     std::cout << "typelist_type5 count:" << typelist_type6::length << std::endl;
     std::cout << "int index:" << Arrow::typelist::find<int, typelist_type6>::value << std::endl;
 
-    // Arrow::typelist::print(typelist_type6{});
+    Arrow::typelist::print(typelist_type6{});
+
+    typedef typename Arrow::typelist::find_last<int, typelist_type6> typelist_type7;
+    std::cout << "int index " << typelist_type7::value << std::endl;
 }
 constexpr static char sz[] = "asdfadf";
 void test_typelist_vlaue()
