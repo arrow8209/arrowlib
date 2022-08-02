@@ -202,10 +202,22 @@ struct tvaluelist_to_data<typelist<tvalue_type<T, args>...>>
     constexpr static T data[sizeof...(args)]={args...};
 };
 
+template<typename T, T ...args>
+struct tvaluelist_to_data<typelist<tvalue_type<const T, args>...>>
+{
+    constexpr static T data[sizeof...(args)]={args...};
+};
+
 template<char ...args>
 struct tvaluelist_to_data<typelist<tvalue_type<char, args>...>>
 {
-    constexpr static char data[sizeof...(args)]={args..., 0};
+    constexpr static char data[sizeof...(args) + 1]={args..., 0};
+};
+
+template<char ...args>
+struct tvaluelist_to_data<typelist<tvalue_type<const char, args>...>>
+{
+    constexpr static char data[sizeof...(args) + 1]={args..., 0};
 };
 
 // template<int ...args>
@@ -222,6 +234,13 @@ void print(typelist<tvalue_type<T,t>, tvalue_type<T, args>...>)
 {
     std::cout << typeid(tvalue_type<T, t>).name() << ":" << t << "\n\t";
     print(typelist<tvalue_type<T, args>...>{});
+};
+
+template<typename T, T t, T ...args>
+void print(typelist<tvalue_type<const T,t>, tvalue_type<const T, args>...>)
+{
+    std::cout << typeid(tvalue_type<const T, t>).name() << ":" << t << "\n\t";
+    print(typelist<tvalue_type<const T, args>...>{});
 };
 
 template<typename T, typename... args>

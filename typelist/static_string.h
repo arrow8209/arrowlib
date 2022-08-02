@@ -12,7 +12,6 @@ constexpr const char get(const char (&arr)[N])
     return arr[ M < N ? M : N-1];
 }
 
-
 // 最长支持1024个字符 [zhuyb 2022-07-30 20:25:54]
 #define MakeCharSequence_16(m, n, str) Arrow::static_string::get<0x##m##n##0>(str), Arrow::static_string::get<0x##m##n##1>(str), \
                                        Arrow::static_string::get<0x##m##n##2>(str), Arrow::static_string::get<0x##m##n##3>(str), \
@@ -50,7 +49,7 @@ constexpr const char get(const char (&arr)[N])
                                    MakeCharSequence_64(3, str), \
                                    MakeCharSequence_64(4, str)
 
-#define STATIC_STRING(str) Arrow::typelist::splite<sizeof(str) - 1, Arrow::typelist::tvalue_typelist<const char, MakeCharSequence_1024(str)>>::Head
+#define STATIC_STRING(str) Arrow::typelist::splite<sizeof(str) - 1, Arrow::typelist::tvalue_typelist<char, MakeCharSequence_1024(str)>>::Head
 
 }
 
