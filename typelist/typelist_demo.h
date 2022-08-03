@@ -65,8 +65,15 @@ void test_static_string()
 
 void test_static_string2()
 {
-    typedef STATIC_STRING(__FILE__) static_str_filename;
-    std::cout << "static_str1 Length:" << static_str_filename::length << std::endl;
-    Arrow::typelist::print(static_str_filename{});
-    std::cout << Arrow::typelist::tvaluelist_to_data<static_str_filename>::data << std::endl;
+    typedef STATIC_STRING(__FILE__) static_str_fullname;
+    std::cout << "static_str1 Length:" << static_str_fullname::length << std::endl;
+    Arrow::typelist::print(static_str_fullname{});
+    std::cout << Arrow::typelist::tvaluelist_to_data<static_str_fullname>::data << std::endl;
+    
+    typedef Arrow::static_string::getfilename<static_str_fullname>::type static_str_fillname;
+    std::cout << Arrow::typelist::tvaluelist_to_data<static_str_fillname>::data << std::endl;
+
+    // 获取文件名 [zhuyb 2022-08-03 09:06:23]
+    typedef STATIC_FILE static_filename;
+    std::cout << Arrow::typelist::tvaluelist_to_data<static_str_fillname>::data << std::endl;
 }

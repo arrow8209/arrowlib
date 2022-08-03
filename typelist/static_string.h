@@ -1,4 +1,5 @@
 #pragma once
+#include "typelist_fun.h"
 
 namespace Arrow
 {
@@ -50,6 +51,46 @@ constexpr const char get(const char (&arr)[N])
                                    MakeCharSequence_64(4, str)
 
 #define STATIC_STRING(str) Arrow::typelist::splite<sizeof(str) - 1, Arrow::typelist::tvalue_typelist<char, MakeCharSequence_1024(str)>>::Head
+
+#define STATIC_FILE  Arrow::static_string::getfilename<STATIC_STRING(__FILE__)>::type
+
+namespace details
+{
+template<int index, typename StaticStr>
+struct getfilename;
+
+template<typename StaticStr>
+struct getfilename<-1, StaticStr>
+{
+    typedef StaticStr type;
+};
+
+template<int index, typename ...Args>
+struct getfilename<index, typelist::typelist<Args...> >
+{
+protected:
+    static_assert(index >= 0, "index 小于0（请检查代码逻辑）");
+    typedef typename typelist::splite<index + 1, typelist::typelist<Args...>> split_str;
+
+public:
+    typedef typename split_str::Tail type;
+};
+
+}
+
+template<typename StaticStr>
+struct getfilename;
+
+template<typename ... Args>
+struct getfilename<typelist::typelist<Args...>>
+{
+protected:
+    typedef typename typelist::typelist<Args...> static_str;
+    typedef typename typelist::find_last<typelist::tvalue_type<char, '/'>, static_str> find_last_forward_slash;
+    
+public:
+    typedef typename details::getfilename<find_last_forward_slash::value, static_str>::type type;
+};
 
 }
 
