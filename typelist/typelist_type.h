@@ -16,6 +16,7 @@ struct typelist<>
     constexpr static unsigned int length = 0;
 };
 
+// 注意此处尽量不要使用const类型，主要是担心在使用 typelist功能函数的时候，const类型和标准类型会匹配不上的问题[zhuyb 2022-08-02 09:53:41]
 template <typename T, T t>
 struct tvalue_type
 {
@@ -38,6 +39,7 @@ struct value_typelist
 {
     typedef typelist<tvalue_type<int, args>...> type;
 };
+
 
 template <typename T, T... args>
 struct tvalue_typelist

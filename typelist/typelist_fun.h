@@ -59,6 +59,42 @@ public:
 
 #pragma endregion
 
+#pragma region 查找指定类型最后一次出现的位置 -1表示未出现
+template<typename T, typename TList>
+struct find_last;
+
+template <typename T>
+struct find_last<T, typelist<>>
+{
+    constexpr static int value = -1;
+    typedef typelist<> type;
+};
+
+template<typename T, typename... Args>
+struct find_last<T, typelist<T, Args...>>
+{
+protected:
+    typedef find_last<T, typelist<Args...>> find_last_next;
+    constexpr static int tmp = find_last_next::value;
+public:
+    constexpr static int value = tmp == -1 ? 0 : tmp + 1;
+    typedef typename find_last_next::type type;
+};
+
+template <typename T, typename Head, typename... Args>
+struct find_last<T, typelist<Head, Args...>>
+{
+protected:
+    typedef find_last<T, typelist<Args...>> find_last_next;
+    constexpr static int tmp = find_last_next::value;
+
+public:
+    constexpr static int value = tmp == -1 ? -1 : tmp + 1;
+    typedef typename find_last_next::type type;
+};
+
+#pragma endregion
+
 #pragma region 拼接typelist
 template<typename TList1, typename TList2>
 struct concat;
@@ -202,26 +238,39 @@ struct tvaluelist_to_data<typelist<tvalue_type<T, args>...>>
     constexpr static T data[sizeof...(args)]={args...};
 };
 
+template<typename T, T ...args>
+struct tvaluelist_to_data<typelist<tvalue_type<const T, args>...>>
+{
+    constexpr static T data[sizeof...(args)]={args...};
+};
+
 template<char ...args>
 struct tvaluelist_to_data<typelist<tvalue_type<char, args>...>>
 {
-    constexpr static char data[sizeof...(args)]={args..., 0};
+    constexpr static char data[sizeof...(args) + 1]={args..., 0};
 };
 
-// template<int ...args>
-// struct tvaluelist_to_data<typelist<tvalue_type<int, args>...>>
-// {
-//     constexpr static int data[sizeof...(args)]={args...};
-// };
+template<char ...args>
+struct tvaluelist_to_data<typelist<tvalue_type<const char, args>...>>
+{
+    constexpr static char data[sizeof...(args) + 1]={args..., 0};
+};
 
 #pragma endregion
 
-
+#pragma region 打印
 template<typename T, T t, T ...args>
 void print(typelist<tvalue_type<T,t>, tvalue_type<T, args>...>)
 {
     std::cout << typeid(tvalue_type<T, t>).name() << ":" << t << "\n\t";
     print(typelist<tvalue_type<T, args>...>{});
+};
+
+template<typename T, T t, T ...args>
+void print(typelist<tvalue_type<const T,t>, tvalue_type<const T, args>...>)
+{
+    std::cout << typeid(tvalue_type<const T, t>).name() << ":" << t << "\n\t";
+    print(typelist<tvalue_type<const T, args>...>{});
 };
 
 template<typename T, typename... args>
@@ -235,7 +284,7 @@ void print(typelist<>)
 {
     std::cout << std::endl;
 };
-
+#pragma endregion
 
 }
 } // namespace  Arrow

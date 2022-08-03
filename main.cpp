@@ -71,10 +71,10 @@ int main(int argc, char* argv[])
     
     test_typelist_type();
     // test_typelist_vlaue();
-    test_static_string();
+    // test_static_string();
     // test_define();
     // Arrow::static_string::outinf("123456");
-
+    test_static_string2();
 
     return 1;
 }

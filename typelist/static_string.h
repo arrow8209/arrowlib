@@ -1,4 +1,5 @@
 #pragma once
+#include "typelist_fun.h"
 
 namespace Arrow
 {
@@ -11,7 +12,6 @@ constexpr const char get(const char (&arr)[N])
 {
     return arr[ M < N ? M : N-1];
 }
-
 
 // 最长支持1024个字符 [zhuyb 2022-07-30 20:25:54]
 #define MakeCharSequence_16(m, n, str) Arrow::static_string::get<0x##m##n##0>(str), Arrow::static_string::get<0x##m##n##1>(str), \
@@ -50,7 +50,48 @@ constexpr const char get(const char (&arr)[N])
                                    MakeCharSequence_64(3, str), \
                                    MakeCharSequence_64(4, str)
 
-#define STATIC_STRING(str) Arrow::typelist::splite<sizeof(str) - 1, Arrow::typelist::tvalue_typelist<const char, MakeCharSequence_1024(str)>>::Head
+#define STATIC_STRING(str) Arrow::typelist::splite<sizeof(str) - 1, Arrow::typelist::tvalue_typelist<char, MakeCharSequence_1024(str)>>::Head
+
+#define STATIC_FILE Arrow::static_string::getfilename<STATIC_STRING(__FILE__)>::type
+#define STATIC_FUNC STATIC_STRING(__func__)
+
+namespace details
+{
+template<int index, typename StaticStr>
+struct getfilename;
+
+template<typename StaticStr>
+struct getfilename<-1, StaticStr>
+{
+    typedef StaticStr type;
+};
+
+template<int index, typename ...Args>
+struct getfilename<index, typelist::typelist<Args...> >
+{
+protected:
+    static_assert(index >= 0, "index 小于0（请检查代码逻辑）");
+    typedef typename typelist::splite<index + 1, typelist::typelist<Args...>> split_str;
+
+public:
+    typedef typename split_str::Tail type;
+};
+
+}
+
+template<typename StaticStr>
+struct getfilename;
+
+template<typename ... Args>
+struct getfilename<typelist::typelist<Args...>>
+{
+protected:
+    typedef typename typelist::typelist<Args...> static_str;
+    typedef typename typelist::find_last<typelist::tvalue_type<char, '/'>, static_str> find_last_forward_slash;
+    
+public:
+    typedef typename details::getfilename<find_last_forward_slash::value, static_str>::type type;
+};
 
 }
 
