@@ -1,5 +1,5 @@
 /*
- * @FilePath: /plugin-based_streaming_data_analysis/ShareCode/arrow/log/log_define.h
+ * @FilePath: /arrowlib/log/log.h
  * @Author: arrow arrow8209@foxmail.com
  * @Date: 2022-07-07 18:26:24
  * @Description: 日志输出,使用log4cplus输出日志
@@ -34,16 +34,16 @@ static int demangle_status;
 // typedef LogInterface<LogImplNull> ALog;
 
 // 这函数属于编译器期执行 [zhuyb 2022-07-20 11:10:12]
-template<size_t N>
-constexpr const char *get_file_basename(const char (&filename)[N])
-{
-    for (int i = N - 1; i >= 0; i--)
-    {
-        if (filename[i] == '/' || filename[i] == '\\')
-            return filename + i + 1;
-    }
-    return filename;
-}
+// template<size_t N>
+// constexpr const char *get_file_basename(const char (&filename)[N])
+// {
+//     for (int i = N - 1; i >= 0; i--)
+//     {
+//         if (filename[i] == '/' || filename[i] == '\\')
+//             return filename + i + 1;
+//     }
+//     return filename;
+// }
 
 } // namespace Log
 } // namespace Arrow

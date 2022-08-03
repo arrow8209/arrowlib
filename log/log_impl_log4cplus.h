@@ -1,6 +1,7 @@
 #pragma once
 
 #include <log4cplus/log4cplus.h>
+#include <log4cplus/logger.h>
 
 namespace Arrow
 {
@@ -67,14 +68,18 @@ public:
         log4cplus::initialize();
         try
         {
-            log4cplus::PropertyConfigurator::doConfigure(LOG4CPLUS_TEXT(szConfigFileName));
+            if(szConfigFileName != nullptr)
+            {
+                log4cplus::PropertyConfigurator::doConfigure(LOG4CPLUS_TEXT(szConfigFileName));
+                return true;
+            }
         }
         catch (...)
         {
             printf("log_init exception...\n");
         }
-
-        log4cplus::Logger const& _logger = log4cplus::Logger::getRoot();
+        
+        log4cplus::Logger&& _logger = log4cplus::Logger::getRoot();
 
         if (_logger.getAllAppenders().size() == 0)
         {

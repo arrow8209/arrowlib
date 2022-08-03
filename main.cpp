@@ -12,6 +12,9 @@
 #include <functional>
 #include <stdio.h>
 #include "typelist/typelist_demo.h"
+#include "log/log.h"
+#include "log/log_impl_log4cplus.h"
+ typedef Arrow::Log::LogInterface<Arrow::Log::LogImplLog4Cplus> ALog;
 
 // typedef IObserver<int, int, int> IIIObejct;
 // typedef ISubject<int, int, int> IIISubject;
@@ -43,6 +46,8 @@
 
 int main(int argc, char* argv[])
 {
+    ALog::log_init(nullptr);
+    ARROW_LOG_DEBUG("12312");
     // while(true)
     // {
     //     printf("asdfas\n");
@@ -63,7 +68,7 @@ int main(int argc, char* argv[])
     // App_Factory::Create(1);
     // App_Factory::Create(2);
     // App_Factory::Create(4);
-
+    
     test_typelist_type();
     // test_typelist_vlaue();
     test_static_string();
