@@ -19,7 +19,7 @@ protected:
 public:
     static bool log_init(const char* szConfigFileName)
     {
-        
+        return true;
     }
 
     static void Trace_Log(const char* szInfo)

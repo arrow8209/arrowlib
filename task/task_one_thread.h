@@ -42,6 +42,7 @@ protected:
         m_bIsRun = true;
         m_Thread = std::thread(std::bind(&TaskOneThread::RunThread, this));
         WaitBeforeThreadRun();
+        return true;
     }
 
     bool Stop()

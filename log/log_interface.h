@@ -18,7 +18,7 @@ protected:
 public:
     static bool log_init(const char* szConfigFileName)
     {
-        LogImpl::log_init(szConfigFileName);
+        return LogImpl::log_init(szConfigFileName);
     }
 
     static void Trace_Log(const char* szInfo)

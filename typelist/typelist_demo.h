@@ -63,17 +63,29 @@ void test_static_string()
 
 }
 
+constexpr static char data[10] = "123456789";
 void test_static_string2()
 {
     typedef STATIC_STRING(__FILE__) static_str_fullname;
     std::cout << "static_str1 Length:" << static_str_fullname::length << std::endl;
     Arrow::typelist::print(static_str_fullname{});
-    std::cout << Arrow::typelist::tvaluelist_to_data<static_str_fullname>::data << std::endl;
-    
-    typedef Arrow::static_string::getfilename<static_str_fullname>::type static_str_fillname;
-    std::cout << Arrow::typelist::tvaluelist_to_data<static_str_fillname>::data << std::endl;
+    typedef typename Arrow::typelist::tvaluelist_to_data<static_str_fullname> static_fullname;
+    std::cout << static_fullname::data << std::endl;
 
-    // 获取文件名 [zhuyb 2022-08-03 09:06:23]
-    typedef STATIC_FILE static_filename;
-    std::cout << Arrow::typelist::tvaluelist_to_data<static_str_fillname>::data << std::endl;
+    typedef Arrow::typelist::tvalue_typelist<int, 1, 2, 3, 4, 5> static_int_array;
+    typedef Arrow::typelist::tvalue_typelist<int, 1, 2, 3, 4> static_int_array2;
+    Arrow::typelist::print(static_int_array{});
+    std::cout << Arrow::typelist::tvaluelist_to_data<static_int_array>::data[0];
+    std::cout << Arrow::typelist::tvaluelist_to_data<static_int_array>::data[1];
+    std::cout << Arrow::typelist::tvaluelist_to_data<static_int_array>::data[2];
+    std::cout << Arrow::typelist::tvaluelist_to_data<static_int_array>::data[3];
+    std::cout << Arrow::typelist::tvaluelist_to_data<static_int_array>::data[4] << std::endl;
+
+
+    // typedef Arrow::static_string::getfilename<static_str_fullname>::type static_str_fillname;
+    // std::cout << Arrow::typelist::tvaluelist_to_data<static_str_fillname>::data << std::endl;
+
+    // // 获取文件名 [zhuyb 2022-08-03 09:06:23]
+    // typedef STATIC_FILE static_filename;
+    // std::cout << Arrow::typelist::tvaluelist_to_data<static_str_fillname>::data << std::endl;
 }

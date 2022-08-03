@@ -229,32 +229,42 @@ public:
 #pragma endregion
 
 #pragma region 值类型列表转对应数组
-template<typename TList>
+template<typename TList, typename T=void>
 struct tvaluelist_to_data;
 
+// 使用enable_if的写法主要是适配gcc 编译期，如果是 clange编译器，直接用特化处理就OK了 [zhuyb 2022-08-03 23:50:02]
+template <typename T, T... args>
+struct tvaluelist_to_data<typelist<tvalue_type<T, args>...>, 
+        typename std::enable_if<!std::is_same<T, char>::value, void>::type>
+{
+    constexpr static T const data[sizeof...(args)] = {args...};
+};
 template<typename T, T ...args>
-struct tvaluelist_to_data<typelist<tvalue_type<T, args>...>>
-{
-    constexpr static T data[sizeof...(args)]={args...};
-};
+T const tvaluelist_to_data<typelist<tvalue_type<T, args>...>, typename std::enable_if<!std::is_same<T, char>::value, void>::type>::data[sizeof...(args)];
 
 template<typename T, T ...args>
-struct tvaluelist_to_data<typelist<tvalue_type<const T, args>...>>
+struct tvaluelist_to_data<typelist<tvalue_type<const T, args>...>, typename std::enable_if<!std::is_same<T, char>::value, void>::type>
 {
-    constexpr static T data[sizeof...(args)]={args...};
+    constexpr static T const data[sizeof...(args)]={args...};
 };
+template<typename T, T ...args>
+const T tvaluelist_to_data<typelist<tvalue_type<const T, args>...>,typename std::enable_if<!std::is_same<T, char>::value, void>::type>::data[sizeof...(args)];
 
-template<char ...args>
-struct tvaluelist_to_data<typelist<tvalue_type<char, args>...>>
+template<const char ...args>
+struct tvaluelist_to_data<typelist<tvalue_type<char, args>...>, void>
 {
-    constexpr static char data[sizeof...(args) + 1]={args..., 0};
+    constexpr static char const data[sizeof...(args) + 1] = {args..., 0};
 };
+template<char ...args>
+char const tvaluelist_to_data<typelist<tvalue_type<char, args>...>, void>::data[sizeof...(args) + 1];
 
-template<char ...args>
-struct tvaluelist_to_data<typelist<tvalue_type<const char, args>...>>
+template<const char ...args>
+struct tvaluelist_to_data<typelist<tvalue_type<const char, args>...>, void>
 {
-    constexpr static char data[sizeof...(args) + 1]={args..., 0};
+    constexpr static char const data[sizeof...(args) + 1]={args..., 0};
 };
+template <char... args>
+char const tvaluelist_to_data<typelist<tvalue_type<const char, args>...>, void>::data[sizeof...(args) + 1];
 
 #pragma endregion
 
