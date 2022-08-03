@@ -52,7 +52,8 @@ constexpr const char get(const char (&arr)[N])
 
 #define STATIC_STRING(str) Arrow::typelist::splite<sizeof(str) - 1, Arrow::typelist::tvalue_typelist<char, MakeCharSequence_1024(str)>>::Head
 
-#define STATIC_FILE  Arrow::static_string::getfilename<STATIC_STRING(__FILE__)>::type
+#define STATIC_FILE Arrow::static_string::getfilename<STATIC_STRING(__FILE__)>::type
+#define STATIC_FUNC STATIC_STRING(__func__)
 
 namespace details
 {
