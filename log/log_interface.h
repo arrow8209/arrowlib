@@ -21,9 +21,10 @@ public:
         return LogImpl::log_init(szConfigFileName);
     }
 
+    template<typename TFileName, typename TFunName, int line>
     static void Trace_Log(const char* szInfo)
     {
-        LogImpl::Trace_Log(szInfo);
+        LogImpl::template Trace_Log<TFileName, TFunName, line>(szInfo);
     }
 
     template <typename T>

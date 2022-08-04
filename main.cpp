@@ -47,7 +47,8 @@
 int main(int argc, char* argv[])
 {
     ALog::log_init(nullptr);
-    ARROW_LOG_DEBUG("12312");
+    ALog::Trace_Log<STATIC_FILE, STATIC_FUNC, __LINE__>("12312");
+    ARROW_LOG_TRACE("12312");
     // while(true)
     // {
     //     printf("asdfas\n");

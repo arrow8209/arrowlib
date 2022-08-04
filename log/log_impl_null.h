@@ -21,7 +21,8 @@ public:
     {
         return true;
     }
-
+    
+    template<typename TFileName, typename TFunName, int line>
     static void Trace_Log(const char* szInfo)
     {
     }

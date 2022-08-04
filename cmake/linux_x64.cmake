@@ -1,0 +1,106 @@
+cmake_minimum_required(VERSION 3.0.0)
+PROJECT (arrow_lib_test)
+
+MESSAGE("arrow_lib_test tagert: x64")
+
+##编译环境和参数设置
+
+#编译环境和参数设置（按需修改）
+set(CMAKE_CXX_STANDARD 11)
+set(LOG4CPLUS_ROOT /Users/zhuyuanbo/Documents/5.code/third_party_libr/lib/log4cplus/x64)
+
+#设置预定宏（按需修改）
+#add_definitions(-DATLAS500)
+
+
+#编译前执行相关指令（按需修改）
+
+# EXEC_PROGRAM(cp ${CMAKE_CURRENT_SOURCE_DIR} ARGS "${CMAKE_CURRENT_SOURCE_DIR}/../algorithm/zhihuijiayouzhan/lib/lib/libmaxvision_algorithm_sdk_aarch64.so ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}")
+# EXEC_PROGRAM(cp ${CMAKE_CURRENT_SOURCE_DIR} ARGS "-R ${CMAKE_CURRENT_SOURCE_DIR}/*.ini ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}")
+# EXEC_PROGRAM(cp ${CMAKE_CURRENT_SOURCE_DIR} ARGS "-R ${CMAKE_CURRENT_SOURCE_DIR}/*.txt ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}")
+# EXEC_PROGRAM(mkdir ${CMAKE_CURRENT_SOURCE_DIR} ARGS "${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/model")
+# EXEC_PROGRAM(${CMAKE_CURRENT_SOURCE_DIR}/config/copymodeltobin.sh 
+# ${CMAKE_CURRENT_SOURCE_DIR} ARGS 
+# "${CMAKE_CURRENT_SOURCE_DIR}/../algorithm/zhihuijiayouzhan/model ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/model")
+
+
+# message(STATUS "-R ${CMAKE_CURRENT_SOURCE_DIR}/../algorithm/zhihuijiayouzhan/model ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}")
+
+
+#设置编译参数（基本不改）
+set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS} -fPIC -O0 -g -Wall -rdynamic -Wno-deprecated  -fpermissive")
+set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS} -fPIC -O2 -Wall -rdynamic -Wno-deprecated  -fpermissive")
+
+set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS} -fPIC -O0 -g -Wall -pipe -Wextra -latomic")
+set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS} -fPIC -O2 -Wall -pipe -Wextra -latomic")
+
+#设置PkgConfig （无需修改）
+FIND_PACKAGE(PkgConfig)
+
+#设置pkgconfig path（按需修改）
+SET(ENV{PKG_CONFIG_PATH} /maxvision/lib/log4cplus/build/amd64/lib/pkgconfig:$ENV{PKG_CONFIG_PATH})
+PKG_SEARCH_MODULE(log4cplus REQUIRED log4cplus)
+
+#设置包路径
+# set(log4cplus_DIR /Users/zhuyuanbo/Documents/5.code/third_party_libr/lib/log4cplus/x64/lib/cmake/log4cplus )
+# find_package(log4cplus REQUIRED NO_CMAKE_FIND_ROOT_PATH)
+
+#工程添加多个特定的头文件搜索路径（按需修改）
+INCLUDE_DIRECTORIES(
+    ${log4cplus_INCLUDE_DIRS}
+)
+
+#添加非标准的共享库搜索路径（按需修改）
+LINK_DIRECTORIES(
+    ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}
+    ${log4cplus_LIBRARY_DIRS}
+)
+
+#需要编译的文件相关设置
+
+#将文件添加到工程目录中（按需修改）
+FILE(GLOB_RECURSE SRC_LIST *.cpp *.c *.h *.hpp)
+
+#设置需要忽略的源文件（按需修改）
+SET(IGNORE_SRC_LIST CMakeCCompilerId.c CMakeCXXCompilerId.cpp CMakeCXXCompilerId.cpp)
+
+#从源文件列表中查找需要忽略文件（无需修改）
+SET(SRC_REMOVE_LIST)
+FOREACH(F ${SRC_LIST})
+	FOREACH(I ${IGNORE_SRC_LIST})
+		SET(RegexStr .*/${I})
+		string(REGEX MATCH ${RegexStr} dirName ${F} )
+		IF(dirName)
+			LIST(APPEND SRC_REMOVE_LIST ${F})
+		ENDIF(dirName)
+	ENDFOREACH(I)
+ENDFOREACH(F)
+
+#从源文件中删除忽略文件（无需修改）
+FOREACH(F ${SRC_REMOVE_LIST})
+	list(FIND SRC_LIST ${F} TMP_INDEX)
+	list(REMOVE_AT SRC_LIST ${TMP_INDEX} )
+ENDFOREACH(F)
+
+MESSAGE("==============Src List==============")
+FOREACH(F ${SRC_LIST})
+	MESSAGE(${F})
+ENDFOREACH(F)
+MESSAGE("==============Src List==============")
+
+# ADD_LIBRARY(
+# 	arrow_lib_test
+#     SHARED
+# 	${SRC_LIST} 
+# )
+
+ADD_EXECUTABLE(
+    arrow_lib_test
+    ${SRC_LIST} 
+)
+
+
+TARGET_LINK_LIBRARIES(
+	arrow_lib_test
+    ${log4cplus_LIBRARIES}
+)

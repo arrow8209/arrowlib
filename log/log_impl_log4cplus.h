@@ -68,7 +68,7 @@ public:
         log4cplus::initialize();
         try
         {
-            if(szConfigFileName != nullptr)
+            if (szConfigFileName != nullptr)
             {
                 log4cplus::PropertyConfigurator::doConfigure(LOG4CPLUS_TEXT(szConfigFileName));
                 return true;
@@ -78,7 +78,7 @@ public:
         {
             printf("log_init exception...\n");
         }
-        
+
         log4cplus::Logger&& _logger = log4cplus::Logger::getRoot();
 
         if (_logger.getAllAppenders().size() == 0)
@@ -92,11 +92,46 @@ public:
             _logger.setLogLevel(log4cplus::ALL_LOG_LEVEL);
             _logger.addAppender(_append);
         }
+        return true;
     }
 
+    template <typename TFileName, typename TFunName, int line>
     static void Trace_Log(const char* szInfo)
     {
-        LOG4CPLUS_TRACE_STR("", szInfo);
+        // LOG4CPLUS_SUPPRESS_DOWHILE_WARNING()
+        // do
+        // {
+        //     log4cplus::Logger const& _l = log4cplus::detail::macros_get_logger(g_logger);
+        //     if (LOG4CPLUS_MACRO_LOGLEVEL_PRED(_l.isEnabledFor(log4cplus::TRACE_LOG_LEVEL), logLevel))
+        //     {
+        //         log4cplus::detail::macro_forced_log(_l,
+        //                                             log4cplus::TRACE_LOG_LEVEL, logEvent,
+        //                                             LOG4CPLUS_MACRO_FILE(),
+        //                                             __LINE__,
+        //                                             LOG4CPLUS_MACRO_FUNCTION());
+        //     }
+        // } while (0)
+        // LOG4CPLUS_RESTORE_DOWHILE_WARNING()
+
+        typedef Arrow::typelist::tvaluelist_to_data<TFileName> Staic_FileName;
+        typedef Arrow::typelist::tvaluelist_to_data<TFunName> Staic_FunName;
+
+        LOG4CPLUS_SUPPRESS_DOWHILE_WARNING()
+        do
+        {
+            log4cplus::Logger const& _l = log4cplus::detail::macros_get_logger(g_logger);
+            if (LOG4CPLUS_MACRO_LOGLEVEL_PRED(_l.isEnabledFor(log4cplus::TRACE_LOG_LEVEL), TRACE_LOG_LEVEL))
+            {
+                LOG4CPLUS_MACRO_INSTANTIATE_OSTRINGSTREAM(_log4cplus_buf);
+                _log4cplus_buf << szInfo;
+                log4cplus::detail::macro_forced_log(_l,
+                                                    log4cplus::TRACE_LOG_LEVEL, _log4cplus_buf.str(),
+                                                    Staic_FileName::data, 
+                                                    line,
+                                                    Staic_FunName::data);
+            }
+        } while (0);
+        LOG4CPLUS_RESTORE_DOWHILE_WARNING()
     }
 
     template <typename T>
