@@ -28,11 +28,11 @@ set(LOG4CPLUS_ROOT /Users/zhuyuanbo/Documents/5.code/third_party_libr/lib/log4cp
 
 
 #设置编译参数（基本不改）
-set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS} -fPIC -O0 -g -Wall -rdynamic -Wno-deprecated  -fpermissive stdlib=libstdc++")
-set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS} -fPIC -O2 -Wall -rdynamic -Wno-deprecated  -fpermissive stdlib=libstdc++")
-
-set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS} -fPIC -O0 -g -Wall -pipe -Wextra -latomic stdlib=libstdc++")
-set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS} -fPIC -O2 -Wall -pipe -Wextra -latomic stdlib=libstdc++")
+set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS} -fPIC -O0 -g -Wall -rdynamic -Wno-deprecated  -fpermissive")
+set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS} -fPIC -O2 -Wall -rdynamic -Wno-deprecated  -fpermissive")
+# -stdlib=libstdc++
+set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS} -fPIC -O0 -g -Wall -pipe -Wextra -latomic ")
+set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS} -fPIC -O2 -Wall -pipe -Wextra -latomic")
 
 #设置PkgConfig （无需修改）
 # FIND_PACKAGE(PkgConfig)
@@ -41,9 +41,9 @@ set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS} -fPIC -O2 -Wall -pipe -Wextra -latom
 # SET(ENV{PKG_CONFIG_PATH} /maxvision/lib/gstreamer/lib/pkgconfig:$ENV{PKG_CONFIG_PATH})
 # PKG_SEARCH_MODULE(gst-main REQUIRED gstreamer-1.0)
 
-#设置OpenCV包路径
-set(log4cplus_DIR /Users/zhuyuanbo/Documents/5.code/third_party_libr/lib/log4cplus/x64/lib/cmake/log4cplus )
-find_package(log4cplus REQUIRED NO_CMAKE_FIND_ROOT_PATH)
+#设置 package 包路径
+# set(log4cplus_DIR /Users/zhuyuanbo/Documents/5.code/third_party_libr/lib/log4cplus/x64/lib/cmake/log4cplus )
+# find_package(log4cplus REQUIRED NO_CMAKE_FIND_ROOT_PATH)
 
 #工程添加多个特定的头文件搜索路径（按需修改）
 INCLUDE_DIRECTORIES(

@@ -163,9 +163,9 @@ public:
 
     // 主要给Windows使用，CallCon 确定调用约定，Linux下使用，会忽略这个参数 [zhuyb 2022-07-18 14:36:45]
     template <int CallCon, typename RetType, typename... Args>
-    RetType call_win(const char* lpProcName, Args... args)
+    RetType call(const char* lpProcName, Args... args)
     {
-        return call_win<RetType>(lpProcName, type<CallCon>(), args...);
+        return call<RetType>(lpProcName, type<CallCon>(), args...);
     }
 
 private:
@@ -203,7 +203,7 @@ private:
     //////////////////////////////////////////////////////////////////////////
     // 对__stdcall调用约定的实现
     template <class RetType, typename... Args>
-    RetType call_win(const char* lpProcName, type<_calltype_stdcall>, Args... args)
+    RetType call(const char* lpProcName, type<_calltype_stdcall>, Args... args)
     {
         typedef RetType(__stdcall * LPProcName)(Args...);
         return addr<LPProcName>(lpProcName)(args...);
@@ -212,7 +212,7 @@ private:
     //////////////////////////////////////////////////////////////////////////
     // 对__cdecl调用约定的实现
     template <class RetType, typename... Args>
-    RetType call_win(const char* lpProcName, type<_calltype_cdecl>, Args... args)
+    RetType call(const char* lpProcName, type<_calltype_cdecl>, Args... args)
     {
         typedef RetType(__cdecl * LPProcName)(Args...);
         return addr<LPProcName>(lpProcName)(args...);
@@ -221,7 +221,7 @@ private:
     /////////////////////////////////////////////////////////////////////////
     // 对__fastcall调用约定的实现
     template <class RetType, typename... Args>
-    RetType call_win(const char* lpProcName, type<_fastcall_>, Args... args)
+    RetType call(const char* lpProcName, type<_fastcall_>, Args... args)
     {
         typedef RetType(__fastcall * LPProcName)(Args...);
         return addr<LPProcName>(lpProcName)(args...);

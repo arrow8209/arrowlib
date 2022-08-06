@@ -1,8 +1,8 @@
 cmake_minimum_required(VERSION 3.0)
 
 #设置编译参数和环境
-SET(COMPILE_TYPE "linux_x64")
-# SET(COMPILE_TYPE "mac")
+# SET(COMPILE_TYPE "linux_x64")
+SET(COMPILE_TYPE "mac")
 
 
 IF(${COMPILE_TYPE} STREQUAL "linux_x64")
