@@ -75,7 +75,5 @@ namespace Log
 
 // typedef LogInterface<LogImplLog4Cplus> ALog;
 // typedef LogInterface<LogImplNull> ALog;
-
-
 } // namespace Log
 } // namespace Arrow
