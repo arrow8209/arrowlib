@@ -3,12 +3,20 @@
 #include "std_assist.h"
 #include "load_lib.h"
 
+
+#ifdef _WIN32
+#elif __APPLE__
+#define Test_Lib_Name "libtestlib1.dylib"
+#elif __linux__
+#define Test_Lib_Name "libtestlib1.so"
+#endif
+
 static void Test_Load_Lib()
 {
     Arrow::Other::DynamicLib testlib1;
     try
     {
-        testlib1.LoadLib("libtestlib1.so");
+        testlib1.LoadLib(Test_Lib_Name);
         std::string strPath = Arrow::Other::get_app_path();
 
         testlib1.call<uint32_t>("Init", strPath.c_str());

@@ -3,8 +3,8 @@ cmake_minimum_required(VERSION 3.0)
 PROJECT(arrowlib)
 
 #设置编译参数和环境
-SET(COMPILE_TYPE "x64")
-# SET(COMPILE_TYPE "mac")
+# SET(COMPILE_TYPE "x64")
+SET(COMPILE_TYPE "mac")
 
 
 MESSAGE("* CMAKE_BUILD_TYPE:  " "${CMAKE_BUILD_TYPE}")

@@ -19,7 +19,7 @@ public:
     template<typename ...Args>
     static bool log_init(Args... args)
     {
-        return LogImpl::log_init(args);
+        return LogImpl::log_init(args...);
     }
 
     template<typename TFileName, typename TFunName, int line>

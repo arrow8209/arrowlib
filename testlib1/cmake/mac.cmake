@@ -87,20 +87,22 @@ FOREACH(F ${SRC_LIST})
 ENDFOREACH(F)
 MESSAGE("==============Src List==============")
 
-# ADD_LIBRARY(
-# 	${ProjectName}
-#     SHARED
-# 	${SRC_LIST} 
-# )
-
-ADD_EXECUTABLE(
-    ${ProjectName}
-    ${SRC_LIST} 
+ADD_LIBRARY(
+	${ProjectName}
+    SHARED
+	${SRC_LIST} 
 )
+
+# ADD_EXECUTABLE(
+#     ${ProjectName}
+#     ${SRC_LIST} 
+# )
 
 
 TARGET_LINK_LIBRARIES(
 	${ProjectName}
     log4cplus
+    dl
+    pthread
     # ${log4cplus_LIBRARIES}
 )

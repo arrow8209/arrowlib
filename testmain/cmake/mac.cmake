@@ -101,6 +101,7 @@ ADD_EXECUTABLE(
 
 TARGET_LINK_LIBRARIES(
 	${ProjectName}
-    log4cplus
-    # ${log4cplus_LIBRARIES}
+    # log4cplus
+    dl
+    pthread
 )

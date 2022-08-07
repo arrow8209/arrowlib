@@ -99,5 +99,4 @@ ADD_LIBRARY(
 TARGET_LINK_LIBRARIES(
 	${ProjectName}
     log4cplus
-    dl
 )
