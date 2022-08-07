@@ -1,0 +1,72 @@
+{
+    "root": {
+        "data": {
+            "id": "clzglri5jhc0",
+            "created": 1659841215108,
+            "text": "arrow"
+        },
+        "children": [
+            {
+                "data": {
+                    "id": "clzglzlp01s0",
+                    "created": 1659841232737,
+                    "text": "task"
+                },
+                "children": [
+                    {
+                        "data": {
+                            "id": "clzgm4aecf40",
+                            "created": 1659841242937,
+                            "text": "水位标"
+                        },
+                        "children": []
+                    },
+                    {
+                        "data": {
+                            "id": "clzgme3gkr40",
+                            "created": 1659841264286,
+                            "text": "信号量"
+                        },
+                        "children": []
+                    },
+                    {
+                        "data": {
+                            "id": "clzgm0zjjww0",
+                            "created": 1659841235751,
+                            "text": "定时器"
+                        },
+                        "children": []
+                    },
+                    {
+                        "data": {
+                            "id": "clzgmbkgtw00",
+                            "created": 1659841258784,
+                            "text": "参数拷贝性能优化"
+                        },
+                        "children": []
+                    }
+                ]
+            },
+            {
+                "data": {
+                    "id": "clzgnfbtrx40",
+                    "created": 1659841345333,
+                    "text": "log"
+                },
+                "children": [
+                    {
+                        "data": {
+                            "id": "clzgnjx1g940",
+                            "created": 1659841355322,
+                            "text": "模板化"
+                        },
+                        "children": []
+                    }
+                ]
+            }
+        ]
+    },
+    "template": "right",
+    "theme": "fresh-blue",
+    "version": "1.4.43"
+}

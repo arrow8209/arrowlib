@@ -17,7 +17,8 @@ protected:
     virtual ~LogImplNull() = default;
 
 public:
-    static bool log_init(const char* szConfigFileName)
+    template<typename ...Args>
+    static bool log_init(Args... args)
     {
         return true;
     }
@@ -27,12 +28,12 @@ public:
     {
     }
 
-    template <typename T>
+    template <typename TFileName, typename TFunName, int line, typename T>
     static void Trace_Log(const T& t)
     {
     }
 
-    template <typename... Args>
+    template <typename TFileName, typename TFunName, int line, typename... Args>
     static void Trace_Log(const char* szFmt, Args... args)
     {
        

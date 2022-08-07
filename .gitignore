@@ -33,3 +33,5 @@
 build/
 CMakeLists.txt.bak
 typelist/typelist_fun copy.h
+bin/
+testmain/is fail

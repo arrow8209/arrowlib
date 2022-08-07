@@ -1,5 +1,5 @@
 /*
- * @FilePath: /arrowlib/Log/LogDefine.h
+ * @FilePath: /arrowlib/arrow/log/log_define.h
  * @Author: arrow arrow8209@foxmail.com
  * @Date: 2022-07-07 18:26:24
  * @Description: 日志输出,使用log4cplus输出日志
@@ -73,19 +73,9 @@ namespace Arrow
 namespace Log
 {
 
-typedef LogInterface<LogImplLog4Cplus> ALog;
+// typedef LogInterface<LogImplLog4Cplus> ALog;
 // typedef LogInterface<LogImplNull> ALog;
-// 这函数属于编译器期执行 [zhuyb 2022-07-20 11:10:12]
-template<size_t N>
-constexpr const char *get_file_basename(const char (&filename)[N])
-{
-    for (int i = N - 1; i >= 0; i--)
-    {
-        if (filename[i] == '/' || filename[i] == '\\')
-            return filename + i + 1;
-    }
-    return filename;
-}
+
 
 } // namespace Log
 } // namespace Arrow

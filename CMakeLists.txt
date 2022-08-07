@@ -1,15 +1,36 @@
 cmake_minimum_required(VERSION 3.0)
 
+PROJECT(arrowlib)
+
 #设置编译参数和环境
-# SET(COMPILE_TYPE "linux_x64")
-SET(COMPILE_TYPE "mac")
+SET(COMPILE_TYPE "x64")
+# SET(COMPILE_TYPE "mac")
 
 
-IF(${COMPILE_TYPE} STREQUAL "linux_x64")
-	INCLUDE(cmake/linux_x64.cmake)
+MESSAGE("* CMAKE_BUILD_TYPE:  " "${CMAKE_BUILD_TYPE}")
+
+MESSAGE("* COMPILE_TYPE:  " "${COMPILE_TYPE}")
+
+IF(${COMPILE_TYPE} STREQUAL "x64")
+	INCLUDE(cmake-env/x64-env.cmake)
 ELSEIF(${COMPILE_TYPE} STREQUAL "mac")
-	INCLUDE(cmake/mac.cmake)
+	INCLUDE(cmake-env/mac-env.cmake)
 ELSE(${COMPILE_TYPE})
-    MESSAGE("    *COMPILE_TYPE:  Unkonw ""${COMPILE_TYPE}")
-    INCLUDE(cmake/Linux_x64.cmake)
+    MESSAGE("* COMPILE_TYPE:  Unkonw ""${COMPILE_TYPE}")
+    INCLUDE(cmake-env/x64-env.cmake)
 ENDIF()
+
+
+
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin)
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin)
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin)
+set(LIBRARY_OUTPUT_PATH            ${CMAKE_SOURCE_DIR}/bin)
+
+
+
+
+#插件编译(主要都是用来测试的插件)
+ADD_SUBDIRECTORY(testmain)
+
+ADD_SUBDIRECTORY(testlib1)

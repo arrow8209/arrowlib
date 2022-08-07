@@ -32,12 +32,12 @@ typedef void* DynamicLibHandle;
 typedef void* DynamicLibFunAddress;
 #endif
 
-enum _em_call_type
+typedef enum _em_call_type
 {
     _calltype_stdcall = 0,
     _calltype_cdecl = 1,
     _fastcall_ = 2
-};
+}Em_Call_Type;
 
 typedef enum _em_ErrorCode
 {
@@ -47,40 +47,6 @@ typedef enum _em_ErrorCode
     _em_FindFunFail,
 } Em_ErrorCode;
 
-static inline std::string get_app_path()
-{
-#ifdef WIN32
-    char chPath[MAX_PATH];
-    std::string strPath;
-    int nCount;
-
-    ::GetModuleFileName(NULL, chPath, MAX_PATH); //得到执行文件名的全路径
-    strPath = chPath;
-    nCount = strPath.find_last_of('\\');
-    strPath = strPath.substr(0, nCount + 1);
-    return strPath;
-
-#else
-    std::string sPath;
-    char buf[4097] = {0};
-    long size;
-    char* ptr;
-    size = pathconf(".", _PC_PATH_MAX);
-    if ((ptr = (char*)malloc((size_t)size)) != NULL)
-    {
-        memset(ptr, 0, size);
-        sprintf(ptr, "/proc/%d/exe", getpid());
-    }
-    else
-        return sPath;
-    readlink(ptr, buf, size);
-    free(ptr);
-    ptr = NULL;
-    sPath = buf;
-    int nPos = sPath.find_last_of("/");
-    return sPath.substr(0, nPos + 1);
-#endif
-}
 
 class DynamicLib
 {
@@ -94,31 +60,35 @@ public:
 public:
     DynamicLib()
     {
-        m_hInst = NULL;
+        m_hInst = nullptr;
         m_ErrorNo = Em_ErrorCode::_em_Success;
         m_strLastErrorMsg = "";
     }
 
     DynamicLib(const char* lpLibFileName) // 构造函数,调用HLoadLibrary加载DLL
     {
-        m_hInst = NULL;
+        m_hInst = nullptr;
         m_hInst = LoadLib(lpLibFileName);
     }
 
     virtual ~DynamicLib()
     {
-        CloseLib(m_hInst);
+        if (m_hInst != nullptr)
+        {
+            CloseLib(m_hInst);
+            m_hInst = nullptr;
+        }
     }
 
     DynamicLibHandle LoadLib(const char* lpLibFileName) // 加载DLL
     {
-        if (m_hInst != NULL)
+        if (m_hInst != nullptr)
         {
             CloseLib(m_hInst);
-            m_hInst = NULL;
+            m_hInst = nullptr;
         }
         m_hInst = OpenLib(lpLibFileName);
-        if (m_hInst == NULL)
+        if (m_hInst == nullptr)
         {
             m_ErrorNo = Em_ErrorCode::_em_LoadLibFail;
 
@@ -140,16 +110,16 @@ public:
 
     bool CheckFun(const char* lpPorcName)
     {
-        if (m_hInst == NULL)
+        if (m_hInst == nullptr)
             return false;
         char* tmpProcName = const_cast<char*>(lpPorcName);
         DynamicLibFunAddress pFunAddress = GetFunAddress(m_hInst, tmpProcName);
-        return pFunAddress != NULL;
+        return pFunAddress != nullptr;
     }
 
     bool CheckOpenLib()
     {
-        return m_hInst != NULL;
+        return m_hInst != nullptr;
     }
 
 public:
@@ -246,7 +216,7 @@ private:
         nRet = dlclose(hin);
 
 #endif // WIN32
-        m_hInst = NULL;
+        m_hInst = nullptr;
         return nRet;
     }
 

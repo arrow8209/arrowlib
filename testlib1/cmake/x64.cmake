@@ -1,7 +1,8 @@
 cmake_minimum_required(VERSION 3.0.0)
-PROJECT (arrow_lib_test)
 
-MESSAGE("arrow_lib_test tagert: mac")
+PROJECT (${ProjectName})
+
+MESSAGE("* ${ProjectName} tagert: x64")
 
 ##编译环境和参数设置
 
@@ -11,7 +12,6 @@ set(LOG4CPLUS_ROOT /Users/zhuyuanbo/Documents/5.code/third_party_libr/lib/log4cp
 
 #设置预定宏（按需修改）
 #add_definitions(-DATLAS500)
-
 
 #编译前执行相关指令（按需修改）
 
@@ -23,37 +23,33 @@ set(LOG4CPLUS_ROOT /Users/zhuyuanbo/Documents/5.code/third_party_libr/lib/log4cp
 # ${CMAKE_CURRENT_SOURCE_DIR} ARGS 
 # "${CMAKE_CURRENT_SOURCE_DIR}/../algorithm/zhihuijiayouzhan/model ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/model")
 
-
-# message(STATUS "-R ${CMAKE_CURRENT_SOURCE_DIR}/../algorithm/zhihuijiayouzhan/model ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}")
-
-
 #设置编译参数（基本不改）
-set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS} -fPIC -O0 -g -Wall -rdynamic -Wno-deprecated  -fpermissive")
-set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS} -fPIC -O2 -Wall -rdynamic -Wno-deprecated  -fpermissive")
-# -stdlib=libstdc++
-set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS} -fPIC -O0 -g -Wall -pipe -Wextra -latomic ")
-set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS} -fPIC -O2 -Wall -pipe -Wextra -latomic")
+# set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS} -fPIC -O0 -g -Wall -rdynamic -Wno-deprecated  -fpermissive")
+# set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS} -fPIC -O2 -Wall -rdynamic -Wno-deprecated  -fpermissive")
+
+# set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS} -fPIC -O0 -g -Wall -pipe -Wextra -latomic")
+# set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS} -fPIC -O2 -Wall -pipe -Wextra -latomic")
 
 #设置PkgConfig （无需修改）
-# FIND_PACKAGE(PkgConfig)
+FIND_PACKAGE(PkgConfig)
 
 #设置pkgconfig path（按需修改）
-# SET(ENV{PKG_CONFIG_PATH} /maxvision/lib/gstreamer/lib/pkgconfig:$ENV{PKG_CONFIG_PATH})
-# PKG_SEARCH_MODULE(gst-main REQUIRED gstreamer-1.0)
+# SET(ENV{PKG_CONFIG_PATH} /maxvision/lib/log4cplus/build/amd64/lib/pkgconfig:$ENV{PKG_CONFIG_PATH})
+# PKG_SEARCH_MODULE(log4cplus REQUIRED log4cplus)
 
-#设置 package 包路径
+#设置包路径
 # set(log4cplus_DIR /Users/zhuyuanbo/Documents/5.code/third_party_libr/lib/log4cplus/x64/lib/cmake/log4cplus )
 # find_package(log4cplus REQUIRED NO_CMAKE_FIND_ROOT_PATH)
 
 #工程添加多个特定的头文件搜索路径（按需修改）
 INCLUDE_DIRECTORIES(
-    ${LOG4CPLUS_ROOT}/include
+    ${ALL_INCLUDE_DIRS}
 )
 
 #添加非标准的共享库搜索路径（按需修改）
 LINK_DIRECTORIES(
     ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}
-    ${LOG4CPLUS_ROOT}/lib
+    ${ALL_LIBRARY_DIRS}
 )
 
 #需要编译的文件相关设置
@@ -84,24 +80,24 @@ ENDFOREACH(F)
 
 MESSAGE("==============Src List==============")
 FOREACH(F ${SRC_LIST})
-	MESSAGE(${F})
+	MESSAGE("* ${F}")
 ENDFOREACH(F)
 MESSAGE("==============Src List==============")
 
-# ADD_LIBRARY(
-# 	arrow_lib_test
-#     SHARED
-# 	${SRC_LIST} 
-# )
-
-ADD_EXECUTABLE(
-    arrow_lib_test
-    ${SRC_LIST} 
+ADD_LIBRARY(
+	${ProjectName}
+    SHARED
+	${SRC_LIST} 
 )
+
+# ADD_EXECUTABLE(
+#     ${ProjectName}
+#     ${SRC_LIST} 
+# )
 
 
 TARGET_LINK_LIBRARIES(
-	arrow_lib_test
+	${ProjectName}
     log4cplus
-    # ${log4cplus_LIBRARIES}
+    dl
 )

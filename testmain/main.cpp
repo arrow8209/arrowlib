@@ -1,54 +1,39 @@
 /*
- * @FilePath: /arrowlib/main.cpp
+ * @FilePath: /arrowlib/testmain/main.cpp
  * @Author: arrow arrow8209@foxmail.com
  * @Date: 2022-06-30 09:31:52
  * @Description:
  */
-#include "pattern/factory/factory_test.h"
-#include "pattern/observer/observer.h"
-#include "pattern/observer/subject.h"
-#include "pattern/singleton/singleton.h"
-#include "task/task_one_thread.h"
 #include <functional>
 #include <stdio.h>
-#include "typelist/typelist_demo.h"
-#include "log/log.h"
-#include "log/log_impl_log4cplus.h"
- typedef Arrow::Log::LogInterface<Arrow::Log::LogImplLog4Cplus> ALog;
+#include <thread>
+#include "arrow/pattern/factory/factory_test.h"
+#include "arrow/pattern/observer/observer.h"
+#include "arrow/pattern/observer/subject.h"
+#include "arrow/pattern/singleton/singleton.h"
+#include "arrow/task/task_one_thread.h"
+#include "arrow/typelist/typelist_demo.h"
+#include "arrow/log/log.h"
+#include "arrow/log/log_impl_log4cplus.h"
+#include "arrow/other/load_lib_test.h"
+#include <log4cplus/log4cplus.h>
+//  typedef Arrow::Log::LogInterface<Arrow::Log::LogImplLog4Cplus> ALog;
 
-// typedef IObserver<int, int, int> IIIObejct;
-// typedef ISubject<int, int, int> IIISubject;
+void fun()
+{
 
-// class CObserver : public IIIObejct
-// {
-//     friend class Singleton<CObserver>;
-
-// protected:
-//     CObserver()
-//     {
-//     }
-
-// public:
-//     virtual int Response(int n1, int n2)
-//     {
-//         printf("1\n");
-//         return 0;
-//     }
-// };
-// typedef Singleton<CObserver> App_Observer;
-
-// void fun1(void* param)
-// {
-//     printf("fun1\n");
-// }
-
-// constexpr static const int ntmp11= 0;
+}
 
 int main(int argc, char* argv[])
 {
-    ALog::log_init(nullptr);
-    ALog::Trace_Log<STATIC_FILE, STATIC_FUNC, __LINE__>("12312");
-    ARROW_LOG_TRACE("12312");
+    printf("\nLD_LIBRARY_PATH:\n");
+    system("echo $LD_LIBRARY_PATH");
+    
+    // std::thread th = std::thread(&fun); 
+    
+    // ALog::log_init(nullptr);
+    // ALog::Trace_Log<STATIC_FILE, STATIC_FUNC, __LINE__>("12312");
+    // ARROW_LOG_TRACE("12312");
     // while(true)
     // {
     //     printf("asdfas\n");
@@ -70,12 +55,23 @@ int main(int argc, char* argv[])
     // App_Factory::Create(2);
     // App_Factory::Create(4);
     
-    test_typelist_type();
+    // test_typelist_type();
     // test_typelist_vlaue();
     // test_static_string();
     // test_define();
     // Arrow::static_string::outinf("123456");
-    test_static_string2();
+    // test_static_string2();
+    // log4cplus::initialize();
+    std::cout << "123" << std::endl;
+    Test_Load_Lib();
 
+    std::cout << "456" << std::endl;
+
+
+    // if (th.joinable())
+    // {
+    //     th.join();
+    // }
+    
     return 1;
 }

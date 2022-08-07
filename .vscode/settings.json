@@ -1,4 +1,8 @@
 {
+    "cmake.environment": 
+    {
+        "LD_LIBRARY_PATH": "/Users/zhuyuanbo/Documents/5.code/third_party_libr/lib/log4cplus/x64/lib:${env:LD_LIBRARY_PATH}"
+    },
     "files.associations": {
         "functional": "cpp",
         "ostream": "cpp",
