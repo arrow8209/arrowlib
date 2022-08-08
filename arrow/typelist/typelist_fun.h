@@ -237,6 +237,8 @@ template <typename T, T... args>
 struct tvaluelist_to_data<typelist<tvalue_type<T, args>...>, 
         typename std::enable_if<!std::is_same<T, char>::value, void>::type>
 {
+    typedef T type;
+    constexpr static int Length = sizeof...(args);
     constexpr static T const data[sizeof...(args)] = {args...};
 };
 template<typename T, T ...args>
@@ -245,7 +247,9 @@ T const tvaluelist_to_data<typelist<tvalue_type<T, args>...>, typename std::enab
 template<typename T, T ...args>
 struct tvaluelist_to_data<typelist<tvalue_type<const T, args>...>, typename std::enable_if<!std::is_same<T, char>::value, void>::type>
 {
-    constexpr static T const data[sizeof...(args)]={args...};
+    typedef T type;
+    constexpr static int Length = sizeof...(args);
+    constexpr static T const data[sizeof...(args)] = {args...};
 };
 template<typename T, T ...args>
 const T tvaluelist_to_data<typelist<tvalue_type<const T, args>...>,typename std::enable_if<!std::is_same<T, char>::value, void>::type>::data[sizeof...(args)];
@@ -253,6 +257,8 @@ const T tvaluelist_to_data<typelist<tvalue_type<const T, args>...>,typename std:
 template<const char ...args>
 struct tvaluelist_to_data<typelist<tvalue_type<char, args>...>, void>
 {
+    typedef char type;
+    constexpr static int Length = sizeof...(args) + 1;
     constexpr static char const data[sizeof...(args) + 1] = {args..., 0};
 };
 template<char ...args>
@@ -261,7 +267,9 @@ char const tvaluelist_to_data<typelist<tvalue_type<char, args>...>, void>::data[
 template<const char ...args>
 struct tvaluelist_to_data<typelist<tvalue_type<const char, args>...>, void>
 {
-    constexpr static char const data[sizeof...(args) + 1]={args..., 0};
+    typedef char type;
+    constexpr static int Length = sizeof...(args) + 1;
+    constexpr static char const data[sizeof...(args) + 1] = {args..., 0};
 };
 template <char... args>
 char const tvaluelist_to_data<typelist<tvalue_type<const char, args>...>, void>::data[sizeof...(args) + 1];

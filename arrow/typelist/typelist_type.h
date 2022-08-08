@@ -27,7 +27,9 @@ struct typelist<>
 template <typename T, T t>
 struct tvalue_type
 {
-    typedef typename std::remove_cv<T>::type type;
+    static_assert(!std::is_const<T>::value, "请勿使用const类型,主要是防止在进行查找的时候，值相等，但是类型不匹配的问题");
+    static_assert(!std::is_volatile<T>::value, "请勿使用volatile类型,主要是防止在进行查找的时候，值相等，但是类型不匹配的问题");
+    typedef T type;
     constexpr static const type value = t;
 };
 
@@ -44,8 +46,7 @@ namespace details
 template <int n>
 struct value_type
 {
-    typedef int type;
-    constexpr static const int value = n;
+    typedef tvalue_type<int, n> type;
 };
 
 template <int... args>

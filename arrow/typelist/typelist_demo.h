@@ -1,6 +1,6 @@
 #pragma once 
-#include "typelist.h"
 
+#include "typelist.h"
 
 void test_typelist_type()
 {
@@ -88,4 +88,10 @@ void test_static_string2()
     // // 获取文件名 [zhuyb 2022-08-03 09:06:23]
     // typedef STATIC_FILE static_filename;
     // std::cout << Arrow::typelist::tvaluelist_to_data<static_str_fillname>::data << std::endl;
+}
+
+void TestPair()
+{
+    typedef Arrow::static_map::static_pair<Arrow::typelist::value_type<1>,Arrow::typelist::value_type<2>> s_pair1;
+    std::cout << s_pair1::Key << ":" << s_pair1::Value << std::endl;
 }

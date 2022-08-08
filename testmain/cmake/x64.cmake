@@ -8,7 +8,6 @@ MESSAGE("* ${ProjectName} tagert: x64")
 
 #编译环境和参数设置（按需修改）
 set(CMAKE_CXX_STANDARD 11)
-set(LOG4CPLUS_ROOT /Users/zhuyuanbo/Documents/5.code/third_party_libr/lib/log4cplus/x64)
 
 #设置预定宏（按需修改）
 #add_definitions(-DATLAS500)
@@ -100,4 +99,5 @@ TARGET_LINK_LIBRARIES(
 	${ProjectName}
     dl
     pthread
+    log4cplus
 )

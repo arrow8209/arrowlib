@@ -120,7 +120,7 @@ public:
         do
         {
             log4cplus::Logger const& _l = log4cplus::detail::macros_get_logger(g_logger);
-            if (LOG4CPLUS_MACRO_LOGLEVEL_PRED(_l.isEnabledFor(log4cplus::TRACE_LOG_LEVEL), TRACE_LOG_LEVEL))
+            if (_l.isEnabledFor(log4cplus::TRACE_LOG_LEVEL))
             {
                 LOG4CPLUS_MACRO_INSTANTIATE_OSTRINGSTREAM(_log4cplus_buf);
                 _log4cplus_buf << szInfo;
@@ -140,10 +140,27 @@ public:
         LOG4CPLUS_TRACE("", t);
     }
 
-    template <typename... Args>
+    template <typename TFileName, typename TFunName, int line, typename... Args>
     static void Trace_Log(const char* szFmt, Args... args)
     {
-        LOG4CPLUS_TRACE_FMT("", szFmt, args...);
+        LOG4CPLUS_SUPPRESS_DOWHILE_WARNING()
+        do
+        {
+            log4cplus::Logger const& _l = log4cplus::detail::macros_get_logger("");
+            if (LOG4CPLUS_MACRO_LOGLEVEL_PRED(
+                    _l.isEnabledFor(log4cplus::TRACE_LOG_LEVEL), TRACE_LOG_LEVEL))
+            {
+                // LOG4CPLUS_MACRO_INSTANTIATE_SNPRINTF_BUF(_snpbuf);
+                log4cplus::helpers::snprintf_buf& _snpbuf = log4cplus::detail::get_macro_body_snprintf_buf();
+
+                log4cplus::tchar const* _logEvent = _snpbuf.print(szFmt, args...);
+                log4cplus::detail::macro_forced_log(_l,
+                                                    log4cplus::TRACE_LOG_LEVEL, _logEvent,
+                                                    LOG4CPLUS_MACRO_FILE(), __LINE__,
+                                                    LOG4CPLUS_MACRO_FUNCTION());
+            }
+        } while (0)
+        LOG4CPLUS_RESTORE_DOWHILE_WARNING();
     }
 
     static void Debug_Log(const char* szInfo)

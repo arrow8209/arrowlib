@@ -1,12 +1,17 @@
 #pragma once
-
-#include <log4cplus/log4cplus.h>
+#include "../typelist/typelist.h"
 
 namespace Arrow
 {
 
 namespace Log
 {
+
+namespace details
+{
+
+}
+
 
 class LogImplDefault
 {

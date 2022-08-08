@@ -3,6 +3,17 @@
 namespace Arrow
 {
 
+typedef enum em_log_Level
+{
+    Log_Null,
+    Log_Trace,
+    Log_Debug,
+    Log_Info,
+    Log_Warn,
+    Log_Error,
+    Log_Max
+} Em_Log_Level;
+
 namespace Log
 {
 template<typename TLogImpl>
@@ -34,10 +45,10 @@ public:
         LogImpl::Trace_Log(t);
     }
 
-    template <typename... Args>
+    template <typename TFileName, typename TFunName, int line, typename... Args>
     static void Trace_Log(const char* szFmt, Args... args)
     {
-        LogImpl::Trace_Log(szFmt, args...);
+        LogImpl::template Trace_Log<TFileName, TFunName, line>(szFmt, args...);
     }
 
     static void Debug_Log(const char* szInfo)
