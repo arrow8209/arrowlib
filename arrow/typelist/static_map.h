@@ -46,20 +46,55 @@ template<typename Key>
 struct find<Key, typelist::typelist<>>
 {
     typedef static_pair_null Pair;
+    typedef static_pair_null Tail;
 };
 
 template<typename Key, typename Value, typename ...Args>
 struct find<Key, typelist::typelist<static_pair<Key, Value>, Args...>>
 {
     typedef static_pair<Key, Value> Pair;
+    typedef typename typelist::typelist<Args...> Tail;
 };
 
 template<typename T, typename Key, typename Value, typename ...Args>
 struct find<T, typelist::typelist<static_pair<Key, Value>, Args...>>
 {
     typedef typename find<T, typelist::typelist<Args...>>::Pair Pair;
+    typedef typename find<T, typelist::typelist<Args...>>::Tail Tail;
 };
 
+
+
+template <typename TList>
+struct static_map;
+
+template<typename Key, typename Value>
+struct static_map<typelist::typelist<static_pair<Key, Value>>>
+{
+    typedef typename typelist::typelist<static_pair<Key, Value>> type;
+};
+
+
+template <typename Key, typename Value, typename... Args>
+struct static_map<typelist::typelist<static_pair<Key, Value>, Args...>>
+{
+public:
+    // 对后面的数据处理 [zhuyb 2022-08-08 23:45:25]
+    typedef typename static_map<typelist::typelist<Args...>>::type tail;
+
+    // 查找后面有没有重复的key [zhuyb 2022-08-08 23:44:38]
+    typedef typename find<Key, typelist::typelist<Args...>>::Pair Pair;
+
+    // 没有重复的key [zhuyb 2022-08-08 23:44:58]
+    typedef typename typelist::push_front<static_pair<Key, Value>, tail>::type one_key;
+
+    // 有重复的key [zhuyb 2022-08-08 23:45:10]
+    typedef tail two_key;
+
+public:
+    typedef typename enable_ternary<std::is_same<Pair, static_pair_null>::value, one_key, two_key>::type type;
+
+};
 
 // namespace details
 // {

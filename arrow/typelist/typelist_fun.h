@@ -6,6 +6,20 @@
 namespace Arrow
 {
 
+template <bool tvalue, typename TrueType, typename FalseType>
+struct enable_ternary
+{
+    constexpr static bool value = tvalue;
+    typedef TrueType type;
+};
+
+template <typename TrueType, typename FalseType>
+struct enable_ternary<false, TrueType, FalseType>
+{
+    constexpr static bool value = false;
+    typedef FalseType type;
+};
+
 namespace typelist
 {
 

@@ -92,6 +92,14 @@ void test_static_string2()
 
 void TestPair()
 {
-    typedef Arrow::static_map::static_pair<Arrow::typelist::value_type<1>,Arrow::typelist::value_type<2>> s_pair1;
-    std::cout << s_pair1::Key << ":" << s_pair1::Value << std::endl;
+
+    typedef typename Arrow::static_map::static_map<Arrow::typelist::typelist<
+     Arrow::static_map::static_pair<Arrow::typelist::value_type<1>,Arrow::typelist::value_type<2>>,
+     Arrow::static_map::static_pair<Arrow::typelist::value_type<1>,Arrow::typelist::value_type<3>>,
+     Arrow::static_map::static_pair<Arrow::typelist::value_type<1>,Arrow::typelist::value_type<4>>,
+     Arrow::static_map::static_pair<Arrow::typelist::value_type<1>,Arrow::typelist::value_type<5>>
+     >> SMap1;
+     Arrow::typelist::print(SMap1::type{});
+     std::cout << typeid(SMap1::Pair).name() << std::endl;;
+    // std::cout << s_pair1::Key << ":" << s_pair1::Value << std::endl;
 }

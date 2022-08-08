@@ -62,7 +62,7 @@ int main(int argc, char* argv[])
     // App_Factory::Create(4);
     
     // test_typelist_type();
-    test_typelist_vlaue();
+    // test_typelist_vlaue();
     // test_static_string();
     // test_define();
     // Arrow::static_string::outinf("123456");
