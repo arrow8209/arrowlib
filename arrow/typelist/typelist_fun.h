@@ -20,7 +20,7 @@ struct enable_ternary<false, TrueType, FalseType>
     typedef FalseType type;
 };
 
-namespace typelist
+namespace tlist
 {
 
 #pragma region 获取指定下标的类型
@@ -291,19 +291,25 @@ char const tvaluelist_to_data<typelist<tvalue_type<const char, args>...>, void>:
 #pragma endregion
 
 #pragma region 打印
+
+void print(typelist<>)
+{
+    std::cout << std::endl;
+}
+
 template<typename T, T t, T ...args>
 void print(typelist<tvalue_type<T,t>, tvalue_type<T, args>...>)
 {
     std::cout << typeid(tvalue_type<T, t>).name() << ":" << t << "\n\t";
     print(typelist<tvalue_type<T, args>...>{});
-};
+}
 
 template<typename T, T t, T ...args>
 void print(typelist<tvalue_type<const T,t>, tvalue_type<const T, args>...>)
 {
     std::cout << typeid(tvalue_type<const T, t>).name() << ":" << t << "\n\t";
     print(typelist<tvalue_type<const T, args>...>{});
-};
+}
 
 template<typename T, typename... args>
 void print(typelist<T, args...>)
@@ -312,10 +318,6 @@ void print(typelist<T, args...>)
     print(typelist<args...>{});
 }
 
-void print(typelist<>)
-{
-    std::cout << std::endl;
-};
 #pragma endregion
 
 }

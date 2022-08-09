@@ -113,8 +113,8 @@ public:
         // } while (0)
         // LOG4CPLUS_RESTORE_DOWHILE_WARNING()
 
-        typedef Arrow::typelist::tvaluelist_to_data<TFileName> Staic_FileName;
-        typedef Arrow::typelist::tvaluelist_to_data<TFunName> Staic_FunName;
+        typedef Arrow::tlist::tvaluelist_to_data<TFileName> Staic_FileName;
+        typedef Arrow::tlist::tvaluelist_to_data<TFunName> Staic_FunName;
 
         LOG4CPLUS_SUPPRESS_DOWHILE_WARNING()
         do
