@@ -19,27 +19,17 @@
 #include <log4cplus/log4cplus.h>
  typedef Arrow::Log::LogInterface<Arrow::Log::LogImplLog4Cplus> ALog;
 
-void fun()
-{
-
-}
-
-constexpr static char const dataX[] = "1213";
-constexpr static char const* data1 = dataX;
-
 int main(int argc, char* argv[])
 {
-    std::cout << dataX << std::endl;
-    std::cout << data1 << std::endl;
     printf("\nLD_LIBRARY_PATH:\n");
     system("echo $LD_LIBRARY_PATH");
-    
+    log4cplus::initialize();
     // std::thread th = std::thread(&fun); 
     
-    ALog::log_init(nullptr);
-    ALog::Trace_Log<STATIC_FILE, STATIC_FUNC, __LINE__>("12312");
-    ALog::Trace_Log<STATIC_FILE, STATIC_FUNC, __LINE__>("A:%s", "12312");
-    ARROW_LOG_TRACE("12312");
+    // ALog::log_init(nullptr);
+    // ALog::Trace_Log<STATIC_FILE, STATIC_FUNC, __LINE__>("12312");
+    // ALog::Trace_Log<STATIC_FILE, STATIC_FUNC, __LINE__>("A:%s", "12312");
+    // ARROW_LOG_TRACE("12312");
     // while(true)
     // {
     //     printf("asdfas\n");
@@ -70,7 +60,7 @@ int main(int argc, char* argv[])
     // log4cplus::initialize();
 
     // Test_Load_Lib();
-    TestPair();
+    // TestPair();
 
 
     // if (th.joinable())

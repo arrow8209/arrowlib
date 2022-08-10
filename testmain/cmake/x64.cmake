@@ -13,32 +13,7 @@ set(CMAKE_CXX_STANDARD 11)
 #add_definitions(-DATLAS500)
 
 #编译前执行相关指令（按需修改）
-
 # EXEC_PROGRAM(cp ${CMAKE_CURRENT_SOURCE_DIR} ARGS "${CMAKE_CURRENT_SOURCE_DIR}/../algorithm/zhihuijiayouzhan/lib/lib/libmaxvision_algorithm_sdk_aarch64.so ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}")
-# EXEC_PROGRAM(cp ${CMAKE_CURRENT_SOURCE_DIR} ARGS "-R ${CMAKE_CURRENT_SOURCE_DIR}/*.ini ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}")
-# EXEC_PROGRAM(cp ${CMAKE_CURRENT_SOURCE_DIR} ARGS "-R ${CMAKE_CURRENT_SOURCE_DIR}/*.txt ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}")
-# EXEC_PROGRAM(mkdir ${CMAKE_CURRENT_SOURCE_DIR} ARGS "${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/model")
-# EXEC_PROGRAM(${CMAKE_CURRENT_SOURCE_DIR}/config/copymodeltobin.sh 
-# ${CMAKE_CURRENT_SOURCE_DIR} ARGS 
-# "${CMAKE_CURRENT_SOURCE_DIR}/../algorithm/zhihuijiayouzhan/model ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/model")
-
-#设置编译参数（基本不改）
-# set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS} -fPIC -O0 -g -Wall -rdynamic -Wno-deprecated  -fpermissive")
-# set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS} -fPIC -O2 -Wall -rdynamic -Wno-deprecated  -fpermissive")
-
-# set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS} -fPIC -O0 -g -Wall -pipe -Wextra -latomic")
-# set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS} -fPIC -O2 -Wall -pipe -Wextra -latomic")
-
-#设置PkgConfig （无需修改）
-FIND_PACKAGE(PkgConfig)
-
-#设置pkgconfig path（按需修改）
-# SET(ENV{PKG_CONFIG_PATH} /maxvision/lib/log4cplus/build/amd64/lib/pkgconfig:$ENV{PKG_CONFIG_PATH})
-# PKG_SEARCH_MODULE(log4cplus REQUIRED log4cplus)
-
-#设置包路径
-# set(log4cplus_DIR /Users/zhuyuanbo/Documents/5.code/third_party_libr/lib/log4cplus/x64/lib/cmake/log4cplus )
-# find_package(log4cplus REQUIRED NO_CMAKE_FIND_ROOT_PATH)
 
 #工程添加多个特定的头文件搜索路径（按需修改）
 INCLUDE_DIRECTORIES(
@@ -47,17 +22,14 @@ INCLUDE_DIRECTORIES(
 
 #添加非标准的共享库搜索路径（按需修改）
 LINK_DIRECTORIES(
-    ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}
     ${ALL_LIBRARY_DIRS}
 )
-
-#需要编译的文件相关设置
 
 #将文件添加到工程目录中（按需修改）
 FILE(GLOB_RECURSE SRC_LIST *.cpp *.c *.h *.hpp)
 
 #设置需要忽略的源文件（按需修改）
-SET(IGNORE_SRC_LIST CMakeCCompilerId.c CMakeCXXCompilerId.cpp CMakeCXXCompilerId.cpp)
+SET(IGNORE_SRC_LIST )
 
 #从源文件列表中查找需要忽略文件（无需修改）
 SET(SRC_REMOVE_LIST)
@@ -97,7 +69,8 @@ ADD_EXECUTABLE(
 
 TARGET_LINK_LIBRARIES(
 	${ProjectName}
+    log4cplus
+    asan
     dl
     pthread
-    log4cplus
 )
