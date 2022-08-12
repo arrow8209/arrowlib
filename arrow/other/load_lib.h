@@ -80,7 +80,7 @@ public:
         }
     }
 
-    DynamicLibHandle LoadLib(const char* lpLibFileName) // 加载DLL
+    DynamicLibHandle LoadLib(const char* lpLibFileName)
     {
         if (m_hInst != nullptr)
         {
@@ -97,7 +97,7 @@ public:
             m_strLastErrorMsg = oss.str();
 
             std::cout << m_strLastErrorMsg << std::endl;
-            throw std::runtime_error(std::string(lpLibFileName));
+            return nullptr;
         }
         m_strLibName = lpLibFileName;
         return m_hInst;
@@ -122,6 +122,15 @@ public:
         return m_hInst != nullptr;
     }
 
+    const char* LastErrorMsg()
+    {
+        return m_strLastErrorMsg.c_str();
+    }
+
+    Em_ErrorCode LastErrorCode()
+    {
+        return m_ErrorNo;
+    }
 public:
     // 主要给Linux使用，没有调用约定约束，Windows也可以使用，默认使用__stdcall调用约定 [zhuyb 2022-07-18 14:36:45]
     template <typename RetType, typename... Args>

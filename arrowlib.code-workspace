@@ -1,8 +1,8 @@
 {
 	"folders": [
-		{
-			"path": "."
-		}
+        {
+            "path": "."
+        }
     ],
     "settings": {
         "files.associations": {
@@ -85,7 +85,9 @@
             "memory_resource": "cpp",
             "numeric": "cpp",
             "random": "cpp",
-            "__functional_base_03": "cpp"
+            "__functional_base_03": "cpp",
+            "future": "cpp",
+            "codecvt": "cpp"
         }
     }
 }

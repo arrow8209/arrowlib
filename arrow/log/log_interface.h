@@ -1,4 +1,7 @@
 #pragma once
+#include "../typelist/typelist.h"
+
+#define Log_Param(LogLevel) LogLevel, STATIC_FILE, STATIC_FUNC, __LINE__
 
 namespace Arrow
 {
@@ -11,135 +14,51 @@ typedef enum em_log_Level
     Log_Info,
     Log_Warn,
     Log_Error,
+    Log_Fatal,
     Log_Max
 } Em_Log_Level;
 
 namespace Log
 {
-template<typename TLogImpl>
-class LogInterface
+template<typename TLogImpl, Em_Log_Level printLevel = Log_Trace>
+class base_log
 {
 protected:
-    LogInterface() = default;
-    LogInterface(LogInterface& t) = delete;
-    LogInterface& operator=(const LogInterface& t) = delete;
-    virtual ~LogInterface() = default;
+    base_log() = default;
+    base_log(base_log& t) = delete;
+    base_log& operator=(const base_log& t) = delete;
+    virtual ~base_log() = default;
 
     typedef TLogImpl LogImpl;
 public:
     template<typename ...Args>
-    static bool log_init(Args... args)
+    static bool init(Args... args)
     {
-        return LogImpl::log_init(args...);
+        return LogImpl::init(args...);
     }
 
-    template<typename TFileName, typename TFunName, int line>
-    static void Trace_Log(const char* szInfo)
+    // template<Em_Log_Level loglevel, typename TFileName, typename TFunName, int line>
+    // static void Log(const char* szInfo)
+    // {
+    //     LogImpl::template Log<loglevel, TFileName, TFunName, line>(szInfo);
+    // }
+
+    template <Em_Log_Level loglevel, typename TFileName, typename TFunName, int line, typename T>
+    static void Log(const T& t)
     {
-        LogImpl::template Trace_Log<TFileName, TFunName, line>(szInfo);
+        LogImpl::template Log<loglevel, TFileName, TFunName, line, T>(t);
     }
 
-    template <typename T>
-    static void Trace_Log(const T& t)
+    template <Em_Log_Level loglevel, typename TFileName, typename TFunName, int line, typename... Args>
+    static void Log(const char* szFmt, Args... args)
     {
-        LogImpl::Trace_Log(t);
-    }
-
-    template <typename TFileName, typename TFunName, int line, typename... Args>
-    static void Trace_Log(const char* szFmt, Args... args)
-    {
-        LogImpl::template Trace_Log<TFileName, TFunName, line>(szFmt, args...);
-    }
-
-    static void Debug_Log(const char* szInfo)
-    {
-        LogImpl::Debug_Log(szInfo);
-    }
-
-    template <typename T>
-    static void Debug_Log(const T& t)
-    {
-        LogImpl::Debug_Log(t);
-    }
-
-    template <typename... Args>
-    static void Debug_Log(const char* szFmt, Args... args)
-    {
-        LogImpl::Debug_Log(szFmt, args...);
-    }
-
-    static void Info_Log(const char* szInfo)
-    {
-        LogImpl::Info_Log(szInfo);
-    }
-
-    template <typename T>
-    static void Info_Log(const T& t)
-    {
-        LogImpl::Info_Log(t);
-    }
-
-    template <typename... Args>
-    static void Info_Log(const char* szFmt, Args... args)
-    {
-        LogImpl::Info_Log(szFmt, args...);
-    }
-
-    static void Warn_Log(const char* szInfo)
-    {
-        LogImpl::Warn_Log(szInfo);
-    }
-
-    template <typename T>
-    static void Warn_Log(const T& t)
-    {
-        LogImpl::Warn_Log(t);
-    }
-
-    template <typename... Args>
-    static void Warn_Log(const char* szFmt, Args... args)
-    {
-        LogImpl::Warn_Log(szFmt, args...);
-    }
-
-    static void Error_Log(const char* szInfo)
-    {
-        LogImpl::Error_Log(szInfo);
-    }
-
-    template <typename T>
-    static void Error_Log(const T& t)
-    {
-        LogImpl::Error_Log(t);
-    }
-
-    template <typename... Args>
-    static void Error_Log(const char* szFmt, Args... args)
-    {
-        LogImpl::Error_Log(szFmt, args...);
-    }
-
-    static void Fatal_Log(const char* szInfo)
-    {
-        LogImpl::Fatal_Log(szInfo);
-    }
-
-    template <typename T>
-    static void Fatal_Log(const T& t)
-    {
-        LogImpl::Fatal_Log(t);
-    }
-
-    template <typename... Args>
-    static void Fatal_Log(const char* szFmt, Args... args)
-    {
-        LogImpl::Fatal_Log(szFmt, args...);
+        LogImpl::template Log<loglevel, TFileName, TFunName, line, Args...>(szFmt, args...);
     }
 
     template <typename... Args>
     static void print(const char* fmt, Args... args)
     {
-        Debug_Log(fmt, args...);
+        Log<Log_Param(printLevel)>(fmt, args...);
     }
 };
 

@@ -14,19 +14,41 @@
 #include "arrow/task/task_one_thread.h"
 #include "arrow/typelist/typelist_demo.h"
 #include "arrow/log/log.h"
-#include "arrow/log/log_impl_log4cplus.h"
+// #include "arrow/log/log_impl_log4cplus.h"
+
 #include "arrow/other/load_lib_test.h"
-#include <log4cplus/log4cplus.h>
- typedef Arrow::Log::LogInterface<Arrow::Log::LogImplLog4Cplus> ALog;
+#include "test_log_in_lib.h"
+// #include <log4cplus/log4cplus.h>
+//  typedef Arrow::Log::LogInterface<Arrow::Log::LogImplLog4Cplus> ALog;
+typedef Arrow::TLog<Arrow::Log::LogImplDefault> Log;
+
+void CPlustThreadInit()
+{
+    std::cout << "CPlustThreadInit" << std::endl;
+}
+
 
 int main(int argc, char* argv[])
 {
+    // log4cplus::initialize();
+    std::thread cplusThreadInit = std::thread(&CPlustThreadInit);
+    if (cplusThreadInit.joinable())
+    {
+        cplusThreadInit.join();
+    }
+    
     printf("\nLD_LIBRARY_PATH:\n");
     system("echo $LD_LIBRARY_PATH");
-    log4cplus::initialize();
+
+    Log::Log<Log_Param(Arrow::Log_Debug)>(56789);
+    
+
+    TestLogInLib();
+
+    // log4cplus::initialize();
     // std::thread th = std::thread(&fun); 
     
-    // ALog::log_init(nullptr);
+    // ALog::init(nullptr);
     // ALog::Trace_Log<STATIC_FILE, STATIC_FUNC, __LINE__>("12312");
     // ALog::Trace_Log<STATIC_FILE, STATIC_FUNC, __LINE__>("A:%s", "12312");
     // ARROW_LOG_TRACE("12312");

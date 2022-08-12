@@ -25,18 +25,30 @@ struct static_pair<tvalue_type<TKey, Key>, tvalue_type<TValue, Value>>
 {
     typedef TKey KeyType;
     typedef TValue ValueType;
-    constexpr static TKey const key = Key;
-    constexpr static TValue const value = Value;
+    static constexpr TKey key = Key;
+    static constexpr TValue value = Value;
 };
+
+template <typename TKey, TKey Key, typename TValue, TValue Value>
+constexpr TKey static_pair<tvalue_type<TKey, Key>, tvalue_type<TValue, Value>>::key;
+
+template <typename TKey, TKey Key, typename TValue, TValue Value>
+constexpr TValue static_pair<tvalue_type<TKey, Key>, tvalue_type<TValue, Value>>::value;
 
 template<typename TKey, TKey Key, typename T, T... args>
 struct static_pair<tvalue_type<TKey, Key>, typelist<tvalue_type<T, args>...>>
 {
     typedef TKey KeyType;
     typedef typename tlist::tvaluelist_to_data<typelist<tvalue_type<T, args>...>>::type ValueType;
-    constexpr static TKey const key = Key;
-    constexpr static ValueType* const value = tlist::tvaluelist_to_data<typelist<tvalue_type<T, args>...>>::data;
+    constexpr static TKey key = Key;
+    constexpr static ValueType* value = tlist::tvaluelist_to_data<typelist<tvalue_type<T, args>...>>::data;
 };
+template <typename TKey, TKey Key, typename T, T... args>
+constexpr TKey static_pair<tvalue_type<TKey, Key>, typelist<tvalue_type<T, args>...>>::key;
+
+template <typename TKey, TKey Key, typename T, T... args>
+constexpr typename static_pair<tvalue_type<TKey, Key>, typelist<tvalue_type<T, args>...>>::ValueType* 
+    static_pair<tvalue_type<TKey, Key>, typelist<tvalue_type<T, args>...>>::value;
 
 template<typename T, typename TPairList>
 struct find;

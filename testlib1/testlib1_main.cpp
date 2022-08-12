@@ -5,7 +5,7 @@
 #include "arrow/log/log.h"
 #include "arrow/log/log_impl_log4cplus.h";
 
-typedef Arrow::Log::base_log<Arrow::Log::LogImplLog4Cplus> ALog;
+typedef Arrow::Log::base_log<Arrow::Log::LogImplLog4Cplus> ALog2;
 
 // #include "zhjyz.h"
 // #include "application.h"
@@ -15,17 +15,13 @@ extern "C"
 {
 #endif
 
-    /**
-     * @description: 初始化模块 可多次调用，但是只有第一次调用的szConfigPath有效
-     * @param {char*} szConfigPath 配置文件目录
-     * @return {*} 0 成功 其他 错误码
-     */
-    uint32_t Init(const char* szConfigPath)
+
+    int main(int argc, char* argv[])
     {
         // return App_Zhjyz::Instance()->Init(szConfigPath);
         // printf(szConfigPath);
-        ALog::init("xdfstestlib1.log.ini");
-        ALog::Log<Log_Param(Arrow::Log_Debug)>("testlib1");
+        ALog2::init("xdfstestlib1.log.ini");
+        ALog2::Log<Log_Param(Arrow::Log_Debug)>("testlib1");
         // ARROW_LOG_DEBUG("test lib1");
         // std::cout << szConfigPath << std::endl;
         std::cout << "run init" << std::endl;

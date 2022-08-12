@@ -1,11 +1,13 @@
 #include <stdio.h>
 #include <stdint.h>
-// #include <log4cplus/log4cplus.h>
 #include <iostream>
 #include "arrow/log/log.h"
 #include "arrow/log/log_impl_log4cplus.h";
 
 typedef Arrow::Log::base_log<Arrow::Log::LogImplLog4Cplus> ALog;
+
+// #include "./"
+// typedef Arrow::log
 
 // #include "zhjyz.h"
 // #include "application.h"
@@ -22,13 +24,11 @@ extern "C"
      */
     uint32_t Init(const char* szConfigPath)
     {
-        // return App_Zhjyz::Instance()->Init(szConfigPath);
-        // printf(szConfigPath);
-        ALog::init("xdfstestlib1.log.ini");
-        ALog::Log<Log_Param(Arrow::Log_Debug)>("testlib1");
-        // ARROW_LOG_DEBUG("test lib1");
+        ALog::init("testlib2.log.ini");
+        ALog::Log<Log_Param(Arrow::Log_Debug)>("testlib2");
+        // ARROW_LOG_DEBUG("test lib2");
         // std::cout << szConfigPath << std::endl;
-        std::cout << "run init" << std::endl;
+        // std::cout << "run init" << std::endl;
         // log4cplus::initialize();
         return 0;
     }
@@ -38,12 +38,12 @@ extern "C"
 #endif
 
 
-__attribute ((constructor)) void testlib1_init(void)
+__attribute ((constructor)) void testlib2_init(void)
 {
     printf("* %s\n", __func__);
 }
 
-__attribute ((destructor)) void testlib1_fini(void)
+__attribute ((destructor)) void testlib2_fini(void)
 {
     printf("* %s\n", __func__);
 }

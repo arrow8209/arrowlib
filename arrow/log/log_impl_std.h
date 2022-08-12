@@ -6,120 +6,57 @@ namespace Arrow
 
 namespace Log
 {
-
-namespace details
+namespace details_std
 {
-
+    typedef  Arrow::static_map<
+     Arrow::static_pair<Arrow::value_type<Log_Null>,STATIC_STRING("Null")>,
+     Arrow::static_pair<Arrow::value_type<Log_Trace>,STATIC_STRING("Trace")>,
+     Arrow::static_pair<Arrow::value_type<Log_Debug>,STATIC_STRING("Debug")>,
+     Arrow::static_pair<Arrow::value_type<Log_Info>,STATIC_STRING("Info")>,
+     Arrow::static_pair<Arrow::value_type<Log_Warn>,STATIC_STRING("Warn")>,
+     Arrow::static_pair<Arrow::value_type<Log_Error>,STATIC_STRING("Error")>,
+     Arrow::static_pair<Arrow::value_type<Log_Fatal>,STATIC_STRING("Fatal")>,
+     Arrow::static_pair<Arrow::value_type<Log_Max>,STATIC_STRING("Max")>
+     > LogTypeStr;
 }
-
 
 class LogImplDefault
 {
 protected:
-    LogImplNull() = default;
-    LogImplNull(LogImplNull& t) = delete;
-    LogImplNull& operator=(const LogImplNull& t) = delete;
-    virtual ~LogImplNull() = default;
+    LogImplDefault() = default;
+    LogImplDefault(LogImplDefault& t) = delete;
+    LogImplDefault& operator=(const LogImplDefault& t) = delete;
+    virtual ~LogImplDefault() = default;
 
 public:
-    static bool log_init(const char* szConfigFileName)
+    template<typename ...Args>
+    static bool init(Args... args)
     {
         return true;
     }
 
-    template <typename TFileName, typename TFunName, int line>
-    static void Trace_Log(const char* szInfo)
+    template <Em_Log_Level loglevel, typename TFileName, typename TFunName, int line, typename T>
+    static void Log(const T& t)
     {
-        std::cout<<""
+        Prefix<loglevel, TFileName, TFunName, line>();
+        std::cout << t << std::endl;
     }
 
-    template <typename TFileName, typename TFunName, int line, typename T>
-    static void Trace_Log(const T& t)
+    template <Em_Log_Level loglevel, typename TFileName, typename TFunName, int line, typename... Args>
+    static void Log(const char* szFmt, Args... args)
     {
+        Prefix<loglevel, TFileName, TFunName, line>();
+        printf(szFmt, args...);
     }
 
-    template <typename TFileName, typename TFunName, int line, typename... Args>
-    static void Trace_Log(const char* szFmt, Args... args)
+protected:
+    template <Em_Log_Level loglevel, typename TFileName, typename TFunName, int line>    
+    static void Prefix()
     {
-    }
-
-    static void Debug_Log(const char* szInfo)
-    {
-      
-    }
-
-    template <typename T>
-    static void Debug_Log(const T& t)
-    {
-    }
-
-    template <typename... Args>
-    static void Debug_Log(const char* szFmt, Args... args)
-    {
-    }
-
-    static void Info_Log(const char* szInfo)
-    {
-       
-    }
-
-    template <typename T>
-    static void Info_Log(const T& t)
-    {
-       
-    }
-
-    template <typename... Args>
-    static void Info_Log(const char* szFmt, Args... args)
-    {
-      
-    }
-
-    static void Warn_Log(const char* szInfo)
-    {
-    }
-
-    template <typename T>
-    static void Warn_Log(const T& t)
-    {
-    }
-
-    template <typename... Args>
-    static void Warn_Log(const char* szFmt, Args... args)
-    {
-    }
-
-    static void Error_Log(const char* szInfo)
-    {
-    }
-
-    template <typename T>
-    static void Error_Log(const T& t)
-    {
-    }
-
-    template <typename... Args>
-    static void Error_Log(const char* szFmt, Args... args)
-    {
-    }
-
-    static void Fatal_Log(const char* szInfo)
-    {
-    }
-
-    template <typename T>
-    static void Fatal_Log(const T& t)
-    {
-    }
-
-    template <typename... Args>
-    static void Fatal_Log(const char* szFmt, Args... args)
-    {
-    }
-
-    template <typename... Args>
-    static void print(const char* fmt, Args... args)
-    {
+        // 输出格式 [logvele][filename:line] [zhuyb 2022-08-12 09:42:38]
+        std::cout<< "[" << Arrow::smap::get<Arrow::value_type<loglevel>, details_std::LogTypeStr>::Pair::value << "]"
+                    << "[" << tlist::tvaluelist_to_data<TFileName>::data << ":" << line << "]"
+                    << "[" << tlist::tvaluelist_to_data<TFunName>::data << "]";
     }
 };
 

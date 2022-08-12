@@ -8,13 +8,12 @@ MESSAGE("* ${ProjectName} tagert: x64")
 
 #编译环境和参数设置（按需修改）
 set(CMAKE_CXX_STANDARD 11)
-set(LOG4CPLUS_ROOT /Users/zhuyuanbo/Documents/5.code/third_party_libr/lib/log4cplus/x64)
 
 #设置预定宏（按需修改）
 #add_definitions(-DATLAS500)
 
 #编译前执行相关指令（按需修改）
-# EXEC_PROGRAM(cp ${CMAKE_CURRENT_SOURCE_DIR} ARGS "${CMAKE_CURRENT_SOURCE_DIR}/../algorithm/zhihuijiayouzhan/lib/lib/libmaxvision_algorithm_sdk_aarch64.so ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}")
+EXEC_PROGRAM(cp ${CMAKE_CURRENT_SOURCE_DIR} ARGS "${CMAKE_CURRENT_SOURCE_DIR}/*.ini ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}")
 
 #工程添加多个特定的头文件搜索路径（按需修改）
 INCLUDE_DIRECTORIES(
@@ -30,7 +29,7 @@ LINK_DIRECTORIES(
 FILE(GLOB_RECURSE SRC_LIST *.cpp *.c *.h *.hpp)
 
 #设置需要忽略的源文件（按需修改）
-SET(IGNORE_SRC_LIST CMakeCCompilerId.c CMakeCXXCompilerId.cpp CMakeCXXCompilerId.cpp)
+SET(IGNORE_SRC_LIST testlib1_main.cpp)
 
 #从源文件列表中查找需要忽略文件（无需修改）
 SET(SRC_REMOVE_LIST)
@@ -65,10 +64,17 @@ ADD_LIBRARY(
 # ADD_EXECUTABLE(
 #     ${ProjectName}
 #     ${SRC_LIST} 
+#     testlib1_main.cpp
 # )
 
+if(${CMAKE_BUILD_TYPE} STREQUAL "Debug")
+    set(LinkLibs asan)
+ELSE(${CMAKE_BUILD_TYPE})
+    set(LinkLibs )
+endif()
 
 TARGET_LINK_LIBRARIES(
 	${ProjectName}
+    ${LinkLibs}
     log4cplus
 )
