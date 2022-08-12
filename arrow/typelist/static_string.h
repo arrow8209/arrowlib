@@ -98,5 +98,32 @@ public:
     typedef typename details::getfilename<find_last_forward_slash::value, static_str>::type type;
 };
 
+// 字符串转数字（DJB 算法） [zhuyb 2022-08-12 16:42:10]
+template<typename StaticStr>
+struct SSToDJB;
+
+template<char ch>
+struct SSToDJB<typelist<tvalue_type<char, ch>>>
+{
+    static constexpr unsigned int value = (5381 << 5) + 5381 + ch;
+};
+template<char ch>
+constexpr unsigned int SSToDJB<typelist<tvalue_type<char, ch>>>::value;
+
+
+template<char ch, typename ...Args>
+struct SSToDJB<typelist<tvalue_type<char, ch>, Args...>>
+{
+protected:
+    typedef SSToDJB<typelist<Args...>> tmp_SSToDJB;
+
+public:
+    static constexpr unsigned int value = (tmp_SSToDJB::value << 5) + tmp_SSToDJB::value + ch;
+};
+template<char ch, typename ...Args>
+constexpr unsigned int SSToDJB<typelist<tvalue_type<char, ch>, Args...>>::value;
+
+
+
 }
 }

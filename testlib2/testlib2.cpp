@@ -2,7 +2,7 @@
 #include <stdint.h>
 #include <iostream>
 #include "arrow/log/log.h"
-#include "arrow/log/log_impl_log4cplus.h";
+#include "arrow/log/log_impl_log4cplus.h"
 
 typedef Arrow::Log::base_log<Arrow::Log::LogImplLog4Cplus> ALog;
 

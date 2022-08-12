@@ -40,14 +40,14 @@ struct static_pair<tvalue_type<TKey, Key>, typelist<tvalue_type<T, args>...>>
 {
     typedef TKey KeyType;
     typedef typename tlist::tvaluelist_to_data<typelist<tvalue_type<T, args>...>>::type ValueType;
-    constexpr static TKey key = Key;
-    constexpr static ValueType* value = tlist::tvaluelist_to_data<typelist<tvalue_type<T, args>...>>::data;
+    static constexpr TKey key = Key;
+    static constexpr const ValueType* value = tlist::tvaluelist_to_data<typelist<tvalue_type<T, args>...>>::data;
 };
 template <typename TKey, TKey Key, typename T, T... args>
 constexpr TKey static_pair<tvalue_type<TKey, Key>, typelist<tvalue_type<T, args>...>>::key;
 
 template <typename TKey, TKey Key, typename T, T... args>
-constexpr typename static_pair<tvalue_type<TKey, Key>, typelist<tvalue_type<T, args>...>>::ValueType* 
+constexpr const typename static_pair<tvalue_type<TKey, Key>, typelist<tvalue_type<T, args>...>>::ValueType* 
     static_pair<tvalue_type<TKey, Key>, typelist<tvalue_type<T, args>...>>::value;
 
 template<typename T, typename TPairList>

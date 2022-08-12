@@ -31,19 +31,19 @@ void CPlustThreadInit()
 int main(int argc, char* argv[])
 {
     // log4cplus::initialize();
-    std::thread cplusThreadInit = std::thread(&CPlustThreadInit);
-    if (cplusThreadInit.joinable())
-    {
-        cplusThreadInit.join();
-    }
+    // std::thread cplusThreadInit = std::thread(&CPlustThreadInit);
+    // if (cplusThreadInit.joinable())
+    // {
+    //     cplusThreadInit.join();
+    // }
     
-    printf("\nLD_LIBRARY_PATH:\n");
-    system("echo $LD_LIBRARY_PATH");
+    // printf("\nLD_LIBRARY_PATH:\n");
+    // system("echo $LD_LIBRARY_PATH");
 
-    Log::Log<Log_Param(Arrow::Log_Debug)>(56789);
+    // Log::Log<Log_Param(Arrow::Log_Debug)>(56789);
     
 
-    TestLogInLib();
+    // TestLogInLib();
 
     // log4cplus::initialize();
     // std::thread th = std::thread(&fun); 
@@ -89,6 +89,8 @@ int main(int argc, char* argv[])
     // {
     //     th.join();
     // }
+
+    test_static_string2();
     
     return 1;
 }

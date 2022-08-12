@@ -1,6 +1,8 @@
 #pragma once 
 
 #include "typelist.h"
+#include "../other/std_assist.h"
+
 
 void test_typelist_type()
 {
@@ -63,7 +65,6 @@ void test_static_string()
 
 }
 
-constexpr static char data[10] = "123456789";
 void test_static_string2()
 {
     typedef STATIC_STRING(__FILE__) static_str_fullname;
@@ -80,6 +81,21 @@ void test_static_string2()
     std::cout << Arrow::tlist::tvaluelist_to_data<static_int_array>::data[2];
     std::cout << Arrow::tlist::tvaluelist_to_data<static_int_array>::data[3];
     std::cout << Arrow::tlist::tvaluelist_to_data<static_int_array>::data[4] << std::endl;
+
+    // typedef STATIC_FILE ssFile;
+    // std::cout << Arrow::static_string::SSToDJB<ssFile>::value << std::endl;
+    // std::cout << __FILE__ << std::endl;
+
+    // char sz[] ="h.omed_tsilepyt/tsilepyt/worra/..";
+    // std::cout << Arrow::Other::StrToUnit32(sz) << std::endl;
+
+
+    typedef STATIC_FILE ssFile;
+    std::cout << Arrow::static_string::SSToDJB<ssFile>::value << std::endl;
+    std::cout << Arrow::tlist::tvaluelist_to_data<ssFile>::data << "?" << std::endl;
+// typelist_demo.h
+    char sz[] ="h.omed_tsilepyt";
+    std::cout << Arrow::Other::StrToUnit32(sz) << std::endl;
 
     // typedef Arrow::static_string::getfilename<static_str_fullname>::type static_str_fillname;
     // std::cout << Arrow::typelist::tvaluelist_to_data<static_str_fillname>::data << std::endl;
