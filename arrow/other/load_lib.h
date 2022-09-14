@@ -34,8 +34,8 @@ typedef void* DynamicLibFunAddress;
 
 typedef enum _em_call_type
 {
-    _calltype_stdcall = 0,
-    _calltype_cdecl = 1,
+    _stdcall_ = 0,
+    _cdecl_ = 1,
     _fastcall_ = 2
 }Em_Call_Type;
 
@@ -132,20 +132,23 @@ public:
         return m_ErrorNo;
     }
 public:
-    // 主要给Linux使用，没有调用约定约束，Windows也可以使用，默认使用__stdcall调用约定 [zhuyb 2022-07-18 14:36:45]
-    template <typename RetType, typename... Args>
-    RetType call(const char* lpProcName, Args... args)
-    {
-        typedef RetType (__stdcall *LPProcName)(Args...);
-        return addr<LPProcName>(lpProcName)(args...);
-    }
+#ifdef WIN32
 
     // 主要给Windows使用，CallCon 确定调用约定，Linux下使用，会忽略这个参数 [zhuyb 2022-07-18 14:36:45]
-    template <int CallCon, typename RetType, typename... Args>
+    template <Em_Call_Type CallCon, typename RetType, typename... Args>
     RetType call(const char* lpProcName, Args... args)
     {
-        return call<RetType>(lpProcName, type<CallCon>(), args...);
+        return call_win<RetType>(lpProcName, type<CallCon>(), args...);
     }
+#else
+    // 主要给Linux使用，没有调用约定约束，Windows也可以使用，默认使用__stdcall调用约定 [zhuyb 2022-07-18 14:36:45]
+    template <Em_Call_Type CallCon, typename RetType, typename... Args>
+    RetType call(const char* lpProcName, Args... args)
+    {
+        typedef RetType(* LPProcName)(Args...);
+        return addr<LPProcName>(lpProcName)(args...);
+    }
+#endif
 
 private:
     template <class FunType>
@@ -182,7 +185,7 @@ private:
     //////////////////////////////////////////////////////////////////////////
     // 对__stdcall调用约定的实现
     template <class RetType, typename... Args>
-    RetType call(const char* lpProcName, type<_calltype_stdcall>, Args... args)
+    RetType call_win(const char* lpProcName, type<_stdcall_>, Args... args)
     {
         typedef RetType(__stdcall * LPProcName)(Args...);
         return addr<LPProcName>(lpProcName)(args...);
@@ -191,7 +194,7 @@ private:
     //////////////////////////////////////////////////////////////////////////
     // 对__cdecl调用约定的实现
     template <class RetType, typename... Args>
-    RetType call(const char* lpProcName, type<_calltype_cdecl>, Args... args)
+    RetType call_win(const char* lpProcName, type<_cdecl_>, Args... args)
     {
         typedef RetType(__cdecl * LPProcName)(Args...);
         return addr<LPProcName>(lpProcName)(args...);
@@ -200,7 +203,7 @@ private:
     /////////////////////////////////////////////////////////////////////////
     // 对__fastcall调用约定的实现
     template <class RetType, typename... Args>
-    RetType call(const char* lpProcName, type<_fastcall_>, Args... args)
+    RetType call_win(const char* lpProcName, type<_fastcall_>, Args... args)
     {
         typedef RetType(__fastcall * LPProcName)(Args...);
         return addr<LPProcName>(lpProcName)(args...);

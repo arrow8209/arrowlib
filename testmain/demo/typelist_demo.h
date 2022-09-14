@@ -1,8 +1,9 @@
 #pragma once 
 
-#include "typelist.h"
-#include "../other/std_assist.h"
-
+// #include "typelist.h"
+// #include "../other/std_assist.h"
+#include "arrow/typelist/typelist.h"
+#include "arrow/other/std_assist.h"
 
 void test_typelist_type()
 {
@@ -116,6 +117,23 @@ void TestPair()
      > SMap1;
      Arrow::tlist::print(SMap1{});
      Arrow::tlist::print(typename Arrow::smap::get<Arrow::value_type<6>, SMap1>::Pair{});
+     std::cout << typeid(SMap1::Pair).name() << std::endl;;
+    // std::cout << s_pair1::Key << ":" << s_pair1::Value << std::endl;
+}
+
+
+
+void TestPair2()
+{
+
+    typedef  Arrow::static_map<
+     Arrow::static_pair<Arrow::value_type<1>,STATIC_STRING("1234")>,
+     Arrow::static_pair<Arrow::value_type<3>,STATIC_STRING("2345")>,
+     Arrow::static_pair<Arrow::value_type<5>,STATIC_STRING("3456")>,
+     Arrow::static_pair<Arrow::value_type<7>,STATIC_STRING("4567")>
+     > SMap1;
+     Arrow::tlist::print(SMap1{});
+     Arrow::tlist::print(typename Arrow::smap::get<Arrow::value_type<7>, SMap1>::Pair{});
      std::cout << typeid(SMap1::Pair).name() << std::endl;;
     // std::cout << s_pair1::Key << ":" << s_pair1::Value << std::endl;
 }

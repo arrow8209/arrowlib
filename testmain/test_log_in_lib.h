@@ -17,8 +17,8 @@ static void TestLogInLib()
     std::string strPath = Arrow::Other::get_app_path();
     try
     {
-        testlib1.call<uint32_t>("Init", strPath.c_str());
-        testlib2.call<uint32_t>("Init", strPath.c_str());
+        testlib1.call<Arrow::Other::_stdcall_, uint32_t>("Init", strPath.c_str());
+        testlib2.call<Arrow::Other::_stdcall_,uint32_t>("Init", strPath.c_str());
     }
     catch (const std::exception& e)
     {

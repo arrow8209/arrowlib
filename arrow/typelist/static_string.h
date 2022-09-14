@@ -70,7 +70,7 @@ template<int index, typename ...Args>
 struct getfilename<index, typelist<Args...> >
 {
 protected:
-    static_assert(index >= 0, "index 小于0（请检查代码逻辑）");
+    static_assert(index >= 0, "index 小于0(请检查代码逻辑)");
     typedef typename tlist::splite<index + 1, typelist<Args...>> split_str;
 
 public:

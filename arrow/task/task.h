@@ -7,7 +7,6 @@
 #include <atomic>
 #include <condition_variable>
 #include <chrono>
-#include <forward_list>
 
 namespace Arrow
 {
@@ -16,7 +15,8 @@ namespace Pattern
 {
 
 // 此类类似框架类，接口函数都比较特殊，所以不提供访问接口，只有子类能对其进行访问 [zhuyb 2022-07-05 08:57:47]
-class TaskOneThread
+template <int ThreadCount>
+class TaskThread
 {
 protected:
     typedef std::function<void()> RunFunAddress;            // 任务执行函数定义 [zhuyb 2022-07-05 08:59:14]
@@ -24,16 +24,15 @@ protected:
     typedef std::tuple<RunFunAddress, ClearCacheFunAddress> TaskFun;    // 单个任务的执行信息 [zhuyb 2022-07-05 09:00:12]
     typedef std::list<TaskFun> List_Task;   // 缓冲区，存储所有的任务 [zhuyb 2022-07-05 09:00:43]
 protected:
-    TaskOneThread():m_bIsRun(false)
+    TaskThread():m_bIsRun(false)
     {
         
     }
-    virtual ~TaskOneThread()
+    virtual ~TaskThread()
     {
         Stop();
     }
 
-    // 启动线程 [zhuyb 2022-09-14 17:09:34]
     bool Activate()
     {
         if (m_bIsRun == true)
@@ -47,16 +46,15 @@ protected:
         return true;
     }
 
-    // 停止线程 [zhuyb 2022-09-14 17:07:46]
     bool Stop()
     {
         if (!m_Thread.joinable())
         {
             return true;
         }
-
         printf("TaskOneThread::Stop Begin\n");
-        StopFlag();
+
+        m_bIsRun = false;
         m_Thread.join();
         List_Task::iterator it = m_listTask.begin();
         for (; it != m_listTask.end(); ++it)
@@ -68,23 +66,13 @@ protected:
         return true;
     }
 
-    // 设置线程停止标志 [zhuyb 2022-09-14 17:07:56]
-    void StopFlag()
-    {
-        m_bIsRun = false;
-    }
-
-    uint32_t TaskCount()
-    {
-        return m_listTask.size();
-    }
 
     /**
      * @description: 等待线程执行完BeforeThreadRun
      * @param {uint32_t} un32TimeOutMs 超时时间 单位：毫秒 0 表示一等待
      * @return {*} true：BeforeThreadRun顺利执行完毕 false：超时返回
      */
-    bool WaitBeforeThreadRun(uint32_t un32TimeOutMs = 0)
+    virtual bool WaitBeforeThreadRun(uint32_t un32TimeOutMs = 0)
     {
 
         std::unique_lock<std::mutex> lck(m_mutexBeforeThreadRun);
@@ -99,6 +87,12 @@ protected:
                    lck, std::chrono::system_clock::now() + std::chrono::milliseconds(un32TimeOutMs)) ==
                std::cv_status::no_timeout;
     }
+
+    // 在线程进入循环前执行相关初始化操作 [zhuyb 2022-07-05 09:01:03]
+    virtual void BeforeThreadRun(){}
+
+    // 线程退出循环后执行响应的回收操作 [zhuyb 2022-07-05 09:01:25]
+    virtual void AfterThreadStop(){}
 
     //   [zhuyb 2022-07-05 09:02:01]
     /**
@@ -145,12 +139,6 @@ protected:
         return true;
     }
 
-    // 在线程进入循环前执行相关初始化操作 [zhuyb 2022-07-05 09:01:03]
-    virtual void BeforeThreadRun(){}
-
-    // 线程退出循环后执行响应的回收操作 [zhuyb 2022-07-05 09:01:25]
-    virtual void AfterThreadStop(){}
-
 private:
     // 默认回收函数 [zhuyb 2022-07-05 09:14:41]
     template<typename ..._Args>
@@ -172,19 +160,22 @@ private:
         List_Task::iterator it;
         while (m_bIsRun)
         {
-            if (m_listTask.empty() == true)
+            if (m_listTask.size() == 0)
             {
-                std::this_thread::sleep_for(std::chrono::milliseconds(10));           
+                std::this_thread::sleep_for(std::chrono::milliseconds(10));//睡眠1000毫秒（1秒）           
                 continue;
             }
-
-            // 每次只执行一个任务，是为了快速响应线程退出的信号 [zhuyb 2022-09-14 17:05:09]
             m_mutexListTask.lock();
-            TaskFun fun = m_listTask.front();
-            m_listTask.pop_front();
+            tmpListTask = m_listTask;
+            m_listTask.clear();
             m_mutexListTask.unlock();
-            
-            std::get<0>(fun)();
+
+            for (it = tmpListTask.begin(); it != tmpListTask.end(); ++it)
+            {
+                std::get<0>(*it)();
+                // 
+            }
+            tmpListTask.clear();
         }
 
         // 执行回收操作，回收未处理的数据 [zhuyb 2022-07-05 09:14:09]
@@ -200,19 +191,13 @@ private:
     }
 
 private:
-    // 线程运行标准 [zhuyb 2022-09-14 10:10:40]
+    //  [zhuyb 2022-09-14 10:10:18]
     std::atomic<bool> m_bIsRun;
-    // 线程对象 [zhuyb 2022-09-14 10:10:55]
     std::thread m_Thread;
-
-    // 任务列表锁 [zhuyb 2022-09-14 10:11:10]
     std::mutex m_mutexListTask;
-    List_Task m_listTask;
-
-    // 等待线程初始化完成信号量 [zhuyb 2022-09-14 10:12:58]
     std::mutex m_mutexBeforeThreadRun;
     std::condition_variable m_cvBeforeThreadRun;
-
+    List_Task m_listTask;
 };
 
 // Demo

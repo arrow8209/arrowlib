@@ -7,16 +7,15 @@
 #include <functional>
 #include <stdio.h>
 #include <thread>
-#include "arrow/pattern/factory/factory_test.h"
+// #include "arrow/pattern/factory/factory_test.h"
 #include "arrow/pattern/observer/observer.h"
 #include "arrow/pattern/observer/subject.h"
 #include "arrow/pattern/singleton/singleton.h"
 #include "arrow/task/task_one_thread.h"
-#include "arrow/typelist/typelist_demo.h"
+#include "demo/typelist_demo.h"
 #include "arrow/log/log.h"
 // #include "arrow/log/log_impl_log4cplus.h"
-
-#include "arrow/other/load_lib_test.h"
+// #include "arrow/other/load_lib_test.h"
 #include "test_log_in_lib.h"
 // #include <log4cplus/log4cplus.h>
 //  typedef Arrow::Log::LogInterface<Arrow::Log::LogImplLog4Cplus> ALog;
@@ -90,7 +89,8 @@ int main(int argc, char* argv[])
     //     th.join();
     // }
 
-    test_static_string2();
+    // test_static_string2();
+    TestPair2();
     
     return 1;
 }

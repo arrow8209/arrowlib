@@ -1,3 +1,9 @@
+/*
+ * @FilePath: /arrowlib/arrow/typelist/static_map.h
+ * @Author: arrow arrow8209@foxmail.com
+ * @Date: 2022-08-10 08:20:07
+ * @Description: 静态（编译期） map
+ */
 #pragma once
 #include <map>
 #include "typelist_type.h"
@@ -7,9 +13,14 @@ namespace Arrow
 {
 namespace smap
 {
+
+#pragma region static_pair
+
+// static_map 的存储类型 [zhuyb 2022-09-14 17:51:33]
 template<typename Key, typename Value>
 struct  static_pair;
 
+// 用于表示结束类型 [zhuyb 2022-09-14 17:51:52]
 template<>
 struct  static_pair<std::nullptr_t, std::nullptr_t>
 {
@@ -20,6 +31,7 @@ struct  static_pair<std::nullptr_t, std::nullptr_t>
 };
 typedef static_pair<std::nullptr_t, std::nullptr_t> static_pair_null;
 
+// 普遍类型的static_pair [zhuyb 2022-09-14 17:52:21]
 template<typename TKey, TKey Key, typename TValue, TValue Value>
 struct static_pair<tvalue_type<TKey, Key>, tvalue_type<TValue, Value>>
 {
@@ -35,6 +47,7 @@ constexpr TKey static_pair<tvalue_type<TKey, Key>, tvalue_type<TValue, Value>>::
 template <typename TKey, TKey Key, typename TValue, TValue Value>
 constexpr TValue static_pair<tvalue_type<TKey, Key>, tvalue_type<TValue, Value>>::value;
 
+// staic_pair 存放的数组（例如static_string） [zhuyb 2022-09-14 17:57:26]
 template<typename TKey, TKey Key, typename T, T... args>
 struct static_pair<tvalue_type<TKey, Key>, typelist<tvalue_type<T, args>...>>
 {
@@ -50,6 +63,11 @@ template <typename TKey, TKey Key, typename T, T... args>
 constexpr const typename static_pair<tvalue_type<TKey, Key>, typelist<tvalue_type<T, args>...>>::ValueType* 
     static_pair<tvalue_type<TKey, Key>, typelist<tvalue_type<T, args>...>>::value;
 
+#pragma endregion
+
+#pragma region find
+
+// 查找staic_pair [zhuyb 2022-09-14 18:06:52]
 template<typename T, typename TPairList>
 struct find;
 
@@ -73,6 +91,9 @@ struct find<T, typelist<static_pair<Key, Value>, Args...>>
     typedef typename find<T, typelist<Args...>>::Pair Pair;
     typedef typename find<T, typelist<Args...>>::Tail Tail;
 };
+#pragma endregion
+
+#pragma region static_map
 
 
 template <typename... Args>
@@ -106,6 +127,8 @@ public:
 
 };
 
+#pragma endregion
+
 template<typename T, typename TPairList>
 struct get;
 
@@ -115,8 +138,6 @@ struct get<Key, static_map<Args...>>
     typedef typename find<Key, typename static_map<Args...>::type>::Pair Pair;
     typedef typename find<Key, typename static_map<Args...>::type>::Tail Tail;
 };
-
-
 
 }
 
@@ -155,8 +176,6 @@ void print(static_map<Args...>)
 {
     print(typename static_map<Args...>::type{});
 }
-
-
 
 }
 }
