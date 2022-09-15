@@ -132,6 +132,7 @@ public:
 template<typename T, typename TPairList>
 struct get;
 
+// 获取map中指定Key的数据 [zhuyb 2022-09-14 18:23:30]
 template<typename Key, typename ...Args>
 struct get<Key, static_map<Args...>>
 {

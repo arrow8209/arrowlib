@@ -133,6 +133,8 @@ void TestPair2()
      Arrow::static_pair<Arrow::value_type<7>,STATIC_STRING("4567")>
      > SMap1;
      Arrow::tlist::print(SMap1{});
+
+     
      Arrow::tlist::print(typename Arrow::smap::get<Arrow::value_type<7>, SMap1>::Pair{});
      std::cout << typeid(SMap1::Pair).name() << std::endl;;
     // std::cout << s_pair1::Key << ":" << s_pair1::Value << std::endl;
