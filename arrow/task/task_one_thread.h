@@ -7,8 +7,9 @@
 #include <atomic>
 #include <condition_variable>
 #include <chrono>
-#include <forward_list>
-
+#include <string>
+#include <pthread.h>
+#include <future>
 namespace Arrow
 {
 
@@ -32,9 +33,9 @@ protected:
     {
         Stop();
     }
-
+public:
     // 启动线程 [zhuyb 2022-09-14 17:09:34]
-    bool Activate()
+    bool Activate(const char* szThreadName = nullptr)
     {
         if (m_bIsRun == true)
         {
@@ -42,7 +43,18 @@ protected:
         }
         
         m_bIsRun = true;
+        m_FutureBeforeThreadRun = m_PromiseBeforThreadRun.get_future();
         m_Thread = std::thread(std::bind(&TaskOneThread::RunThread, this));
+        if (szThreadName != nullptr)
+        {
+            m_strThreadName = szThreadName;
+            pthread_setname_np(m_Thread.native_handle(), m_strThreadName.c_str());
+        }
+        else
+        {
+            pthread_setname_np(m_Thread.native_handle(), m_strThreadName.c_str());
+        }
+
         WaitBeforeThreadRun();
         return true;
     }
@@ -54,9 +66,9 @@ protected:
         {
             return true;
         }
+        printf("%s TaskOneThread::Stop Begin\n", m_strThreadName.c_str());
 
-        printf("TaskOneThread::Stop Begin\n");
-        StopFlag();
+        m_bIsRun = false;
         m_Thread.join();
         List_Task::iterator it = m_listTask.begin();
         for (; it != m_listTask.end(); ++it)
@@ -64,7 +76,7 @@ protected:
             std::get<1>(*it)();
         }
         m_listTask.clear();
-        printf("TaskOneThread::Stop End\n");
+        printf("%s TaskOneThread::Stop End\n", m_strThreadName.c_str());
         return true;
     }
 
@@ -79,26 +91,7 @@ protected:
         return m_listTask.size();
     }
 
-    /**
-     * @description: 等待线程执行完BeforeThreadRun
-     * @param {uint32_t} un32TimeOutMs 超时时间 单位：毫秒 0 表示一等待
-     * @return {*} true：BeforeThreadRun顺利执行完毕 false：超时返回
-     */
-    bool WaitBeforeThreadRun(uint32_t un32TimeOutMs = 0)
-    {
-
-        std::unique_lock<std::mutex> lck(m_mutexBeforeThreadRun);
-
-        if (un32TimeOutMs == 0)
-        {
-            m_cvBeforeThreadRun.wait(lck);
-            return true;
-        }
-        
-        return m_cvBeforeThreadRun.wait_until(
-                   lck, std::chrono::system_clock::now() + std::chrono::milliseconds(un32TimeOutMs)) ==
-               std::cv_status::no_timeout;
-    }
+protected:
 
     //   [zhuyb 2022-07-05 09:02:01]
     /**
@@ -156,17 +149,14 @@ private:
     template<typename ..._Args>
     void DefaultClearCache(_Args... args)
     {
-        printf("Call Default Data Delete\n");
+        printf("%s Call Default Data Delete\n", m_strThreadName.c_str());
     }
 
     void RunThread()
     {
-        printf("Task Thread Start\n");
+        printf("%s Task Thread Start\n", m_strThreadName.c_str());
         BeforeThreadRun();
-
-        m_cvBeforeThreadRun.notify_all();
-        m_mutexBeforeThreadRun.unlock();
-
+        m_PromiseBeforThreadRun.set_value(true);
 
         List_Task tmpListTask;
         List_Task::iterator it;
@@ -187,32 +177,38 @@ private:
             std::get<0>(fun)();
         }
 
+        printf("%s Task Thread End Start\n", m_strThreadName.c_str());
         // 执行回收操作，回收未处理的数据 [zhuyb 2022-07-05 09:14:09]
         m_mutexListTask.lock();
         for (it = m_listTask.begin(); it != m_listTask.end(); ++it)
         {
             std::get<1>(*it)();
         }
+        m_listTask.clear();
         m_mutexListTask.unlock();
 
         AfterThreadStop();
-        printf("Task Thread End\n");
+        printf("%s Task Thread End\n", m_strThreadName.c_str());
     }
-
+    
+    void WaitBeforeThreadRun()
+    {
+        m_FutureBeforeThreadRun.get();
+    }
 private:
     // 线程运行标准 [zhuyb 2022-09-14 10:10:40]
     std::atomic<bool> m_bIsRun;
     // 线程对象 [zhuyb 2022-09-14 10:10:55]
     std::thread m_Thread;
+    // 线程名称 [zhuyb 2022-10-20 11:08:36]
+    std::string m_strThreadName = "ArrowTask";
 
     // 任务列表锁 [zhuyb 2022-09-14 10:11:10]
     std::mutex m_mutexListTask;
     List_Task m_listTask;
 
-    // 等待线程初始化完成信号量 [zhuyb 2022-09-14 10:12:58]
-    std::mutex m_mutexBeforeThreadRun;
-    std::condition_variable m_cvBeforeThreadRun;
-
+    std::future<bool> m_FutureBeforeThreadRun;
+    std::promise<bool> m_PromiseBeforThreadRun;
 };
 
 // Demo
