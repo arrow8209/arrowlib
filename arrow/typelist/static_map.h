@@ -123,7 +123,7 @@ public:
     typedef tail two_key;
 
 public:
-    typedef typename enable_ternary<std::is_same<Pair, static_pair_null>::value, one_key, two_key>::type type;
+    typedef typename std::conditional<std::is_same<Pair, static_pair_null>::value, one_key, two_key>::type type;
 
 };
 
