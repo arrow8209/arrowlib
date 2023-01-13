@@ -24,16 +24,16 @@ public:
     void TstAddTask()
     {
         AddTask<CTestTask>(&CTestTask::Print, &CTestTask::PrintDestory, (int)1);
-        AddTaskClearNull<CTestTask>(&CTestTask::Print2);
+        AddTaskClearCacheNull<CTestTask>(&CTestTask::Print2);
 
         CTestDelCatch* pT1 = new CTestDelCatch();
         CTestDelCatch* pT2 = new CTestDelCatch();
         CTestDelCatch* pT3 = new CTestDelCatch();
         CTestDelCatch* pT4 = new CTestDelCatch();
         
-        AddTaskClearDelete<CTestTask>(&CTestTask::TaskDel1, pT1);
-        AddTaskClearDelete<CTestTask>(&CTestTask::TaskDel2, pT2, pT3);
-        AddTaskClearDelete<CTestTask>(&CTestTask::TaskDel3, pT4, (int)585858);
+        AddTaskClearCacheDelete<CTestTask>(&CTestTask::TaskDel1, pT1);
+        AddTaskClearCacheDelete<CTestTask>(&CTestTask::TaskDel2, pT2, pT3);
+        AddTaskClearCacheDelete<CTestTask>(&CTestTask::TaskDel3, pT4, (int)585858);
         std::this_thread::sleep_for(std::chrono::seconds(1));
         Stop();
     }

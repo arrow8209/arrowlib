@@ -121,7 +121,7 @@ protected:
 
     // 添加任务 使用空回收函数 回收函数只在线程退出后，缓存区还存在数据的时候才会调用 [zhuyb 2022-07-05 09:02:23]
     template<typename T, typename TRunFun, typename ..._Args>
-    bool AddTaskClearNull(TRunFun pRunFun, _Args... args)
+    bool AddTaskClearCacheNull(TRunFun pRunFun, _Args... args)
     {
         return AddTask<T>(pRunFun, &TaskOneThread::ClearCacheNull<_Args...>, args...);
 
@@ -142,7 +142,7 @@ protected:
 
     // 添加任务 使用delete 回收函数 线程退出后，缓存区还存在数据的时候会对缓存数据 调用 delete args [zhuyb 2022-07-05 09:02:23]
     template<typename T, typename TRunFun, typename ..._Args>
-    bool AddTaskClearDelete(TRunFun pRunFun, _Args... args)
+    bool AddTaskClearCacheDelete(TRunFun pRunFun, _Args... args)
     {
         return AddTask<T>(pRunFun, &TaskOneThread::ClearCacheDelete<_Args...>, args...);
 
