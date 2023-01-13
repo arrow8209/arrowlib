@@ -153,19 +153,19 @@ using static_map = smap::static_map<Args...>;
 namespace tlist
 {
 
-void print(smap::static_pair_null)
+static void print(smap::static_pair_null)
 {
     std::cout<< "(nullptr, nullptr)" << std::endl;
 }
 
 template <typename Key, typename Value>
-void print(static_pair<Key, Value>)
+static void print(static_pair<Key, Value>)
 {
     std::cout<< "("<< static_pair<Key, Value>::key << "," << static_pair<Key, Value>::value << ")" << std::endl;
 }
 
 template <typename Key, typename Value, typename ...Args>
-void print(typelist<static_pair<Key, Value>, Args...>)
+static void print(typelist<static_pair<Key, Value>, Args...>)
 {
     print(static_pair<Key, Value>{});
     std::cout << "\t";
@@ -173,7 +173,7 @@ void print(typelist<static_pair<Key, Value>, Args...>)
 }
 
 template <typename... Args>
-void print(static_map<Args...>)
+static void print(static_map<Args...>)
 {
     print(typename static_map<Args...>::type{});
 }

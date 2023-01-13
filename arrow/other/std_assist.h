@@ -6,7 +6,7 @@
  */
 #pragma once
 
-#include "../log/print.h"
+#include "../log/log_interface.h"
 
 #include <unistd.h>
 #include <stdio.h>
@@ -114,30 +114,58 @@ static uint64_t GetThreadID()
     oss << std::this_thread::get_id();
     return std::stoull(oss.str());
 }
-template <typename TPrint = Arrow::Other::CPrint>
-static void PrintfMallinfo()
+// template <Arrow::EmLogLevel _logLevel>
+// static void PrintfMallinfo()
+// {
+//     struct mallinfo info = mallinfo();
+//     ARROW_LOG(_logLevel, "===========================\n");
+//     ARROW_LOG_FMT(_logLevel, "\tmallinfo\n");
+//     ARROW_LOG_FMT(_logLevel, "\t\tarena:%d\n", info.arena);
+//     ARROW_LOG_FMT(_logLevel, "\t\tordblks:%d\n", info.ordblks);
+//     ARROW_LOG_FMT(_logLevel, "\t\tsmblks:%d\n", info.smblks);
+//     ARROW_LOG_FMT(_logLevel, "\t\thblks:%d\n", info.hblks);
+//     ARROW_LOG_FMT(_logLevel, "\t\thblkhd:%d\n", info.hblkhd);
+//     ARROW_LOG_FMT(_logLevel, "\t\tusmblks:%d\n", info.usmblks);
+//     ARROW_LOG_FMT(_logLevel, "\t\tuordblks:%d\n", info.uordblks);
+//     ARROW_LOG_FMT(_logLevel, "\t\tfordblks:%d\n", info.fordblks);
+//     ARROW_LOG_FMT(_logLevel, "\t\tkeepcost:%d\n", info.keepcost);
+//     ARROW_LOG(_logLevel, "===========================\n");
+// }
+// static unsigned int StrToUInt32(const char* sz)
+// {
+//     const signed char* pCh;
+//     unsigned int unRet = 5381;
+//     for (pCh = (const signed char*)sz; *pCh != '\0'; pCh++)
+//         unRet = (unRet << 5) + unRet + *pCh;
+//     return unRet;
+// }
+
+// djb2 hash 算法 [zhuyb 2023-01-06 09:15:45]
+static uint32_t StrToUInt32Impl(const char* sz, uint32_t u32Ret = 5381)
 {
-    struct mallinfo info = mallinfo();
-    TPrint::print("===========================\n");
-    TPrint::print("\tmallinfo\n");
-    TPrint::print("\t\tarena:%d\n", info.arena);
-    TPrint::print("\t\tordblks:%d\n", info.ordblks);
-    TPrint::print("\t\tsmblks:%d\n", info.smblks);
-    TPrint::print("\t\thblks:%d\n", info.hblks);
-    TPrint::print("\t\thblkhd:%d\n", info.hblkhd);
-    TPrint::print("\t\tusmblks:%d\n", info.usmblks);
-    TPrint::print("\t\tuordblks:%d\n", info.uordblks);
-    TPrint::print("\t\tfordblks:%d\n", info.fordblks);
-    TPrint::print("\t\tkeepcost:%d\n", info.keepcost);
-    TPrint::print("===========================\n");
+    const uint8_t* pCh;
+    for (pCh = reinterpret_cast<const uint8_t*>(sz); *pCh != '\0'; pCh++)
+        u32Ret = (u32Ret << 5) + u32Ret + *pCh;
+    return u32Ret;
 }
-static unsigned int StrToUnit32(const char* sz)
+
+
+static uint32_t StrToUInt32(const char* sz)
 {
-    const char* pCh;
-    unsigned int unRet = 5381;
-    for (pCh = sz; *pCh != '\0'; pCh++)
-        unRet = (unRet << 5) + unRet + *pCh;
-    return unRet;
+    return StrToUInt32Impl(sz, 5381);
+    // const uint8_t* pCh;
+    // uint32_t unRet = 5381;
+    // for (pCh = reinterpret_cast<const uint8_t*>(sz); *pCh != '\0'; pCh++)
+    //     unRet = (unRet << 5) + unRet + *pCh;
+    // return unRet;
+}
+
+// Args 必须为const char* 类型 [zhuyb 2023-01-06 10:34:31]
+template<typename ...Args>
+static uint32_t StrToUInt32(const char* sz, Args... args)
+{
+    uint32_t u32Ret = StrToUInt32(args...);
+    return StrToUInt32Impl(sz, u32Ret);
 }
 
 inline static std::chrono::milliseconds get_milliseconds()

@@ -1,26 +1,27 @@
 #pragma once
 #include "../typelist/typelist.h"
 
-#define Log_Param(LogLevel) LogLevel, STATIC_FILE, STATIC_FUNC, __LINE__
+#define LOG_PARAM(LogLevel) LogLevel, STATIC_FILE, typename STATIC_FUNC, __LINE__
+#define LOG_PARAM_FMT(LogLevel, fmt) LogLevel, STATIC_FILE, typename STATIC_FUNC, __LINE__, typename STATIC_STRING(fmt)
 
 namespace Arrow
 {
 
-typedef enum em_log_Level
+typedef enum _emLogLevel
 {
-    Log_Null,
-    Log_Trace,
-    Log_Debug,
-    Log_Info,
-    Log_Warn,
-    Log_Error,
-    Log_Fatal,
-    Log_Max
-} Em_Log_Level;
+    LogNull,
+    LogTrace,
+    LogDebug,
+    LogInfo,
+    LogWarn,
+    LogError,
+    LogFatal,
+    LogMax
+} EmLogLevel;
 
 namespace Log
 {
-template<typename TLogImpl, Em_Log_Level printLevel = Log_Trace>
+template<typename TLogImpl, EmLogLevel printLevel = LogTrace>
 class base_log
 {
 protected:
@@ -43,22 +44,34 @@ public:
     //     LogImpl::template Log<loglevel, TFileName, TFunName, line>(szInfo);
     // }
 
-    template <Em_Log_Level loglevel, typename TFileName, typename TFunName, int line, typename T>
+    template <EmLogLevel loglevel, typename TFileName, typename TFunName, int line, typename T>
     static void Log(const T& t)
     {
         LogImpl::template Log<loglevel, TFileName, TFunName, line, T>(t);
     }
 
-    template <Em_Log_Level loglevel, typename TFileName, typename TFunName, int line, typename... Args>
-    static void Log(const char* szFmt, Args... args)
+    template <EmLogLevel loglevel, typename TFileName, typename TFunName, int line>
+    static void Log(const char* t)
     {
-        LogImpl::template Log<loglevel, TFileName, TFunName, line, Args...>(szFmt, args...);
+        LogImpl::template Log<loglevel, TFileName, TFunName, line, const char*>(t);
+    }
+
+    template <EmLogLevel loglevel, typename TFileName, typename TFunName, int line>
+    static void Log(char* t)
+    {
+        LogImpl::template Log<loglevel, TFileName, TFunName, line, char*>(t);
+    }
+
+    template <EmLogLevel loglevel, typename TFileName, typename TFunName, int line, typename TFmt, typename... Args>
+    static void Log(Args... args)
+    {
+        LogImpl::template Log<loglevel, TFileName, TFunName, line, TFmt, Args...>(args...);
     }
 
     template <typename... Args>
     static void print(const char* fmt, Args... args)
     {
-        Log<Log_Param(printLevel)>(fmt, args...);
+        Log<LOG_PARAM(printLevel)>(fmt, args...);
     }
 };
 

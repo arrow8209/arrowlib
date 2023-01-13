@@ -37,7 +37,7 @@ typedef enum _em_call_type
     _stdcall_ = 0,
     _cdecl_ = 1,
     _fastcall_ = 2
-}Em_Call_Type;
+}EmCallType;
 
 typedef enum _em_ErrorCode
 {
@@ -132,23 +132,25 @@ public:
         return m_ErrorNo;
     }
 public:
-#ifdef WIN32
+// #ifdef WIN32
 
     // 主要给Windows使用，CallCon 确定调用约定，Linux下使用，会忽略这个参数 [zhuyb 2022-07-18 14:36:45]
-    template <Em_Call_Type CallCon, typename RetType, typename... Args>
+    template <EmCallType CallCon, typename RetType, typename... Args>
     RetType call(const char* lpProcName, Args... args)
     {
         return call_win<RetType>(lpProcName, type<CallCon>(), args...);
     }
-#else
-    // 主要给Linux使用，没有调用约定约束，Windows也可以使用，默认使用__stdcall调用约定 [zhuyb 2022-07-18 14:36:45]
-    template <Em_Call_Type CallCon, typename RetType, typename... Args>
+// #else
+    // 主要给Linux使用，没有调用约定约束，Windows也可以使用，默认使用编译器默认调用约定 [zhuyb 2022-07-18 14:36:45]
+    template <typename RetType, typename... Args>
     RetType call(const char* lpProcName, Args... args)
     {
         typedef RetType(* LPProcName)(Args...);
         return addr<LPProcName>(lpProcName)(args...);
+        // 在windows下，可以使用下面的代码，使用特定的默认调用 [zhuyb 2023-01-11 08:46:12]
+        //return call_win<RetType>(lpProcName, type<EmCallType::_stdcall_>(), args...);
     }
-#endif
+// #endif
 
 private:
     template <class FunType>
@@ -221,12 +223,16 @@ private:
 
     int CloseLib(DynamicLibHandle& hin)
     {
+        if (hin == nullptr)
+        {
+            return 0;
+        }
+        
         int nRet = 0;
 #ifdef WIN32
         nRet = FreeLibrary(hin);
 #else
         nRet = dlclose(hin);
-
 #endif // WIN32
         m_hInst = nullptr;
         return nRet;

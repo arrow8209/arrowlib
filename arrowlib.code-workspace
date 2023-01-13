@@ -88,7 +88,8 @@
             "__functional_base_03": "cpp",
             "future": "cpp",
             "codecvt": "cpp",
-            "forward_list": "cpp"
+            "forward_list": "cpp",
+            "cinttypes": "cpp"
         }
     }
 }

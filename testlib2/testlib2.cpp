@@ -25,7 +25,7 @@ extern "C"
     uint32_t Init(const char* szConfigPath)
     {
         ALog::init("testlib2.log.ini");
-        ALog::Log<Log_Param(Arrow::Log_Debug)>("testlib2");
+        ALog::Log<LOG_PARAM(Arrow::LogDebug)>("testlib2");
         // ARROW_LOG_DEBUG("test lib2");
         // std::cout << szConfigPath << std::endl;
         // std::cout << "run init" << std::endl;

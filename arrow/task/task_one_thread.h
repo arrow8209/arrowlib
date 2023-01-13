@@ -102,7 +102,7 @@ protected:
      * @return {*} 添加任务 使用自定义回收函数
      */
     template<typename T, typename TRunFun, typename TClearCacheFun, typename ..._Args>
-    bool AddTask1(TRunFun pRunFun, TClearCacheFun pClearCacheFun, _Args... args)
+    bool AddTask(TRunFun pRunFun, TClearCacheFun pClearCacheFun, _Args... args)
     {
         if (m_bIsRun == false)
         {
@@ -119,23 +119,33 @@ protected:
         return true;
     }
 
-    // 添加任务 使用默认回收函数 回收函数只在线程退出后，缓存区还存在数据的时候才会调用 [zhuyb 2022-07-05 09:02:23]
+    // 添加任务 使用空回收函数 回收函数只在线程退出后，缓存区还存在数据的时候才会调用 [zhuyb 2022-07-05 09:02:23]
     template<typename T, typename TRunFun, typename ..._Args>
-    bool AddTask2(TRunFun pRunFun, _Args... args)
+    bool AddTaskClearNull(TRunFun pRunFun, _Args... args)
     {
-        if(m_bIsRun == false)
-        {
-            return false;
-        }
+        return AddTask<T>(pRunFun, &TaskOneThread::ClearCacheNull<_Args...>, args...);
 
-        TaskFun taskFun(std::bind(pRunFun, (T*)this, args...),
-                        std::bind(&TaskOneThread::DefaultClearCache<_Args...>, (TaskOneThread*)this, args...));
+        // if (m_bIsRun == false)
+        // {
+        //     return false;
+        // }
 
-        m_mutexListTask.lock();
-        m_listTask.push_back(taskFun);
-        m_mutexListTask.unlock();
-        
-        return true;
+        // TaskFun taskFun(std::bind(pRunFun, (T*)this, args...),
+        //                 std::bind(&TaskOneThread::ClearCacheNull<_Args...>, (TaskOneThread*)this, args...));
+
+        // m_mutexListTask.lock();
+        // m_listTask.push_back(taskFun);
+        // m_mutexListTask.unlock();
+
+        // return true;
+    }
+
+    // 添加任务 使用delete 回收函数 线程退出后，缓存区还存在数据的时候会对缓存数据 调用 delete args [zhuyb 2022-07-05 09:02:23]
+    template<typename T, typename TRunFun, typename ..._Args>
+    bool AddTaskClearDelete(TRunFun pRunFun, _Args... args)
+    {
+        return AddTask<T>(pRunFun, &TaskOneThread::ClearCacheDelete<_Args...>, args...);
+
     }
 
     // 在线程进入循环前执行相关初始化操作 [zhuyb 2022-07-05 09:01:03]
@@ -147,10 +157,44 @@ protected:
 private:
     // 默认回收函数 [zhuyb 2022-07-05 09:14:41]
     template<typename ..._Args>
-    void DefaultClearCache(_Args... args)
+    void ClearCacheNull(_Args... args)
     {
-        printf("%s Call Default Data Delete\n", m_strThreadName.c_str());
+        printf("%s call null clear catch data\n", m_strThreadName.c_str());
     }
+
+    template<typename ...Args>
+    void ClearCacheDelete(Args... args)
+    {
+        DeleteObj(args...);
+        // std::initializer_list<int>{([&]{delete args; }(), 0)...};
+        printf("%s call delete clear catch data\n", m_strThreadName.c_str());
+    }
+
+    template <typename T, typename ...Args>
+    void DeleteObj(T* pObj, Args... args)
+    {
+        pObj->Delete();
+        delete pObj;
+        DeleteObj(args...);
+    }
+
+    template <typename T, typename ...Args>
+    void DelteObj(T pObj, Args... args)
+    {
+        DeleteObj(args...);
+    }
+
+    template <typename T>
+    void DeleteObj(T* pObj)
+    {
+        delete pObj;
+    }
+
+    template <typename T>
+    void DeleteObj(T pObj)
+    {
+    }
+
 
     void RunThread()
     {

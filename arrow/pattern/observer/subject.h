@@ -12,19 +12,19 @@ namespace Pattern
 {
 
 template <typename _Ret, typename ..._Args>
-class ISubject
+class Subject
 {
 public:
-    typedef IObserver<_Ret, _Args...> Observer;
-    typedef std::vector<Observer*> Vec_LPObserver;
+    typedef Observer<_Ret, _Args...> IObserver;
+    typedef std::vector<IObserver*> Vec_PtrObserver;
 public:
-    ISubject(){}
-    virtual ~ISubject(){}
+    Subject(){}
+    virtual ~Subject(){}
 
-    virtual bool Register(Observer* pObserver)
+    virtual bool Register(IObserver* pObserver)
     {
         std::lock_guard<std::mutex> guard(m_Mutex);
-        typename Vec_LPObserver::iterator it = std::find(m_vecLPObserver.begin(), m_vecLPObserver.end(), pObserver);
+        typename Vec_PtrObserver::iterator it = std::find(m_vecLPObserver.begin(), m_vecLPObserver.end(), pObserver);
 
         if (it != m_vecLPObserver.end())
         {
@@ -35,10 +35,10 @@ public:
         return true;
     }
 
-    virtual bool UnRegister(Observer* pObserver)
+    virtual bool UnRegister(IObserver* pObserver)
     {
         std::lock_guard<std::mutex> guard(m_Mutex);
-        typename Vec_LPObserver::iterator it = std::find(m_vecLPObserver.begin(), m_vecLPObserver.end(), pObserver);
+        typename Vec_PtrObserver::iterator it = std::find(m_vecLPObserver.begin(), m_vecLPObserver.end(), pObserver);
 
         if (it == m_vecLPObserver.end())
         {
@@ -52,23 +52,23 @@ public:
     virtual _Ret Notify(_Args... args)
     {
         m_Mutex.lock();
-        Vec_LPObserver tmpVecLPObserver = m_vecLPObserver;
+        Vec_PtrObserver tmpVecLPObserver = m_vecLPObserver;
         m_Mutex.unlock();
-        typename Vec_LPObserver::iterator it = tmpVecLPObserver.begin();
+        typename Vec_PtrObserver::iterator it = tmpVecLPObserver.begin();
         for (; it != tmpVecLPObserver.end(); ++it)
         {
             (*it)->Response(args...);
         }
     }
 
-public:
+private:
     std::mutex m_Mutex;
-    Vec_LPObserver m_vecLPObserver;
+    Vec_PtrObserver m_vecLPObserver;
 
 };
 
 //Demo
-//class UserClass: public ISubject<parem1, parem2, pamre3 ... parmen>
+//class UserClass: public Subject<parem1, parem2, pamre3 ... parmen>
 // {
 //      parem1 UserFun()
 //        {

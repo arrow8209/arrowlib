@@ -21,7 +21,7 @@ extern "C"
         // return App_Zhjyz::Instance()->Init(szConfigPath);
         // printf(szConfigPath);
         ALog2::init("xdfstestlib1.log.ini");
-        ALog2::Log<Log_Param(Arrow::Log_Debug)>("testlib1");
+        ALog2::Log<LOG_PARAM(Arrow::LogDebug)>("testlib1");
         // ARROW_LOG_DEBUG("test lib1");
         // std::cout << szConfigPath << std::endl;
         std::cout << "run init" << std::endl;

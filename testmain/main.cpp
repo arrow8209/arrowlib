@@ -19,6 +19,8 @@
 #include "test_log_in_lib.h"
 // #include <log4cplus/log4cplus.h>
 //  typedef Arrow::Log::LogInterface<Arrow::Log::LogImplLog4Cplus> ALog;
+
+#include "demo/task_test.h"
 typedef Arrow::TLog<Arrow::Log::LogImplDefault> Log;
 
 void CPlustThreadInit()
@@ -90,7 +92,12 @@ int main(int argc, char* argv[])
     // }
 
     // test_static_string2();
-    TestPair2();
-    
+    // TestPair2();
+    CTestTask taskTestmp;
+    taskTestmp.Activate();
+    taskTestmp.TstAddTask();
+
+    int nTmp; 
+    std::cin >>  nTmp;
     return 1;
 }

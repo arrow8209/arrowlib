@@ -29,13 +29,13 @@ public:
     //     LogImpl::template Log<loglevel, TFileName, TFunName, line>(szInfo);
     // }
 
-    template <Em_Log_Level loglevel, typename TFileName, typename TFunName, int line, typename T>
+    template <EmLogLevel loglevel, typename TFileName, typename TFunName, int line, typename T>
     static void Log(const T& t)
     {
     }
 
-    template <Em_Log_Level loglevel, typename TFileName, typename TFunName, int line, typename... Args>
-    static void Log(const char* szFmt, Args... args)
+    template <EmLogLevel loglevel, typename TFileName, typename TFunName, int line, typename TFmt, typename... Args>
+    static void Log(Args... args)
     {
     }
 
