@@ -80,7 +80,7 @@ public:
         }
     }
 
-    DynamicLibHandle LoadLib(const char* lpLibFileName)
+    DynamicLibHandle LoadLib(const char* lpLibFileName) // 加载DLL
     {
         if (m_hInst != nullptr)
         {
