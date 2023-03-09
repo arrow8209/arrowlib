@@ -28,50 +28,6 @@ namespace details_log4
     typedef Arrow::value_typelist<LogNull, LogTrace, LogDebug, LogInfo, LogMax> UnLinly;
 }
 
-
-// #define INFO_LOG(fmt, ...) fprintf(stdout, "[INFO]  " fmt "\n", ##__VA_ARGS__)
-// #define WARN_LOG(fmt, ...) fprintf(stdout, "[WARN]  " fmt "\n", ##__VA_ARGS__)
-// #define ERROR_LOG(fmt, ...) fprintf(stdout, "[ERROR] " fmt "\n", ##__VA_ARGS__)
-
-// #define g_logger ""
-
-// #define ARROW_LOG_TRACE(logEvent) LOG4CPLUS_TRACE(g_logger, logEvent)
-// #define ARROW_LOG_TRACE_FMT(...) LOG4CPLUS_TRACE_FMT(g_logger, __VA_ARGS__)
-
-// #define ARROW_LOG_DEBUG(logEvent) LOG4CPLUS_DEBUG(g_logger, logEvent)
-// #define ARROW_LOG_DEBUG_FMT(...) LOG4CPLUS_DEBUG_FMT(g_logger, __VA_ARGS__)
-
-// #define ARROW_LOG_INFO(logEvent) LOG4CPLUS_INFO(g_logger, logEvent)
-// #define ARROW_LOG_INFO_FMT(...) LOG4CPLUS_INFO_FMT(g_logger, __VA_ARGS__)
-
-// #define ARROW_LOG_WARN(logEvent) LOG4CPLUS_WARN(g_logger, logEvent)
-// #define ARROW_LOG_WARN_FMT(...) LOG4CPLUS_WARN_FMT(g_logger, __VA_ARGS__)
-
-// #define ARROW_LOG_ERROR(logEvent) LOG4CPLUS_ERROR(g_logger, logEvent)
-// #define ARROW_LOG_ERROR_FMT(...) LOG4CPLUS_ERROR_FMT(g_logger, __VA_ARGS__)
-
-// #define ARROW_LOG_FATAL(logEvent) LOG4CPLUS_FATAL(g_logger, logEvent)
-// #define ARROW_LOG_FATAL_FMT(...) LOG4CPLUS_FATAL_FMT(g_logger, __VA_ARGS__)
-
-
-// #define ARROW_LOG_TRACE(logEvent) 
-// #define ARROW_LOG_TRACE_FMT(...)
-
-// #define ARROW_LOG_DEBUG(logEvent) 
-// #define ARROW_LOG_DEBUG_FMT(...) 
-
-// #define ARROW_LOG_INFO(logEvent) 
-// #define ARROW_LOG_INFO_FMT(...) 
-
-// #define ARROW_LOG_WARN(logEvent)
-// #define ARROW_LOG_WARN_FMT(...) 
-
-// #define ARROW_LOG_ERROR(logEvent) 
-// #define ARROW_LOG_ERROR_FMT(...) 
-
-// #define ARROW_LOG_FATAL(logEvent) 
-// #define ARROW_LOG_FATAL_FMT(...)
-
 class LogImplLog4Cplus
 {
 protected:
@@ -88,72 +44,87 @@ public:
         log4cplus::Logger&& logger = log4cplus::Logger::getRoot();  
         log4cplus::SharedAppenderPtrList pList = logger.getAllAppenders();
 
+        try
+        {
+            if (szConfigFileName != nullptr)
+            {
+                printf("[log4cplus]:load log config:%s\n",szConfigFileName);
+                log4cplus::PropertyConfigurator::doConfigure(LOG4CPLUS_TEXT(szConfigFileName));
+            }
+        }
+        catch(const std::exception& e)
+        {
+            printf("[log4cplus]:load log config: fail error msg: %s\n",e.what());
+        }
+
         if (pList.size() > 1)
         {
             log4cplus::SharedAppenderPtrList::iterator it = pList.begin();
-            printf("log4cplus has been initialized appenders size:%u\n", static_cast<uint32_t>(pList.size()));
+            printf("[log4cplus]:log4cplus has been initialized appenders size:%u\n", static_cast<uint32_t>(pList.size()));
             for (; it != pList.end(); ++it)
             {
                 printf("Appender name:%s\n", it->get()->getName().c_str());
             }
             return true;
         }
-
-        // if (pList.size() == 1 &&
-        //     strcmp(szConsole, pList.begin()->get()->getName().c_str()) != 0)
-        // {
-        //     printf("Appender name:%s\n", pList.begin()->get()->getName().c_str());
-        //     return true;
-        // }
-
-        try
-        {
-            if (szConfigFileName != nullptr)
-            {
-                log4cplus::PropertyConfigurator::doConfigure(LOG4CPLUS_TEXT(szConfigFileName));
-            }
-        }
-        catch(const std::exception& e)
-        {
-            std::cout << "doConfigure:" << e.what() << '\n';
-        }
-
+        
         try
         {
             if (logger.getAllAppenders().size() == 0)
             {
-                // 设置TRACE~INFO信息日志格式 [zhuyb 2022-11-16 08:54:33]
-                log4cplus::SharedAppenderPtr appendTraceToInfo(new log4cplus::ConsoleAppender());
-                appendTraceToInfo->setName("traceConsole");
-                std::string patternTraceToInfo = "[D]<%-5p>[%D{%Y-%m-%d %H:%M:%S}][%b,%L][%t]:%m%n";
+                printf("[log4cplus]:set default log\n");
+                logger.setLogLevel(log4cplus::ALL_LOG_LEVEL);
 
-                std::unique_ptr<log4cplus::Layout> layoutTraceToInfo(new log4cplus::PatternLayout(patternTraceToInfo));
-                appendTraceToInfo->setLayout(std::move(layoutTraceToInfo));
+                // 设置TRACE~Debug信息日志格式 [zhuyb 2022-11-16 08:54:33]
+                log4cplus::SharedAppenderPtr appendTraceToDebug(new log4cplus::ConsoleAppender());
+                appendTraceToDebug->setName("traceToDebugConsole");
+                std::string patternTraceToDebug = "\033[1;32m[D]<%-5p>[%D{%Y-%m-%d %H:%M:%S}][%b,%L][%t]:%m%n\033[0m";
 
-                log4cplus::helpers::Properties pro;
-                pro.setProperty("LogLevelMin", "TRACE");
-                pro.setProperty("LogLevelMax", "INFO");
+                std::unique_ptr<log4cplus::Layout> layoutTraceToDebug(new log4cplus::PatternLayout(patternTraceToDebug));
+                appendTraceToDebug->setLayout(std::move(layoutTraceToDebug));
+
+                log4cplus::helpers::Properties proTrackToDebug;
+                proTrackToDebug.setProperty("LogLevelMin", "TRACE");
+                proTrackToDebug.setProperty("LogLevelMax", "DEBUG");
+
+                log4cplus::spi::FilterPtr filterTraceToDebug(new log4cplus::spi::LogLevelRangeFilter(proTrackToDebug));
+                appendTraceToDebug->addFilter(filterTraceToDebug);
+                logger.addAppender(appendTraceToDebug);
+
                 
-                log4cplus::spi::FilterPtr filterTraceToInfo(new log4cplus::spi::LogLevelRangeFilter(pro));
-                appendTraceToInfo->addFilter(filterTraceToInfo);
+                // 设置INFO信息日志格式 [zhuyb 2022-11-16 08:54:33]
+                log4cplus::SharedAppenderPtr appendInfo(new log4cplus::ConsoleAppender());
+                appendInfo->setName("infoConsole");
+                std::string patternInfo = "[D]<%-5p>[%D{%Y-%m-%d %H:%M:%S}][%b,%L][%t]:%m%n";
+
+                std::unique_ptr<log4cplus::Layout> layoutTraceToInfo(new log4cplus::PatternLayout(patternInfo));
+                appendInfo->setLayout(std::move(layoutTraceToInfo));
+
+                log4cplus::helpers::Properties proInfo;
+                proInfo.setProperty("LogLevelMin", "INFO");
+                proInfo.setProperty("LogLevelMax", "INFO");
+
+                log4cplus::spi::FilterPtr filterInfo(new log4cplus::spi::LogLevelRangeFilter(proInfo));
+                appendInfo->addFilter(filterInfo);
                 // logger.setLogLevel(log4cplus::ALL_LOG_LEVEL);
-                logger.addAppender(appendTraceToInfo);
+                logger.addAppender(appendInfo);
 
 
 
                 // 设置WARN~FATAL信息日志格式 [zhuyb 2022-11-16 08:54:45]
                 log4cplus::SharedAppenderPtr appendWarnToFatal(new log4cplus::ConsoleAppender());
-                appendWarnToFatal->setName("warnConsole");
+                appendWarnToFatal->setName("warnToFatalConsole");
                 std::string patternWarnToFatal = "\033[1;31m[D]<%-5p>[%D{%Y-%m-%d %H:%M:%S}][%b,%L][%t]:%m%n\033[0m";
                 // std::string patternWarnToFatal = "\033[1;31m[D]<%-5p>%n\033[0m";
 
                 std::unique_ptr<log4cplus::Layout> layoutWarnToFatal(new log4cplus::PatternLayout(patternWarnToFatal));
                 appendWarnToFatal->setLayout(std::move(layoutWarnToFatal));
 
-                pro.setProperty("LogLevelMin", "WARN");
-                pro.setProperty("LogLevelMax", "FATAL");
+                log4cplus::helpers::Properties proWarnToFatal;
+                proWarnToFatal.setProperty("LogLevelMin", "WARN");
+                proWarnToFatal.setProperty("LogLevelMax", "FATAL");
                 
-                log4cplus::spi::FilterPtr filterWarnToFatal(new log4cplus::spi::LogLevelRangeFilter(pro));
+                log4cplus::spi::FilterPtr filterWarnToFatal(new log4cplus::spi::LogLevelRangeFilter(proWarnToFatal));
                 appendWarnToFatal->addFilter(filterWarnToFatal);
 
                 logger.addAppender(appendWarnToFatal);
@@ -168,75 +139,6 @@ public:
         return true;
     }
 
-    // template <typename TFileName, typename TFunName, int line>
-    // static void Trace_Log(const char* szInfo)
-    // {
-    //     // LOG4CPLUS_SUPPRESS_DOWHILE_WARNING()
-    //     // do
-    //     // {
-    //     //     log4cplus::Logger const& _l = log4cplus::detail::macros_get_logger(g_logger);
-    //     //     if (LOG4CPLUS_MACRO_LOGLEVEL_PRED(_l.isEnabledFor(log4cplus::TRACE_LOG_LEVEL), logLevel))
-    //     //     {
-    //     //         log4cplus::detail::macro_forced_log(_l,
-    //     //                                             log4cplus::TRACE_LOG_LEVEL, logEvent,
-    //     //                                             LOG4CPLUS_MACRO_FILE(),
-    //     //                                             __LINE__,
-    //     //                                             LOG4CPLUS_MACRO_FUNCTION());
-    //     //     }
-    //     // } while (0)
-    //     // LOG4CPLUS_RESTORE_DOWHILE_WARNING()
-
-    //     typedef Arrow::tlist::tvaluelist_to_data<TFileName> Staic_FileName;
-    //     typedef Arrow::tlist::tvaluelist_to_data<TFunName> Staic_FunName;
-
-    //     LOG4CPLUS_SUPPRESS_DOWHILE_WARNING()
-    //     do
-    //     {
-    //         log4cplus::Logger const& _l = log4cplus::detail::macros_get_logger(g_logger);
-    //         if (_l.isEnabledFor(log4cplus::TRACE_LOG_LEVEL))
-    //         {
-    //             LOG4CPLUS_MACRO_INSTANTIATE_OSTRINGSTREAM(_log4cplus_buf);
-    //             _log4cplus_buf << szInfo;
-    //             log4cplus::detail::macro_forced_log(_l,
-    //                                                 log4cplus::TRACE_LOG_LEVEL, _log4cplus_buf.str(),
-    //                                                 Staic_FileName::data, 
-    //                                                 line,
-    //                                                 Staic_FunName::data);
-    //         }
-    //     } while (0);
-    //     LOG4CPLUS_RESTORE_DOWHILE_WARNING()
-    // }
-
-    // template <typename T>
-    // static void Trace_Log(const T& t)
-    // {
-    //     LOG4CPLUS_TRACE("", t);
-    // }
-
-    // template <typename TFileName, typename TFunName, int line, typename... Args>
-    // static void Trace_Log(const char* szFmt, Args... args)
-    // {
-    //     LOG4CPLUS_SUPPRESS_DOWHILE_WARNING()
-    //     do
-    //     {
-    //         log4cplus::Logger const& _l = log4cplus::detail::macros_get_logger("");
-    //         if (LOG4CPLUS_MACRO_LOGLEVEL_PRED(
-    //                 _l.isEnabledFor(log4cplus::TRACE_LOG_LEVEL), TRACE_LOG_LEVEL))
-    //         {
-    //             // LOG4CPLUS_MACRO_INSTANTIATE_SNPRINTF_BUF(_snpbuf);
-    //             log4cplus::helpers::snprintf_buf& _snpbuf = log4cplus::detail::get_macro_body_snprintf_buf();
-
-    //             log4cplus::tchar const* _logEvent = _snpbuf.print(szFmt, args...);
-    //             log4cplus::detail::macro_forced_log(_l,
-    //                                                 log4cplus::TRACE_LOG_LEVEL, _logEvent,
-    //                                                 LOG4CPLUS_MACRO_FILE(), __LINE__,
-    //                                                 LOG4CPLUS_MACRO_FUNCTION());
-    //         }
-    //     } while (0)
-    //     LOG4CPLUS_RESTORE_DOWHILE_WARNING();
-    // }
-
-    // typename std::enable_if<tlist::find<value_type<loglevel>, details::UnLinly>::value != -1>::type = void>
     template <EmLogLevel loglevel, typename TFileName, typename TFunName, int line, typename T>
     static void Log(const T& t)
     {

@@ -1,3 +1,9 @@
+/*
+ * @FilePath: /ai_server/ShareCode/arrow/other/obj_pool_simple.h
+ * @Author: arrow arrow8209@foxmail.com
+ * @Date: 2022-12-07 10:08:16
+ * @Description: 简单对象池。
+ */
 #pragma once
 #include <queue>
 #include <mutex>
@@ -6,12 +12,34 @@
 #include <chrono>
 #include <typeinfo>
 #include <atomic>
+#include <functional>
 
 namespace Arrow
 {
 
 namespace Other
 {
+
+namespace details
+{
+/**
+ * @description: 检测U是否存在Release 函数
+ * @return {*}
+ */
+template <typename U>
+struct checkClassReleaseNotParam
+{
+    template <typename T,
+              typename Ret = typename std::reference_wrapper<decltype(&T::Release)>::result_type, // 萃取出返回值 [zhuyb// 2023-03-06 11:50:22],
+              Ret (T::*)() = &T::Release>
+    static constexpr bool check(T*)
+    {
+        return true;
+    };
+    static constexpr bool check(...) { return false; };
+    static constexpr bool value = check(static_cast<U *>(0));
+};
+}
 
 // 对象池空闲存活时间 单位:秒 [zhuyb 2022-10-24 08:57:04]
 typedef enum _em_ObjLiveTime
@@ -78,14 +106,16 @@ public:
         auto it = m_ActiveObj.find(pObj);
         if (it == m_ActiveObj.end())
         {
-            pObj->Release();
+            // pObj->Release();
+            CallTObjRelease(pObj);
             printf("[Arrow:Other:Pool][Warn]TObjSimplePool<%s> Unkonw %p ptr\n", typeid(pObj).name(), pObj);
             delete pObj;
             return;
         }
 
         std::get<1>(it->second) = std::chrono::system_clock::now();
-        pObj->Release();
+        // pObj->Release();
+        CallTObjRelease(pObj);
         m_FreeObj.push_front(it->second);
         m_ActiveObj.erase(it);
         Check();
@@ -102,7 +132,8 @@ public:
 
             try
             {
-                std::get<0>(objInfo)->Release();
+                // std::get<0>(objInfo)->Release();
+                CallTObjRelease(std::get<0>(objInfo));
                 delete std::get<0>(objInfo);
                 m_n32PoolCount--;
             }
@@ -118,7 +149,8 @@ public:
             try
             {
                 pObj = it->first;
-                pObj->Release();
+                // pObj->Release();
+                CallTObjRelease(pObj);
                 delete pObj;
                 m_n32PoolCount--;
             }
@@ -130,8 +162,20 @@ public:
         
         m_ActiveObj.clear();
     }
+protected:
+    template <typename T = TObj,
+              typename std::enable_if<details::checkClassReleaseNotParam<T>::value, T>::type* = nullptr>
+    void CallTObjRelease(T* pObj)
+    {
+        pObj->Release();
+    }
 
-    private:
+    template <typename T = TObj,
+              typename std::enable_if<!details::checkClassReleaseNotParam<T>::value, T>::type* = nullptr>
+    void CallTObjRelease(T* pObj)
+    {
+    }
+
     void Check()
     {
         if (livetime == 0)

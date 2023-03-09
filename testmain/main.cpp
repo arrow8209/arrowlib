@@ -21,6 +21,8 @@
 //  typedef Arrow::Log::LogInterface<Arrow::Log::LogImplLog4Cplus> ALog;
 
 #include "demo/task_test.h"
+
+#include "test_enum_to_str.h"
 typedef Arrow::TLog<Arrow::Log::LogImplDefault> Log;
 
 void CPlustThreadInit()
@@ -93,11 +95,12 @@ int main(int argc, char* argv[])
 
     // test_static_string2();
     // TestPair2();
-    CTestTask taskTestmp;
-    taskTestmp.Activate();
-    taskTestmp.TstAddTask();
+    // CTestTask taskTestmp;
+    // taskTestmp.Activate();
+    // taskTestmp.TstAddTask();
 
-    int nTmp; 
-    std::cin >>  nTmp;
+    // int nTmp; 
+    // std::cin >>  nTmp;
+    TestEnumToStr();
     return 1;
 }

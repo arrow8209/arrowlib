@@ -6,13 +6,24 @@
  */
 #pragma once
 #include <map>
-#include "create.h"
 
 namespace Arrow
 {
 
 namespace Pattern
 {
+
+template<typename TObjBase, typename TObj>
+class CreateObj
+{
+public:
+    // 生产一个具体产品
+    static TObjBase* Create()
+    {
+        return new TObj();
+    }
+
+};
 
 // 抽象工厂
 template<typename TObjKeyType, typename TObjBase>

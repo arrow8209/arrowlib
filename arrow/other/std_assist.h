@@ -6,7 +6,7 @@
  */
 #pragma once
 
-#include "../log/log_interface.h"
+#include "../log/print.h"
 
 #include <unistd.h>
 #include <stdio.h>
@@ -15,6 +15,13 @@
 #include <sstream>
 #include <thread>
 #include <cstring>
+#include <vector>
+#include <memory>
+#include <set>
+#include <iostream>
+#include <codecvt> // codecvt_utf8
+#include <locale>  // wstring_convert
+#include "../log.h"
 
 #ifdef _WIN32
 #elif __APPLE__
@@ -61,8 +68,6 @@ namespace Other
 
 static inline std::string get_app_path()
 {
-
-
 #ifdef WIN32
     char chPath[MAX_PATH];
     std::string strPath;
@@ -173,6 +178,121 @@ inline static std::chrono::milliseconds get_milliseconds()
     return std::chrono::duration_cast<std::chrono::milliseconds>(
         std::chrono::system_clock::now().time_since_epoch());
 }
+
+// 去除重复，并将结果放入dst中 [zhuyb 2023-02-21 09:42:12]
+template <typename T>
+void RemoveRepeat(std::vector<T>& src, std::vector<T>& dst)
+{
+    // typedef std::vector<T> VecSharedPtr;
+    // if(src.size() <= 1)
+    // {
+    //     dst = src;
+    //     return;
+    // }
+
+    // typename VecSharedPtr::iterator it1 = src.begin();
+    // typename VecSharedPtr::iterator it2 = src.begin();
+    // typename VecSharedPtr::iterator itEnd = src.end();
+    // it2++;
+    // while(it2 != itEnd)
+    // {
+    //     if(std::find(it2, itEnd, *it1) == itEnd)
+    //     {
+    //         dst.push_back(*it1);
+    //     }
+    //     it1++;
+    //     it2++;
+    // }
+    // dst.push_back(*it1);
+    std::set<T> setVal(src.begin(), src.end());
+    dst.insert(dst.end(), setVal.begin(), setVal.end());
+}
+
+// 去除重复 [zhuyb 2023-02-21 09:42:34]
+template<typename T>
+inline void RemoveRepeat(std::vector<T>& val)
+{
+    std::set<T> setVal(val.begin(), val.end());
+    val.assign(setVal.begin(), setVal.end());
+}
+
+// /*
+// * 宽字节转utf8
+// */
+// std::string wstring_2_utf8(std::wstring& wide_string) {
+//     static std::wstring_convert<std::codecvt_utf8<wchar_t>> utf8_conv;
+//     return utf8_conv.to_bytes(wide_string);
+// }
+
+// /*
+// * uft8转宽字节
+// */
+// std::wstring wstring_from_utf8(std::string& bype_string)
+// {
+//     static std::wstring_convert<std::codecvt_utf8<wchar_t>> utf8_conv;
+//     return utf8_conv.from_bytes(bype_string);
+// }
+
+/*
+* 多字节转宽字节
+* 本函数会返回new分配的outStr，需要手动调用delete[]释放内存.
+*/
+static bool CA2W(wchar_t*& outStr, size_t& outLen, const char* inStr, int inLen)
+{
+    // size_t len = inLen + 1;
+    // size_t converted = 0;
+    // *outStr = new wchar_t[ len * sizeof(wchar_t)];
+    // mbstowcs_s(&converted, *outStr, len, inStr, _TRUNCATE);
+    // outLen = converted;
+    // (*outStr)[len - 1] = L'\0';
+
+    size_t len = 0;
+
+    if (len < 1)
+    {
+        setlocale(LC_CTYPE,
+                  "C.UTF-8"); // 字符集设置不当，mbstowcs返回值小于1(可通过异常返回值自动尝试并找出正确的字符集)。
+        len = (int)mbstowcs(NULL, inStr, 0) + 1;
+    }
+
+    if (len < 1)
+    {
+        setlocale(LC_CTYPE,
+                  "zh_CN.utf8"); // 字符集设置不当，mbstowcs返回值小于1(可通过异常返回值自动尝试并找出正确的字符集)。
+        len = (int)mbstowcs(NULL, inStr, 0) + 1;
+    }
+    if (len < 1)
+    {
+        setlocale(LC_CTYPE,
+                  "en_US.utf8"); // 字符集设置不当，mbstowcs返回值小于1(可通过异常返回值自动尝试并找出正确的字符集)。
+        len = (int)mbstowcs(NULL, inStr, 0) + 1;
+    }
+
+    if(len < 1)
+    {
+        return false;
+    }
+
+    outStr = new wchar_t[len];
+    swprintf(outStr, len, L"%hs", inStr);
+
+    return true;
+}
+
+// /*
+// * 宽字节转多字节
+// * 本函数会返回new分配的outStr，需要手动调用delete[]释放内存.
+// */
+// void W2CA(char** outStr, size_t& outLen, const wchar_t* inStr, int inLen)
+// {
+//     size_t len = inLen + 1;
+//     size_t converted = 0;
+//     *outStr = new char[len * sizeof(char)];
+//     wcstombs_s(&converted, *outStr, len, inStr, _TRUNCATE);
+//     outLen = converted;
+//     (*outStr)[len - 1] = '\0';
+// }
+
 
 } // namespace Std
 }

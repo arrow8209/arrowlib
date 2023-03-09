@@ -61,7 +61,7 @@ public:
         }
     }
 
-private:
+protected:
     std::mutex m_Mutex;
     Vec_PtrObserver m_vecLPObserver;
 
