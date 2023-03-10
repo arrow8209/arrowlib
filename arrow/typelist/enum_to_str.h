@@ -12,10 +12,27 @@ namespace Arrow
 namespace static_string
 {
 
-// typedef std::map<int, std::string> MapEnumValueToStr;
+// 枚举字符串映射表 [zhuyb 2023-03-10 10:13:52]
+template <typename TEnumType>
+struct EnumItemData
+{
+    typedef std::map<TEnumType, std::string> type;
+    static type value;
+};
+template <typename TEnumType>
+typename EnumItemData<TEnumType>::type
+    EnumItemData<TEnumType>::value;
 
 namespace details
 {
+/*
+g++: 编译器的函数名为 
+constexpr Arrow::static_string::details::EnumItemInfo<TEnumType, _emValue>::EnumItemInfo() [with TEnumType = _emDataTypeB; TEnumType _emValue = _emDataTypeB::_emDataTypeB1]
+或者（枚举类型存在，但是具体的枚举值不在）
+Arrow::static_string::details::EnumItemInfo<TEnumType, _emValue>::EnumItemInfo() [with TEnumType = _emDataTypeB; TEnumType _emValue = (_emDataTypeB)2]
+*/
+
+// 截取需要的字符串 [zhuyb 2023-03-10 13:28:17]
 template<int index, typename StaticStr>
 struct get_enum_item_str_splite;
 
@@ -44,6 +61,7 @@ struct get_enum_item_str<typelist<Args...>>
 {
 protected:
     typedef typename tlist::pop_back<typelist<Args...>>::type static_str;
+
     typedef typename tlist::find_last<tvalue_type<char, ' '>, static_str> find_last_forward_sapce;
     typedef typename get_enum_item_str_splite<find_last_forward_sapce::value, static_str>::type enum_long_name;
 
@@ -59,175 +77,141 @@ template<typename TEnumType, TEnumType _emValue>
 struct EnumItemInfo
 {
     constexpr EnumItemInfo() : 
+        full_name(tlist::tvaluelist_to_data<typename STATIC_STRING(__PRETTY_FUNCTION__)>::data),
         short_name(tlist::tvaluelist_to_data<typename get_enum_item_str<typename STATIC_STRING(__PRETTY_FUNCTION__)>::type_short_name>::data), 
         long_name(tlist::tvaluelist_to_data<typename get_enum_item_str<typename STATIC_STRING(__PRETTY_FUNCTION__)>::type_long_name>::data), 
         value(_emValue){};
         
     const char* short_name;
     const char* long_name;
+    const char* full_name;
     const TEnumType value;
 };
 
-// 遵循左闭右闭 [zhuyb 2023-01-30 08:50:00]
 template<typename EnumType, EnumType _emIndex, EnumType _emEnd>
-struct get_enum_str
+struct get_enum_str_impl
 {
-    template<typename TMapEnumValueToStr>
-    static void ItemInfo(TMapEnumValueToStr& mapEnumValueToStr)
+    static void ItemInfo()
     {
         static_assert(_emIndex < _emEnd, "起始枚举值必须小于终止枚举值");
         EnumItemInfo<EnumType, _emIndex> tmp;
-        mapEnumValueToStr[tmp.value] = tmp.short_name;
-        get_enum_str<EnumType, static_cast<EnumType>(static_cast<int32_t>(_emIndex) + 1), _emEnd>::ItemInfo(mapEnumValueToStr);
+        EnumItemData<EnumType>::value[tmp.value] = tmp.short_name;
+        get_enum_str_impl<EnumType, static_cast<EnumType>(static_cast<int32_t>(_emIndex) + 1), _emEnd>::ItemInfo();
     }
 };
 
 template<typename EnumType, EnumType _emEnd>
-struct get_enum_str<EnumType, _emEnd, _emEnd>
+struct get_enum_str_impl<EnumType, _emEnd, _emEnd>
 {
-    template<typename TMapEnumValueToStr>
-    static void ItemInfo(TMapEnumValueToStr& mapEnumValueToStr)
+    static void ItemInfo()
     {
         EnumItemInfo<EnumType, _emEnd> tmp;
-        mapEnumValueToStr[tmp.value] = tmp.short_name;
+        EnumItemData<EnumType>::value[tmp.value] = tmp.short_name;
     }
 };
 
 }
 
-template<typename EnumType, EnumType _emFirst,  EnumType _emLast,bool bFirstAdd = true, bool bLastAdd = true>
-struct get_enum_str;
-
-
-template<typename EnumType, EnumType _emFirst, EnumType _emLast>
-struct get_enum_str<EnumType, _emFirst, _emLast, true, true>
+template<typename EnumType, EnumType _emFirst,  EnumType _emLast>
+struct get_enum_str
 {
-    typedef std::map<EnumType, std::string> MapEnumValueToStr;
-    static MapEnumValueToStr& ItemInfo()
+
+    static typename EnumItemData<EnumType>::type& ItemInfo()
     {
-        static_assert(_emFirst < _emLast, "起始枚举值必须小于终止枚举值");
+        static_assert(_emFirst <= _emLast, "起始枚举值必须小于终止枚举值");
 
-        static MapEnumValueToStr mapEnumValueToStr;
-        if(mapEnumValueToStr.size() > 0)
-            return mapEnumValueToStr;
+        // if(EnumItemData<EnumType>::value.size() > 0)
+        //     return EnumItemData<EnumType>::value;
 
-        details::get_enum_str<EnumType, _emFirst, _emLast>::ItemInfo(mapEnumValueToStr);
-        return mapEnumValueToStr;
+        details::get_enum_str_impl<EnumType, _emFirst, _emLast>::ItemInfo();
+        return EnumItemData<EnumType>::value;
     }
 
     static std::string ItemStr(EnumType _emType)
     {
-        MapEnumValueToStr& mapEnumValueToStr = ItemInfo();
-        auto it = mapEnumValueToStr.find(_emType);
-        if(it == mapEnumValueToStr.end())
+        if(_emType > _emLast || _emType < _emFirst)
         {
             return "";
         }
+
+        auto it = EnumItemData<EnumType>::value.find(_emType);
+        if(it == EnumItemData<EnumType>::value.end())
+        {
+            ItemInfo();
+        }
+
+        it = EnumItemData<EnumType>::value.find(_emType);
+        if(it == EnumItemData<EnumType>::value.end())
+        {
+            return "";
+        }
+
         return it->second;
     }
 };
 
-template<typename EnumType, EnumType _emFirst, EnumType _emLast>
-struct get_enum_str<EnumType, _emFirst, _emLast, false, true>
+template<typename EnumType, EnumType ... enumTypes>
+struct get_enum_str2;
+
+template<typename EnumType>
+struct get_enum_str2<EnumType>
 {
-private:
-    typedef get_enum_str<EnumType, static_cast<EnumType>(static_cast<int32_t>(_emFirst)+1), _emLast, true, true> get_enum_str_tt;
-
-public:
-    typedef std::map<EnumType, std::string> MapEnumValueToStr;
-    static MapEnumValueToStr& ItemInfo()
+    static typename EnumItemData<EnumType>::type& ItemInfo()
     {
-        return get_enum_str_tt::ItemInfo();
-        // static_assert(_emFirst < _emLast, "起始枚举值必须小于终止枚举值");
-        // MapEnumValueToStr& mapEnumValueToStr;
-
-        // if(mapEnumValueToStr.size() > 0)
-        //     return mapEnumValueToStr;
-
-        // details::get_enum_str<EnumType, static_cast<EnumType>(_emFirst + 1), _emLast>::ItemInfo(mapEnumValueToStr);
-        // return mapEnumValueToStr;
+        return EnumItemData<EnumType>::value;
     }
 
     static std::string ItemStr(EnumType _emType)
     {
-        return get_enum_str_tt::ItemStr(_emType);
-        // MapEnumValueToStr& mapEnumValueToStr = ItemInfo();
-        // auto it = mapEnumValueToStr.find(_emType);
-        // if(it == mapEnumValueToStr.end())
-        // {
-        //     return "";
-        // }
-        // return it->second;
+        return "";
     }
 };
 
-template<typename EnumType, EnumType _emFirst, EnumType _emLast>
-struct get_enum_str<EnumType, _emFirst, _emLast, true, false>
+template<typename EnumType, EnumType _emFirst,  EnumType _emLast>
+struct get_enum_str2<EnumType, _emFirst, _emLast>
 {
 private:
-    typedef get_enum_str<EnumType, _emFirst, static_cast<EnumType>(_emLast - 1), true, true> get_enum_str_tt;
-
+    typedef get_enum_str<EnumType, _emFirst, _emLast> tmp_get_enum_str;
 public:
-    typedef std::map<EnumType, std::string> MapEnumValueToStr;
-    static MapEnumValueToStr& ItemInfo()
+    static typename EnumItemData<EnumType>::type& ItemInfo()
     {
-        return get_enum_str_tt::ItemInfo();
-        // static_assert(_emFirst < _emLast, "起始枚举值必须小于终止枚举值");
-        // MapEnumValueToStr mapEnumValueToStr;
-
-        // if(mapEnumValueToStr.size() > 0)
-        //     return mapEnumValueToStr;
-
-        // details::get_enum_str<EnumType, _emFirst, static_cast<EnumType>(_emLast - 1)>::ItemInfo(mapEnumValueToStr);
-        // return mapEnumValueToStr;
+        return tmp_get_enum_str::ItemInfo();
     }
 
     static std::string ItemStr(EnumType _emType)
     {
-        return get_enum_str_tt::ItemStr(_emType);
-        // MapEnumValueToStr& mapEnumValueToStr = ItemInfo();
-        // auto it = mapEnumValueToStr.find(_emType);
-        // if(it == mapEnumValueToStr.end())
-        // {
-        //     return "";
-        // }
-        // return it->second;
+        return tmp_get_enum_str::ItemStr(_emType);
     }
 };
 
-template<typename EnumType, EnumType _emFirst, EnumType _emLast>
-struct get_enum_str<EnumType, _emFirst, _emLast, false, false>
+template<typename EnumType, EnumType _emFirst,  EnumType _emLast, EnumType ...enumTypes>
+struct get_enum_str2<EnumType, _emFirst, _emLast, enumTypes...>
 {
- private:
-    typedef get_enum_str<EnumType, static_cast<EnumType>(static_cast<int32_t>(_emFirst) + 1), static_cast<EnumType>(static_cast<int32_t>(_emLast) - 1), true, true> get_enum_str_tt;
-
+private:
+    typedef get_enum_str<EnumType, _emFirst, _emLast> tmp_get_enum_str1;
+    typedef get_enum_str2<EnumType, enumTypes...> tmp_get_enum_str2;
 public:
-    typedef std::map<EnumType, std::string> MapEnumValueToStr;
-    static MapEnumValueToStr& ItemInfo()
+    static typename EnumItemData<EnumType>::type& ItemInfo()
     {
-        return get_enum_str_tt::ItemInfo();
-        // static_assert(_emFirst < _emLast, "起始枚举值必须小于终止枚举值");
-        // MapEnumValueToStr mapEnumValueToStr;
-        // details::get_enum_str<EnumType, static_cast<EnumType>(_emFirst + 1), static_cast<EnumType>(_emLast - 1)>::ItemInfo(mapEnumValueToStr);
-        // return mapEnumValueToStr;
+        return tmp_get_enum_str2::ItemInfo();
     }
 
     static std::string ItemStr(EnumType _emType)
     {
-        return get_enum_str_tt::ItemStr(_emType);
-        // MapEnumValueToStr& mapEnumValueToStr = ItemInfo();
-        // auto it = mapEnumValueToStr.find(_emType);
-        // if(it == mapEnumValueToStr.end())
-        // {
-        //     return "";
-        // }
-        // return it->second;
+        if(_emType >= _emFirst && _emType <= _emLast)
+        {
+            return tmp_get_enum_str1::ItemStr(_emType);
+        }
+
+        return tmp_get_enum_str2::ItemStr(_emType);
     }
 };
 
 }
 
-template<typename EnumType, EnumType _emFirst,  EnumType _emLast,bool bFirstAdd, bool bLastAdd>
-using enum_to_str = static_string::get_enum_str<EnumType, _emFirst, _emLast, bFirstAdd, bLastAdd>;
+template<typename EnumType, EnumType ...enumTypes>
+using enum_to_str=static_string::get_enum_str2<EnumType, enumTypes...>;
 
+// template<typename EnumType, EnumType emValue>
+// using EnumItemInfo = static_string::details::EnumItemInfo<EnumType, emValue>;
 }
