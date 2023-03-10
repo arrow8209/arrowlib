@@ -12,6 +12,31 @@ typedef enum _emDataType
     _emDataTypeInt32,
     _emDataTypeFloat
 }EmDatType;
+
+
+
+template<typename TEnumType, TEnumType _emValue>
+struct EnumItemInfoTest
+{
+    // typedef Arrow::tlist::tvaluelist_to_data<typename STATIC_STRING(__FUNCTION__)> type;
+    // typedef decltype([](){return STATIC_STRING(__FUNCTION__)();}) type;
+    static char* full_name;
+
+};
+
+// template<typename TEnumType, TEnumType _emValue>
+// auto FunTets() -> decltype([](){return STATIC_STRING(__FUNCTION__)();})
+// {
+//     // typedef Arrow::tlist::tvaluelist_to_data<typename STATIC_STRING(__FUNCTION__)> type;
+//     // typedef decltype([](){return STATIC_STRING(__FUNCTION__)();}) type;
+//     return STATIC_STRING(__FUNCTION__)();
+// };
+
+template<typename TEnumType, TEnumType _emValue>
+char* EnumItemInfoTest<TEnumType, _emValue>::full_name = Arrow::tlist::tvaluelist_to_data<typename STATIC_STRING(__FUNCTION__)>::data;
+
+
+typedef EnumItemInfoTest<EmDatType, _emDataTypeInt32> EnumItemInfoTest_Int32;
 }
 
 typedef enum _emDataTypeA
@@ -20,6 +45,27 @@ typedef enum _emDataTypeA
     _emDataTypeA2,
     _emDataTypeA3
 }EmDatTypeA;
+typedef Arrow::enum_to_str<EmDatTypeA, _emDataTypeA1, _emDataTypeA3> EmDatTypeAStr;
+
+typedef enum class _emDataTypeB
+{
+    _emDataTypeB1 = 0,
+    _emDataTypeB2 = 1,
+    _emDataTypeB3 = 2,
+    _emDataTypeB4 = 3,
+    _emDataTypeB5 = 1004,
+    _emDataTypeB6 = 1005,
+    _emDataTypeB7 = 1006,
+    _emDataTypeB8 = 1007,
+    _emDataTypeB9,
+    _emDataTypeB10 = 2000
+
+}EmDataTypeB;
+typedef Arrow::enum_to_str<EmDataTypeB,
+         EmDataTypeB::_emDataTypeB1, EmDataTypeB::_emDataTypeB4, 
+         EmDataTypeB::_emDataTypeB5, EmDataTypeB::_emDataTypeB9, 
+         EmDataTypeB::_emDataTypeB10, EmDataTypeB::_emDataTypeB10> EmDataTypeBStr0;
+
 // template<typename STAIC_STRING>
 // constexpr typename Arrow::static_string::get_enum_str<STAIC_STRING>::type EnumStr()
 // {
@@ -57,8 +103,22 @@ constexpr void OutPut()
     //     std::cout <<Arrow::tlist::tvaluelist_to_data<STATIC_FILE>::data <<std::endl;
 }
 
+// template<EnumTest::EmDatType _dataType>
+// constexpr auto OutPut2() -> decltype(Arrow::EnumItemInfo<EnumTest::EmDatType,  _dataType>())
+// {
+//     return  Arrow::EnumItemInfo<EnumTest::EmDatType,  _dataType>();
+// }
+
+// template<EnumTest::EmDatType _dataType>
+// constexpr auto OutPut2() -> decltype(Arrow::EnumItemInfo<EnumTest::EmDatType,  _dataType>())
+// {
+//     return  Arrow::EnumItemInfo<EnumTest::EmDatType,  _dataType>();
+// }
+
+
 void TestEnumToStr()
 {
+    // OutPut2<EnumTest::EmDatType::_emDataTypeNone>();
     // typedef EmItemStr<_emDataTypeNone>::STR EnumItemStr;
     // std::cout <<Arrow::tlist::tvaluelist_to_data<EnumItemStr>::data <<std::endl;
     // std::vector<std::string> vecEnumItemStr;
@@ -69,15 +129,35 @@ void TestEnumToStr()
     // std::cout << tmp.name << std::endl;
     // std::cout << tmp.value << std::endl;
     
-    auto mapEnumStr = Arrow::static_string::get_enum_str<EnumTest::EmDatType, EnumTest::_emDataTypeNone, EnumTest::_emDataTypeFloat, false, true>::ItemInfo();
-    for (auto& it : mapEnumStr)
-    {
-        std::cout << it.first << ":" << it.second << std::endl;
-    }
+    // auto mapEnumStr = Arrow::static_string::get_enum_str<EnumTest::EmDatType, EnumTest::_emDataTypeNone, EnumTest::_emDataTypeFloat, false, true>::ItemInfo();
+    // for (auto& it : mapEnumStr)
+    // {
+    //     std::cout << it.first << ":" << it.second << std::endl;
+    // }
     
-    auto mapEnumStrA = Arrow::static_string::get_enum_str<EmDatTypeA, _emDataTypeA1, _emDataTypeA3, false, true>::ItemInfo();
-    for (auto& it : mapEnumStrA)
-    {
-        std::cout << it.first << ":" << it.second << std::endl;
-    }
+    // auto mapEnumStrA = Arrow::static_string::get_enum_str<EmDatTypeA, _emDataTypeA1, _emDataTypeA3, false, true>::ItemInfo();
+    // for (auto& it : mapEnumStrA)
+    // {
+    //     std::cout << it.first << ":" << it.second << std::endl;
+    // }
+    // EmDataTypeBStr::ItemInfo();
+    // std::cout << EmDataTypeBStr::ItemStr(EmDataTypeB::_emDataTypeB1) << std::endl;
+    // auto mapTMp = EmDatTypeAStr::ItemInfo();
+    // auto mapEnumStrB = EmDataTypeBStr::ItemInfo();
+
+    // std::cout << EnumTest::EnumItemInfoTest_Int32::full_name << std::endl;
+    // std::cout << EnumTest::EnumItemInfoTest_Int32::type::data << std::endl;
+    // std::cout << Arrow::tlist::tvaluelist_to_data<EnumTest::EnumItemInfoTest_Int32::type>::data << std::endl;
+
+    // typedef typename std::reference_wrapper<decltype(&EnumTest::FunTets)>::result_type typeRet;
+
+    // std::cout << typeid(typeRet).name() << std::endl;
+    // std::cout << Arrow::tlist::tvaluelist_to_data<typeRet>::data << std::endl;
+    // std::cout << EmDataTypeBStr2::ItemStr(EmDataTypeB::_emDataTypeB1) << std::endl;
+    // std::cout << EmDataTypeBStr1::ItemStr(EmDataTypeB::_emDataTypeB1) << std::endl;
+    std::cout << EmDataTypeBStr0::ItemStr(static_cast<EmDataTypeB>(2000)) << std::endl;
+
+    std::cout << EmDataTypeBStr0::ItemStr(EmDataTypeB::_emDataTypeB1) << std::endl;
+    std::cout << EmDataTypeBStr0::ItemStr(EmDataTypeB::_emDataTypeB9) << std::endl;
+    std::cout << EmDataTypeBStr0::ItemStr(EmDataTypeB::_emDataTypeB10) << std::endl;
 }

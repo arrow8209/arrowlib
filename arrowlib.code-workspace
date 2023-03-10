@@ -89,7 +89,8 @@
             "future": "cpp",
             "codecvt": "cpp",
             "forward_list": "cpp",
-            "cinttypes": "cpp"
+            "cinttypes": "cpp",
+            "set": "cpp"
         }
     }
 }
