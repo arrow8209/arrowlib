@@ -73,6 +73,7 @@ public:
     typedef enum_short_name type_short_name;
 };
 
+
 template<typename TEnumType, TEnumType _emValue>
 struct EnumItemInfo
 {

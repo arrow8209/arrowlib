@@ -91,6 +91,7 @@ struct find<T, typelist<static_pair<Key, Value>, Args...>>
     typedef typename find<T, typelist<Args...>>::Pair Pair;
     typedef typename find<T, typelist<Args...>>::Tail Tail;
 };
+
 #pragma endregion
 
 #pragma region static_map
@@ -99,12 +100,17 @@ struct find<T, typelist<static_pair<Key, Value>, Args...>>
 template <typename... Args>
 struct static_map;
 
+template <>
+struct static_map<>
+{
+    typedef typelist<> type;
+};
+
 template<typename Key, typename Value>
 struct static_map<static_pair<Key, Value>>
 {
     typedef typelist<static_pair<Key, Value>> type;
 };
-
 
 template <typename Key, typename Value, typename... Args>
 struct static_map<static_pair<Key, Value>, Args...>
@@ -122,10 +128,55 @@ public:
     // 有重复的key [zhuyb 2022-08-08 23:45:10]
     typedef tail two_key;
 
+    static_assert(std::is_same<Pair, static_pair_null>::value, "static_map 存在重复选项");
 public:
     typedef typename std::conditional<std::is_same<Pair, static_pair_null>::value, one_key, two_key>::type type;
-
 };
+
+template<typename StaticMap>
+struct smap_to_map;
+
+template <typename Key, typename Value>
+struct smap_to_map<static_map<static_pair<Key, Value>>>
+{
+private:
+    typedef static_pair<Key, Value> Item;
+
+public:
+    template <typename MapType>
+    static MapType& Data(MapType& data)
+    {
+        data[Item::key] = (typename Item::ValueType*)(Item::value);
+        return data;
+    }
+};
+
+template <typename Key, typename Value, typename... Args>
+struct smap_to_map<static_map<static_pair<Key, Value>, Args...>>
+{
+private:
+    typedef static_pair<Key, Value> Item;
+    typedef std::map<typename Item::KeyType,typename Item::ValueType*> MapType;
+public:
+    static MapType& Data(MapType& data)
+    {
+        data[Item::key] = (typename Item::ValueType*)(Item::value);
+        smap_to_map<static_map<Args...>>::Data(data);
+        return data;
+    }
+
+    static MapType& Data()
+    {
+        static MapType mapData;
+        if(mapData.size() > 0)
+            return mapData;
+
+        Data(mapData);
+        return mapData;
+    }
+};
+
+
 
 #pragma endregion
 
@@ -140,6 +191,33 @@ struct get<Key, static_map<Args...>>
     typedef typename find<Key, typename static_map<Args...>::type>::Tail Tail;
 };
 
+//插入
+template<typename StaticMap, typename StaticPair>
+struct insert;
+
+// template<typename Key, typename Value, typename ...Args>
+// struct insert<static_map<Args...>, static_pair<Key, Value>>
+// {
+//     typedef static_pair<Key, Value> Pair;
+//     typedef static_map<static_pair<Key, Value>, Args...> type;
+// };
+
+template<typename Key, typename Value, typename ...Args>
+struct insert<static_map<Args...>, static_pair<Key, Value>>
+{
+public:
+    // 对后面的数据处理 [zhuyb 2022-08-08 23:45:25]
+    typedef typename static_map<Args...>::type tail;
+
+    // 查找后面有没有重复的key [zhuyb 2022-08-08 23:44:38]
+    typedef typename find<Key, typelist<Args...>>::Pair Pair;
+
+    static_assert(std::is_same<Pair, static_pair_null>::value, "static_map 存在重复选项");
+
+public:
+    typedef static_map<static_pair<Key, Value>, Args...> type;
+};
+
 }
 
 template<typename Key, typename Value>
@@ -148,10 +226,12 @@ using  static_pair = smap::static_pair<Key, Value>;
 template <typename ...Args>
 using static_map = smap::static_map<Args...>;
 
-
+template<typename TPariList, typename Item>
+using insert = smap::insert<TPariList, Item>;
 
 namespace tlist
 {
+
 
 static void print(smap::static_pair_null)
 {

@@ -25,4 +25,9 @@
 #include "typelist/typelist_fun.h"
 #include "typelist/static_string.h"
 #include "typelist/static_map.h"
-#include "typelist/enum_to_str.h"
+
+#if __cplusplus >= 201402L
+	#include "typelist/enum_to_str_14.h"
+#elif __cplusplus >= 201103L
+    #include "typelist/enum_to_str.h"
+#endif

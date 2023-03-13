@@ -22,7 +22,9 @@
 
 #include "demo/task_test.h"
 
-#include "test_enum_to_str.h"
+// #include "test_enum_to_str.h"
+#include "test_enum_to_str2.h"
+#include "test_static_map.h"
 typedef Arrow::TLog<Arrow::Log::LogImplDefault> Log;
 
 void CPlustThreadInit()
@@ -101,6 +103,9 @@ int main(int argc, char* argv[])
 
     // int nTmp; 
     // std::cin >>  nTmp;
-    TestEnumToStr();
+    // TestEnumToStr();
+    TestEnum2();
+    std::cout << __cplusplus << std::endl;
+    // TestStaticMap();
     return 1;
 }
