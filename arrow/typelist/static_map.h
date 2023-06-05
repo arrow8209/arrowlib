@@ -14,8 +14,6 @@ namespace Arrow
 namespace smap
 {
 
-#pragma region static_pair
-
 // static_map 的存储类型 [zhuyb 2022-09-14 17:51:33]
 template<typename Key, typename Value>
 struct  static_pair;
@@ -40,10 +38,8 @@ struct static_pair<tvalue_type<TKey, Key>, tvalue_type<TValue, Value>>
     static constexpr TKey key = Key;
     static constexpr TValue value = Value;
 };
-
 template <typename TKey, TKey Key, typename TValue, TValue Value>
 constexpr TKey static_pair<tvalue_type<TKey, Key>, tvalue_type<TValue, Value>>::key;
-
 template <typename TKey, TKey Key, typename TValue, TValue Value>
 constexpr TValue static_pair<tvalue_type<TKey, Key>, tvalue_type<TValue, Value>>::value;
 
@@ -58,14 +54,10 @@ struct static_pair<tvalue_type<TKey, Key>, typelist<tvalue_type<T, args>...>>
 };
 template <typename TKey, TKey Key, typename T, T... args>
 constexpr TKey static_pair<tvalue_type<TKey, Key>, typelist<tvalue_type<T, args>...>>::key;
-
 template <typename TKey, TKey Key, typename T, T... args>
 constexpr const typename static_pair<tvalue_type<TKey, Key>, typelist<tvalue_type<T, args>...>>::ValueType* 
     static_pair<tvalue_type<TKey, Key>, typelist<tvalue_type<T, args>...>>::value;
 
-#pragma endregion
-
-#pragma region find
 
 // 查找staic_pair [zhuyb 2022-09-14 18:06:52]
 template<typename T, typename TPairList>
@@ -92,10 +84,6 @@ struct find<T, typelist<static_pair<Key, Value>, Args...>>
     typedef typename find<T, typelist<Args...>>::Tail Tail;
 };
 
-#pragma endregion
-
-#pragma region static_map
-
 
 template <typename... Args>
 struct static_map;
@@ -104,17 +92,29 @@ template <>
 struct static_map<>
 {
     typedef typelist<> type;
+
+    template<typename TKey>
+    using get=typename find<TKey, type>::Pair;
 };
 
 template<typename Key, typename Value>
 struct static_map<static_pair<Key, Value>>
 {
-    typedef typelist<static_pair<Key, Value>> type;
+    private:
+    using local=static_map<static_pair<Key, Value>>;
+    public:
+    using type=typelist<static_pair<Key, Value>> ;
+
+    template<typename TKey>
+    using get=typename find<TKey, local::type>::Pair;
+    
 };
 
 template <typename Key, typename Value, typename... Args>
 struct static_map<static_pair<Key, Value>, Args...>
 {
+private:
+    using local=static_map<static_pair<Key, Value>, Args...>;
 public:
     // 对后面的数据处理 [zhuyb 2022-08-08 23:45:25]
     typedef typename static_map<Args...>::type tail;
@@ -129,8 +129,11 @@ public:
     typedef tail two_key;
 
     static_assert(std::is_same<Pair, static_pair_null>::value, "static_map 存在重复选项");
-public:
+
     typedef typename std::conditional<std::is_same<Pair, static_pair_null>::value, one_key, two_key>::type type;
+
+    template<typename TKey>
+    using get=typename find<TKey, local::type>::Pair;
 };
 
 template<typename StaticMap>
@@ -177,19 +180,17 @@ public:
 };
 
 
+// template<typename T, typename TPairList>
+// struct get;
 
-#pragma endregion
+// // 获取map中指定Key的数据 [zhuyb 2022-09-14 18:23:30]
+// template<typename Key, typename ...Args>
+// struct get<Key, static_map<Args...>>
+// {
+//     typedef typename find<Key, typename static_map<Args...>::type>::Pair Pair;
+//     typedef typename find<Key, typename static_map<Args...>::type>::Tail Tail;
+// };
 
-template<typename T, typename TPairList>
-struct get;
-
-// 获取map中指定Key的数据 [zhuyb 2022-09-14 18:23:30]
-template<typename Key, typename ...Args>
-struct get<Key, static_map<Args...>>
-{
-    typedef typename find<Key, typename static_map<Args...>::type>::Pair Pair;
-    typedef typename find<Key, typename static_map<Args...>::type>::Tail Tail;
-};
 
 //插入
 template<typename StaticMap, typename StaticPair>

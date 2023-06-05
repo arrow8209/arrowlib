@@ -18,6 +18,7 @@ static void TestStaticMap()
     typedef Arrow::smap::insert<SMap2, Arrow::static_pair<Arrow::value_type<8>,STATIC_STRING("4567")>>::type SMap3;
     Arrow::tlist::print(SMap3{});
      
-     Arrow::tlist::print(typename Arrow::smap::get<Arrow::value_type<7>, SMap1>::Pair{});
+    //  Arrow::tlist::print(typename Arrow::smap::get<Arrow::value_type<7>, SMap1>::Pair{});
+     Arrow::tlist::print(SMap1::get<Arrow::value_type<7>>{});
      std::cout << typeid(SMap1::Pair).name() << std::endl;;
 }

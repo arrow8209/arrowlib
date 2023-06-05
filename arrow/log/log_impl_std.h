@@ -55,7 +55,8 @@ protected:
     static void Prefix()
     {
         // 输出格式 [logvele][filename:line] [zhuyb 2022-08-12 09:42:38]
-        std::cout<< "[" << Arrow::smap::get<Arrow::value_type<loglevel>, details_std::LogTypeStr>::Pair::value << "]"
+        // std::cout<< "[" << Arrow::smap::get<Arrow::value_type<loglevel>, details_std::LogTypeStr>::Pair::value << "]"
+        std::cout<< "[" << details_std::LogTypeStr::get<Arrow::value_type<loglevel>>::value << "]"
                     << "[" << tlist::tvaluelist_to_data<TFileName>::data << ":" << line << "]"
                     << "[" << tlist::tvaluelist_to_data<TFunName>::data << "]";
     }

@@ -141,7 +141,9 @@ public:
     static void Log(const T& t)
     {
         do
-        {   const int& log4cplus_loglevel = Arrow::smap::get<Arrow::value_type<loglevel>, details_log4::Log4Type>::Pair::value;
+        {
+            // const int& log4cplus_loglevel = Arrow::smap::get<Arrow::value_type<loglevel>, details_log4::Log4Type>::Pair::value;
+            const int& log4cplus_loglevel = details_log4::Log4Type::get<Arrow::value_type<loglevel>>::value;
             log4cplus::Logger const& _l = log4cplus::detail::macros_get_logger("");
             
             if (LOG4CPLUS_UNLIKELY(_l.isEnabledFor(log4cplus_loglevel)))
@@ -162,7 +164,8 @@ public:
     {
         do
         {
-            const int& log4cplus_loglevel = Arrow::smap::get<Arrow::value_type<loglevel>, details_log4::Log4Type>::Pair::value;
+            // const int& log4cplus_loglevel = Arrow::smap::get<Arrow::value_type<loglevel>, details_log4::Log4Type>::Pair::value;
+            const int& log4cplus_loglevel = details_log4::Log4Type::get<Arrow::value_type<loglevel>>::Pair::value;
             log4cplus::Logger const& _l = log4cplus::detail::macros_get_logger("");
             if (LOG4CPLUS_UNLIKELY(_l.isEnabledFor(log4cplus_loglevel)))
             {

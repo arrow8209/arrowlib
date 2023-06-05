@@ -99,7 +99,10 @@ int main(int argc, char* argv[])
     // }
 
     // test_static_string2();
-    // TestPair2();
+
+    // using bValue = std::true_type::value;
+
+    TestPair2();
     // CTestTask taskTestmp;
     // taskTestmp.Activate();
     // taskTestmp.TstAddTask();
@@ -111,7 +114,7 @@ int main(int argc, char* argv[])
     // std::cout << __cplusplus << std::endl;
     // TestStaticMap();
 
-    std::cout << typeid(MyConditional<true>).name() << std::endl;
-    std::cout << typeid(MyConditional<false>).name() << std::endl;
+    // std::cout << typeid(MyConditional<true>).name() << std::endl;
+    // std::cout << typeid(MyConditional<false>).name() << std::endl;
     return 1;
 }
