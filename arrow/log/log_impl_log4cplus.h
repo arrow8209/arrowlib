@@ -42,6 +42,7 @@ public:
         // constexpr static char szConsole[]={"consle_default"};
         log4cplus::initialize();
         log4cplus::Logger&& logger = log4cplus::Logger::getRoot();  
+        
         log4cplus::SharedAppenderPtrList pList = logger.getAllAppenders();
 
         try
@@ -109,8 +110,6 @@ public:
                 // logger.setLogLevel(log4cplus::ALL_LOG_LEVEL);
                 logger.addAppender(appendInfo);
 
-
-
                 // 设置WARN~FATAL信息日志格式 [zhuyb 2022-11-16 08:54:45]
                 log4cplus::SharedAppenderPtr appendWarnToFatal(new log4cplus::ConsoleAppender());
                 appendWarnToFatal->setName("warnToFatalConsole");
@@ -134,7 +133,6 @@ public:
         {
             std::cout << "set console fail error msg :" << e.what() << '\n';
         }
-        
         
         return true;
     }
@@ -186,3 +184,5 @@ protected:
 
 } // namespace Log
 } // namespace Arrow
+
+// #pragma GCC diagnostic pop

@@ -1,4 +1,5 @@
 #pragma once
+#include "log_interface.h"
 #include "../typelist/typelist.h"
 
 namespace Arrow

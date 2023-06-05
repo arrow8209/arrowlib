@@ -1,5 +1,4 @@
 #pragma once
-#include "static_cast.h"
 
 namespace Arrow
 {

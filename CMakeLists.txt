@@ -6,8 +6,9 @@ PROJECT(arrowlib)
 SET(COMPILE_PLATFROM "x64")
 # SET(COMPILE_PLATFROM "mac")
 
+INCLUDE(cmake-env/version.cmake)
 
-
+INCLUDE(cmake-env/complie.cmake)
 
 IF(${COMPILE_PLATFROM} STREQUAL "x64")
 	INCLUDE(cmake-env/x64-env.cmake)

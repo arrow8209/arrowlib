@@ -2,7 +2,8 @@
  * @FilePath: /arrowlib/arrow/typelist/enum_to_str.h
  * @Author: arrow arrow8209@foxmail.com
  * @Date: 2023-01-29 17:50:57
- * @Description: 使用C++11实现的枚举值，最后的数据结构还是属于运行期代码。如果使用C++14或者更高版本可以改写为编译器获取参数
+ * @Description: 使用C++11实现的枚举值，最后的数据结构还是属于运行期代码。如果使用C++14或者更高版本可以改写为编译期获取参数
+ *  非常重要：对于enum类型非连续值，该方式还无法满足和支持
  */
 #pragma once
 #include "static_string.h"

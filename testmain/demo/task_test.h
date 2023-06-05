@@ -1,6 +1,5 @@
 #pragma once
 #include <chrono>
-#include "arrow/other/static_cast.h"
 #include "arrow/other/delete_args.h"
 #include "arrow/task/task_one_thread.h"
 

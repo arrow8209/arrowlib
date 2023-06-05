@@ -132,16 +132,26 @@ public:
         return m_ErrorNo;
     }
 public:
-// #ifdef WIN32
 
-    // 主要给Windows使用，CallCon 确定调用约定，Linux下使用，会忽略这个参数 [zhuyb 2022-07-18 14:36:45]
+    /**
+     * @description: 主要给Windows使用，CallCon 确定调用约定，Linux下使用，会忽略这个函数, 注意：会有异常抛出
+     * @param {char*} lpProcName
+     * @param {Args...} args
+     * @return {*}
+     */
     template <EmCallType CallCon, typename RetType, typename... Args>
     RetType call(const char* lpProcName, Args... args)
     {
         return call_win<RetType>(lpProcName, type<CallCon>(), args...);
     }
-// #else
+
     // 主要给Linux使用，没有调用约定约束，Windows也可以使用，默认使用编译器默认调用约定 [zhuyb 2022-07-18 14:36:45]
+    /**
+     * @description: 主要给Linux使用，没有调用约定约束，Windows也可以使用，默认使用编译器默认调用约定 注意：会有异常抛出
+     * @param {char*} lpProcName
+     * @param {Args...} args
+     * @return {*}
+     */
     template <typename RetType, typename... Args>
     RetType call(const char* lpProcName, Args... args)
     {
@@ -150,7 +160,6 @@ public:
         // 在windows下，可以使用下面的代码，使用特定的默认调用 [zhuyb 2023-01-11 08:46:12]
         //return call_win<RetType>(lpProcName, type<EmCallType::_stdcall_>(), args...);
     }
-// #endif
 
 private:
     template <class FunType>

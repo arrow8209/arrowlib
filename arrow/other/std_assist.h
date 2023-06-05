@@ -6,10 +6,9 @@
  */
 #pragma once
 
-#include "../log/print.h"
-
 #include <unistd.h>
 #include <stdio.h>
+#include <stdint.h>
 #include <chrono>
 #include <iostream>
 #include <sstream>
@@ -21,7 +20,8 @@
 #include <iostream>
 #include <codecvt> // codecvt_utf8
 #include <locale>  // wstring_convert
-#include "../log.h"
+#include <limits>
+#include <atomic>
 
 #ifdef _WIN32
 #elif __APPLE__
@@ -179,6 +179,14 @@ inline static std::chrono::milliseconds get_milliseconds()
         std::chrono::system_clock::now().time_since_epoch());
 }
 
+inline static std::string Trim(std::string& str)
+{
+    std::string blanks("\f\v\r\t\n ");
+    str.erase(0, str.find_first_not_of(blanks));
+    str.erase(str.find_last_not_of(blanks) + 1);
+    return str;
+}
+
 // 去除重复，并将结果放入dst中 [zhuyb 2023-02-21 09:42:12]
 template <typename T>
 void RemoveRepeat(std::vector<T>& src, std::vector<T>& dst)
@@ -293,6 +301,40 @@ static bool CA2W(wchar_t*& outStr, size_t& outLen, const char* inStr, int inLen)
 //     (*outStr)[len - 1] = '\0';
 // }
 
+template <typename T,
+          typename _ValueType = uint32_t,
+          _ValueType _minValue = std::numeric_limits<_ValueType>::min(),
+          _ValueType _maxValue = std::numeric_limits<_ValueType>::max()>
+struct TIncrement
+{
+    typedef _ValueType ValueType;
+    constexpr static ValueType minValue = _minValue;
+    constexpr static ValueType maxValue = _maxValue;
+    static std::atomic<ValueType> s_value;
+
+    static ValueType Get()
+    {
+        ValueType oldValue = s_value.fetch_add(1);
+        if(oldValue >= maxValue)
+        {
+            s_value.store(minValue);
+        }
+        return oldValue;
+    }
+
+};
+template <typename T, typename _ValueType, _ValueType _minValue, _ValueType _maxValue>
+std::atomic<_ValueType> TIncrement<T, _ValueType, _minValue, _maxValue>::s_value{_minValue};
+
+static std::string GetDirectoryPath(const std::string& filePath)
+{
+    size_t pos = filePath.find_last_of("/\\");
+    if (pos == std::string::npos)
+    {
+        return "";
+    }
+    return filePath.substr(0, pos + 1);
+}
 
 } // namespace Std
 }

@@ -38,7 +38,7 @@ public:
         return LogImpl::init(args...);
     }
 
-    // template<Em_Log_Level loglevel, typename TFileName, typename TFunName, int line>
+    // template<EmLogLevel loglevel, typename TFileName, typename TFunName, int line>
     // static void Log(const char* szInfo)
     // {
     //     LogImpl::template Log<loglevel, TFileName, TFunName, line>(szInfo);

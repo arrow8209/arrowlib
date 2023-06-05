@@ -33,7 +33,7 @@ public:
             mutext.lock();
             if (s_UniquePtrInstance.get() == NULL)
             {
-                s_UniquePtrInstance.reset(new TInstance);
+                s_UniquePtrInstance.reset(new TInstance());
             }
             bCreate = true;
             mutext.unlock();

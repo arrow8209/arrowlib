@@ -2,7 +2,7 @@
  * @FilePath: /ai_server/ShareCode/arrow/other/obj_pool_simple.h
  * @Author: arrow arrow8209@foxmail.com
  * @Date: 2022-12-07 10:08:16
- * @Description: 简单对象池。
+ * @Description: 简单对象池。注意使用对象池的对象必须实现Release 接口。
  */
 #pragma once
 #include <queue>
@@ -13,6 +13,7 @@
 #include <typeinfo>
 #include <atomic>
 #include <functional>
+#include <map>
 
 namespace Arrow
 {

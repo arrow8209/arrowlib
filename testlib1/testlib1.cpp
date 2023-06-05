@@ -20,7 +20,7 @@ extern "C"
      * @param {char*} szConfigPath 配置文件目录
      * @return {*} 0 成功 其他 错误码
      */
-    uint32_t Init(const char* szConfigPath)
+    __attribute__ ((visibility("default"))) uint32_t Init(const char* szConfigPath)
     {
         // return App_Zhjyz::Instance()->Init(szConfigPath);
         // printf(szConfigPath);

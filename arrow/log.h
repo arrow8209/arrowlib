@@ -2,19 +2,23 @@
  * @FilePath: /ai_server/ShareCode/arrow/log.h
  * @Author: arrow arrow8209@foxmail.com
  * @Date: 2022-12-14 15:13:25
- * @Description: 日志具体使用类，根据实际情况重写这个文件来实现特定的日志
+ * @Description: 日志具体使用类，根据实际情况重写这个文件来实现特定的日志,使用这个头文件需要在编译的时候链接指定库
  */
 #pragma once
-#include "./log/log_impl_log4cplus.h"
+
 #include "./log/log_impl_null.h"
 #include "./log/log_impl_std.h"
 #include "./log/log_interface.h"
 
+#if (USE_SDKLOG == 1)
+
 // 在不同的位置定义这句话实现不同的日志输出 [zhuyb 2022-12-15 09:55:55]
+#include "./log/log_impl_log4cplus.h"
 typedef Arrow::Log::base_log<Arrow::Log::LogImplLog4Cplus> ArrowLog;
 
 // #define ARROW_LOG(logLevel, logEvent) ArrowLog::Log<logLevel, STATIC_FILE, typename STATIC_FUNC, __LINE__>(logEvent);
-// #define ARROW_LOG_FMT(logLevel, ...) ArrowLog::Log<logLevel, STATIC_FILE, typename STATIC_FUNC, __LINE__>(__VA_ARGS__);
+// #define ARROW_LOG_FMT(logLevel, ...) ArrowLog::Log<logLevel, STATIC_FILE, typename STATIC_FUNC,
+// __LINE__>(__VA_ARGS__);
 
 // #define ARROW_LOG_TRACE(logEvent) ArrowLog::Log<LOG_PARAM(Arrow::LogTrace), const char*>(logEvent);
 // #define ARROW_LOG_TRACE_FMT(fmt, ...) ArrowLog::Log<LOG_PARAM_FMT(Arrow::LogTrace, fmt)>(__VA_ARGS__);
@@ -53,3 +57,23 @@ typedef Arrow::Log::base_log<Arrow::Log::LogImplLog4Cplus> ArrowLog;
 
 #define ARROW_LOG_FATAL(logEvent) LOG4CPLUS_FATAL(g_logger, logEvent)
 #define ARROW_LOG_FATAL_FMT(...) LOG4CPLUS_FATAL_FMT(g_logger, __VA_ARGS__)
+
+#else
+#define ARROW_LOG_TRACE(logEvent)
+#define ARROW_LOG_TRACE_FMT(...)
+
+#define ARROW_LOG_DEBUG(logEvent)
+#define ARROW_LOG_DEBUG_FMT(...)
+
+#define ARROW_LOG_INFO(logEvent)
+#define ARROW_LOG_INFO_FMT(...)
+
+#define ARROW_LOG_WARN(logEvent)
+#define ARROW_LOG_WARN_FMT(...)
+
+#define ARROW_LOG_ERROR(logEvent)
+#define ARROW_LOG_ERROR_FMT(...)
+
+#define ARROW_LOG_FATAL(logEvent)
+#define ARROW_LOG_FATAL_FMT(...)
+#endif

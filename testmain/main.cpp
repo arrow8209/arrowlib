@@ -7,6 +7,7 @@
 #include <functional>
 #include <stdio.h>
 #include <thread>
+#include <type_traits>
 // #include "arrow/pattern/factory/factory_test.h"
 #include "arrow/pattern/observer/observer.h"
 #include "arrow/pattern/observer/subject.h"
@@ -32,6 +33,8 @@ void CPlustThreadInit()
     std::cout << "CPlustThreadInit" << std::endl;
 }
 
+template<bool value>
+using MyConditional = typename std::conditional<value, int, float>::type;
 
 int main(int argc, char* argv[])
 {
@@ -104,8 +107,11 @@ int main(int argc, char* argv[])
     // int nTmp; 
     // std::cin >>  nTmp;
     // TestEnumToStr();
-    TestEnum2();
-    std::cout << __cplusplus << std::endl;
+    // TestEnum2();
+    // std::cout << __cplusplus << std::endl;
     // TestStaticMap();
+
+    std::cout << typeid(MyConditional<true>).name() << std::endl;
+    std::cout << typeid(MyConditional<false>).name() << std::endl;
     return 1;
 }
