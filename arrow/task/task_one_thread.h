@@ -12,6 +12,7 @@
 #include <future>
 #include <vector>
 #include "../other/delete_args.h"
+#include "arrow/other/std_assist.h"
 
 namespace Arrow
 {
@@ -69,15 +70,15 @@ public:
         m_bIsRun = true;
         m_FutureBeforeThreadRun = m_PromiseBeforThreadRun.get_future();
         m_Thread = std::thread(std::bind(&TaskOneThread::RunThread, this));
-        if (szThreadName != nullptr)
-        {
-            m_strThreadName = szThreadName;
-            pthread_setname_np(m_Thread.native_handle(), m_strThreadName.c_str());
-        }
-        else
-        {
-            pthread_setname_np(m_Thread.native_handle(), m_strThreadName.c_str());
-        }
+        // if (szThreadName != nullptr)
+        // {
+        //     m_strThreadName = szThreadName;
+        //     pthread_setname_np(m_Thread.native_handle(), m_strThreadName.c_str());
+        // }
+        // else
+        // {
+        //     pthread_setname_np(m_Thread.native_handle(), m_strThreadName.c_str());
+        // }
 
         // 等待线程完全启动 [zhuyb 2023-03-09 09:20:04]
         WaitBeforeThreadRun();
@@ -267,6 +268,8 @@ private:
     void RunThread()
     {
         printf("%s Task Thread Start\n", m_strThreadName.c_str());
+
+        Arrow::Other::SetCurrentThreadName(m_strThreadName);
         BeforeThreadRun();
         // 标记线程已启动并已经完成初始化 [zhuyb 2023-03-09 09:18:08]
         m_PromiseBeforThreadRun.set_value(true);

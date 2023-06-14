@@ -336,5 +336,18 @@ static std::string GetDirectoryPath(const std::string& filePath)
     return filePath.substr(0, pos + 1);
 }
 
+static void SetCurrentThreadName(const std::string& name) {
+    
+    #ifdef __APPLE__
+        pthread_setname_np(name.c_str());
+    #elif defined(__linux__)
+        pthread_t thread = pthread_self();
+        pthread_setname_np(thread,name.c_str());
+    #else
+        // windows [zhuyb 2023-06-05 22:01:53]
+    #endif
+}
+
+
 } // namespace Std
 }

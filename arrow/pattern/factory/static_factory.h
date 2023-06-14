@@ -1,5 +1,5 @@
 /*
- * @FilePath: /plugin-based_streaming_data_analysis/ShareCode/arrow/pattern/factory/static_factory.h
+ * @FilePath: /arrowlib/arrow/pattern/factory/static_factory.h
  * @Author: arrow arrow8209@foxmail.com
  * @Date: 2022-06-30 13:35:33
  * @Description: 编译期抽象工厂 在编译器创建好工厂和 CreatorObj
