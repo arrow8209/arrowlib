@@ -50,14 +50,14 @@ constexpr const char get(const char (&arr)[N])
                                    MakeCharSequence_64(3, str), \
                                    MakeCharSequence_64(4, str)
 
-#define STATIC_STRING_16(str) Arrow::tlist::splite<sizeof(str) - 1, Arrow::tvalue_typelist<char, MakeCharSequence_16(str)>>::Head
-#define STATIC_STRING_64(str) Arrow::tlist::splite<sizeof(str) - 1, Arrow::tvalue_typelist<char, MakeCharSequence_64(str)>>::Head
-#define STATIC_STRING_128(str) Arrow::tlist::splite<sizeof(str) - 1, Arrow::tvalue_typelist<char, MakeCharSequence_128(str)>>::Head
-#define STATIC_STRING_256(str) Arrow::tlist::splite<sizeof(str) - 1, Arrow::tvalue_typelist<char, MakeCharSequence_256(str)>>::Head
-#define STATIC_STRING_512(str) Arrow::tlist::splite<sizeof(str) - 1, Arrow::tvalue_typelist<char, MakeCharSequence_512(str)>>::Head
-#define STATIC_STRING_1024(str) Arrow::tlist::splite<sizeof(str) - 1, Arrow::tvalue_typelist<char, MakeCharSequence_1024(str)>>::Head
+#define STATIC_STRING_16(str) Arrow::tlist::splite<sizeof(str) - 1, Arrow::ValueTypeList<char, MakeCharSequence_16(str)>>::Head
+#define STATIC_STRING_64(str) Arrow::tlist::splite<sizeof(str) - 1, Arrow::ValueTypeList<char, MakeCharSequence_64(str)>>::Head
+#define STATIC_STRING_128(str) Arrow::tlist::splite<sizeof(str) - 1, Arrow::ValueTypeList<char, MakeCharSequence_128(str)>>::Head
+#define STATIC_STRING_256(str) Arrow::tlist::splite<sizeof(str) - 1, Arrow::ValueTypeList<char, MakeCharSequence_256(str)>>::Head
+#define STATIC_STRING_512(str) Arrow::tlist::splite<sizeof(str) - 1, Arrow::ValueTypeList<char, MakeCharSequence_512(str)>>::Head
+#define STATIC_STRING_1024(str) Arrow::tlist::splite<sizeof(str) - 1, Arrow::ValueTypeList<char, MakeCharSequence_1024(str)>>::Head
 #define STATIC_STRING(str) STATIC_STRING_1024(str)
-// #define STATIC_STRING(str) Arrow::tlist::splite<sizeof(str) - 1, Arrow::tvalue_typelist<char, MakeCharSequence_1024(str)>>::Head
+// #define STATIC_STRING(str) Arrow::tlist::splite<sizeof(str) - 1, Arrow::ValueTypeList<char, MakeCharSequence_1024(str)>>::Head
 
 #define STATIC_FILE Arrow::static_string::getfilename<STATIC_STRING(__FILE__)>::type
 #define STATIC_FUNC STATIC_STRING(__func__)
@@ -74,11 +74,11 @@ struct getfilename<-1, StaticStr>
 };
 
 template<int index, typename ...Args>
-struct getfilename<index, typelist<Args...> >
+struct getfilename<index, TypeList<Args...> >
 {
 protected:
     static_assert(index >= 0, "index 小于0(请检查代码逻辑)");
-    typedef typename tlist::splite<index + 1, typelist<Args...>> split_str;
+    typedef typename tlist::splite<index + 1, TypeList<Args...>> split_str;
 
 public:
     typedef typename split_str::Tail type;
@@ -90,14 +90,14 @@ template<typename StaticStr>
 struct getfilename;
 
 template<typename ... Args>
-struct getfilename<typelist<Args...>>
+struct getfilename<TypeList<Args...>>
 {
 protected:
-    typedef typelist<Args...> static_str;
+    typedef TypeList<Args...> static_str;
     #ifdef WIN32
-    typedef typename tlist::find_last<tvalue_type<char, '\\'>, static_str> find_last_forward_slash;
+    typedef typename tlist::FindLast<ValueType<char, '\\'>, static_str> find_last_forward_slash;
     #else
-    typedef typename tlist::find_last<tvalue_type<char, '/'>, static_str> find_last_forward_slash;
+    typedef typename tlist::FindLast<ValueType<char, '/'>, static_str> find_last_forward_slash;
     #endif 
     
     
@@ -110,25 +110,25 @@ template<typename StaticStr>
 struct SSToDJB;
 
 template<char ch>
-struct SSToDJB<typelist<tvalue_type<char, ch>>>
+struct SSToDJB<TypeList<ValueType<char, ch>>>
 {
     static constexpr unsigned int value = (5381 << 5) + 5381 + ch;
 };
 template<char ch>
-constexpr unsigned int SSToDJB<typelist<tvalue_type<char, ch>>>::value;
+constexpr unsigned int SSToDJB<TypeList<ValueType<char, ch>>>::value;
 
 
 template<char ch, typename ...Args>
-struct SSToDJB<typelist<tvalue_type<char, ch>, Args...>>
+struct SSToDJB<TypeList<ValueType<char, ch>, Args...>>
 {
 protected:
-    typedef SSToDJB<typelist<Args...>> tmp_SSToDJB;
+    typedef SSToDJB<TypeList<Args...>> tmp_SSToDJB;
 
 public:
     static constexpr unsigned int value = (tmp_SSToDJB::value << 5) + tmp_SSToDJB::value + ch;
 };
 template<char ch, typename ...Args>
-constexpr unsigned int SSToDJB<typelist<tvalue_type<char, ch>, Args...>>::value;
+constexpr unsigned int SSToDJB<TypeList<ValueType<char, ch>, Args...>>::value;
 
 
 

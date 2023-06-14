@@ -18,7 +18,7 @@ typedef enum _emEnumTest2
 
 static void TestEnum2()
 {
-    // typedef Arrow::tvalue_type<EnumTest2, _emT1> key;
+    // typedef Arrow::ValueType<EnumTest2, _emT1> key;
     typedef typename Arrow::enum_to_str<EnumTest2,  _emT1, _emT3, _emT5, _emT9> EnumTest2Str;
     auto mapValue = EnumTest2Str::ItemInfo();
     std::cout << EnumTest2Str::ItemStr(_emT1) << std::endl;
@@ -31,5 +31,5 @@ static void TestEnum2()
     // std::cout << Arrow::tlist::tvaluelist_to_data<typename OneItemTest::type_long_name>::data << std::endl;
     // std::cout << Arrow::tlist::tvaluelist_to_data<typename OneItemTest::type_short_name>::data << std::endl;
 
-    // typedef Arrow::static_string::details::get_enum_str_impl<Arrow::typelist<>, EnumTest2, _emT1, _emT1>::type TypeEnumListItem;
+    // typedef Arrow::static_string::details::get_enum_str_impl<Arrow::TypeList<>, EnumTest2, _emT1, _emT1>::type TypeEnumListItem;
 }

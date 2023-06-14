@@ -39,3 +39,4 @@ testmain/is fail
 arrow/.scannerwork/
 version.h
 sonar-project.properties
+.cache/

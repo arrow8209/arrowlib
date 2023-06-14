@@ -31,7 +31,7 @@ typedef static_pair<std::nullptr_t, std::nullptr_t> static_pair_null;
 
 // 普遍类型的static_pair [zhuyb 2022-09-14 17:52:21]
 template<typename TKey, TKey Key, typename TValue, TValue Value>
-struct static_pair<tvalue_type<TKey, Key>, tvalue_type<TValue, Value>>
+struct static_pair<ValueType<TKey, Key>, ValueType<TValue, Value>>
 {
     typedef TKey KeyType;
     typedef TValue ValueType;
@@ -39,24 +39,24 @@ struct static_pair<tvalue_type<TKey, Key>, tvalue_type<TValue, Value>>
     static constexpr TValue value = Value;
 };
 template <typename TKey, TKey Key, typename TValue, TValue Value>
-constexpr TKey static_pair<tvalue_type<TKey, Key>, tvalue_type<TValue, Value>>::key;
+constexpr TKey static_pair<ValueType<TKey, Key>, ValueType<TValue, Value>>::key;
 template <typename TKey, TKey Key, typename TValue, TValue Value>
-constexpr TValue static_pair<tvalue_type<TKey, Key>, tvalue_type<TValue, Value>>::value;
+constexpr TValue static_pair<ValueType<TKey, Key>, ValueType<TValue, Value>>::value;
 
 // staic_pair 存放的数组（例如static_string） [zhuyb 2022-09-14 17:57:26]
 template<typename TKey, TKey Key, typename T, T... args>
-struct static_pair<tvalue_type<TKey, Key>, typelist<tvalue_type<T, args>...>>
+struct static_pair<ValueType<TKey, Key>, TypeList<ValueType<T, args>...>>
 {
     typedef TKey KeyType;
-    typedef typename tlist::tvaluelist_to_data<typelist<tvalue_type<T, args>...>>::type ValueType;
+    typedef typename tlist::tvaluelist_to_data<TypeList<ValueType<T, args>...>>::type ValueDataType;
     static constexpr TKey key = Key;
-    static constexpr const ValueType* value = tlist::tvaluelist_to_data<typelist<tvalue_type<T, args>...>>::data;
+    static constexpr const ValueDataType* value = tlist::tvaluelist_to_data<TypeList<ValueType<T, args>...>>::data;
 };
 template <typename TKey, TKey Key, typename T, T... args>
-constexpr TKey static_pair<tvalue_type<TKey, Key>, typelist<tvalue_type<T, args>...>>::key;
+constexpr TKey static_pair<ValueType<TKey, Key>, TypeList<ValueType<T, args>...>>::key;
 template <typename TKey, TKey Key, typename T, T... args>
-constexpr const typename static_pair<tvalue_type<TKey, Key>, typelist<tvalue_type<T, args>...>>::ValueType* 
-    static_pair<tvalue_type<TKey, Key>, typelist<tvalue_type<T, args>...>>::value;
+constexpr const typename static_pair<ValueType<TKey, Key>, TypeList<ValueType<T, args>...>>::ValueDataType* 
+    static_pair<ValueType<TKey, Key>, TypeList<ValueType<T, args>...>>::value;
 
 
 // 查找staic_pair [zhuyb 2022-09-14 18:06:52]
@@ -64,24 +64,24 @@ template<typename T, typename TPairList>
 struct find;
 
 template<typename Key>
-struct find<Key, typelist<>>
+struct find<Key, TypeList<>>
 {
     typedef static_pair_null Pair;
     typedef static_pair_null Tail;
 };
 
 template<typename Key, typename Value, typename ...Args>
-struct find<Key, typelist<static_pair<Key, Value>, Args...>>
+struct find<Key, TypeList<static_pair<Key, Value>, Args...>>
 {
     typedef static_pair<Key, Value> Pair;
-    typedef typelist<Args...> Tail;
+    typedef TypeList<Args...> Tail;
 };
 
 template<typename T, typename Key, typename Value, typename ...Args>
-struct find<T, typelist<static_pair<Key, Value>, Args...>>
+struct find<T, TypeList<static_pair<Key, Value>, Args...>>
 {
-    typedef typename find<T, typelist<Args...>>::Pair Pair;
-    typedef typename find<T, typelist<Args...>>::Tail Tail;
+    typedef typename find<T, TypeList<Args...>>::Pair Pair;
+    typedef typename find<T, TypeList<Args...>>::Tail Tail;
 };
 
 
@@ -91,7 +91,7 @@ struct static_map;
 template <>
 struct static_map<>
 {
-    typedef typelist<> type;
+    typedef TypeList<> type;
 
     template<typename TKey>
     using get=typename find<TKey, type>::Pair;
@@ -103,7 +103,7 @@ struct static_map<static_pair<Key, Value>>
     private:
     using local=static_map<static_pair<Key, Value>>;
     public:
-    using type=typelist<static_pair<Key, Value>> ;
+    using type=TypeList<static_pair<Key, Value>> ;
 
     template<typename TKey>
     using get=typename find<TKey, local::type>::Pair;
@@ -120,7 +120,7 @@ public:
     typedef typename static_map<Args...>::type tail;
 
     // 查找后面有没有重复的key [zhuyb 2022-08-08 23:44:38]
-    typedef typename find<Key, typelist<Args...>>::Pair Pair;
+    typedef typename find<Key, TypeList<Args...>>::Pair Pair;
 
     // 没有重复的key [zhuyb 2022-08-08 23:44:58]
     typedef typename tlist::push_front<static_pair<Key, Value>, tail>::type one_key;
@@ -211,7 +211,7 @@ public:
     typedef typename static_map<Args...>::type tail;
 
     // 查找后面有没有重复的key [zhuyb 2022-08-08 23:44:38]
-    typedef typename find<Key, typelist<Args...>>::Pair Pair;
+    typedef typename find<Key, TypeList<Args...>>::Pair Pair;
 
     static_assert(std::is_same<Pair, static_pair_null>::value, "static_map 存在重复选项");
 
@@ -246,11 +246,11 @@ static void print(static_pair<Key, Value>)
 }
 
 template <typename Key, typename Value, typename ...Args>
-static void print(typelist<static_pair<Key, Value>, Args...>)
+static void print(TypeList<static_pair<Key, Value>, Args...>)
 {
     print(static_pair<Key, Value>{});
     std::cout << "\t";
-    print(typelist<Args...>{});
+    print(TypeList<Args...>{});
 }
 
 template <typename... Args>

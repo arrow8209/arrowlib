@@ -1,5 +1,5 @@
 /*
- * @FilePath: /arrowlib/arrow/typelist/enum_to_str_14.h
+ * @FilePath: /arrowlib/arrow/TypeList/enum_to_str_14.h
  * @Author: arrow arrow8209@foxmail.com
  * @Date: 2023-01-29 17:50:57
  * @Description: 使用C++11实现的枚举值，最后的数据结构还是属于运行期代码。如果使用C++14或者更高版本可以改写为编译器获取参数
@@ -50,17 +50,17 @@ template<int index, typename StaticStr>
 struct get_enum_item_str_splite;
 
 template<typename ...Args>
-struct get_enum_item_str_splite<-1, typelist<Args...>>
+struct get_enum_item_str_splite<-1, TypeList<Args...>>
 {
-    typedef typelist<Args...> type;
+    typedef TypeList<Args...> type;
 };
 
 template<int index, typename ...Args>
-struct get_enum_item_str_splite<index, typelist<Args...> >
+struct get_enum_item_str_splite<index, TypeList<Args...> >
 {
 protected:
     static_assert(index >= 0, "index 小于0(请检查代码逻辑)");
-    typedef typename tlist::splite<index + 1, typelist<Args...>> split_str;
+    typedef typename tlist::splite<index + 1, TypeList<Args...>> split_str;
 
 public:
     typedef typename split_str::Tail type;
@@ -70,15 +70,15 @@ template<typename StaticStr>
 struct get_enum_item_str;
 
 template<typename ... Args>
-struct get_enum_item_str<typelist<Args...>>
+struct get_enum_item_str<TypeList<Args...>>
 {
 protected:
-    typedef typename tlist::pop_back<typelist<Args...>>::type static_str;
+    typedef typename tlist::pop_back<TypeList<Args...>>::type static_str;
 
-    typedef typename tlist::find_last<tvalue_type<char, ' '>, static_str> find_last_forward_sapce;
+    typedef typename tlist::FindLast<ValueType<char, ' '>, static_str> find_last_forward_sapce;
     typedef typename get_enum_item_str_splite<find_last_forward_sapce::value, static_str>::type enum_long_name;
 
-    typedef typename tlist::find_last<tvalue_type<char, ':'>, enum_long_name> find_last_forward_colon;
+    typedef typename tlist::FindLast<ValueType<char, ':'>, enum_long_name> find_last_forward_colon;
     typedef typename get_enum_item_str_splite<find_last_forward_colon::value, enum_long_name>::type enum_short_name;
 
 public:
@@ -103,7 +103,7 @@ struct EnumItemInfo
 // struct get_enum_str_impl
 // {
 // protected:
-//     typedef tvalue_type<EnumType, _emFirst> key;
+//     typedef ValueType<EnumType, _emFirst> key;
 //     typedef typename EnumItemInfo<EnumType, _emFirst>::type_short_name value;
 //     typedef static_pair<key, value> item;   
 //     typedef typename Arrow::smap::insert<MapItemData, item>::type mapItemData;
@@ -116,7 +116,7 @@ struct EnumItemInfo
 // struct get_enum_str_impl<MapItemData, EnumType, _emItem, _emItem>
 // {
 // protected:
-//     typedef tvalue_type<EnumType, _emItem> key;
+//     typedef ValueType<EnumType, _emItem> key;
 //     typedef typename EnumItemInfo<EnumType, _emItem>::type_short_name value;
 //     typedef static_pair<key, value> item;   
 // public:
@@ -131,7 +131,7 @@ template<typename MapItemData, typename EnumType, EnumType _emItem>
 struct get_enum_str_impl<MapItemData, EnumType, _emItem, _emItem>
 {
 protected:
-    typedef tvalue_type<EnumType, _emItem> key;
+    typedef ValueType<EnumType, _emItem> key;
     typedef typename EnumItemInfo<EnumType, _emItem>::type_short_name value;
     typedef static_pair<key, value> item;   
 public:
@@ -142,7 +142,7 @@ template<typename MapItemData, typename EnumType, EnumType _emFirst,  EnumType _
 struct get_enum_str_impl<MapItemData, EnumType, _emFirst, _emLast>
 {
 protected:
-    typedef tvalue_type<EnumType, _emFirst> key;
+    typedef ValueType<EnumType, _emFirst> key;
     typedef typename EnumItemInfo<EnumType, _emFirst>::type_short_name value;
     typedef static_pair<key, value> item;   
     typedef typename Arrow::smap::insert<MapItemData, item>::type mapItemData;
