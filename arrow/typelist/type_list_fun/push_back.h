@@ -1,20 +1,20 @@
-#pragma once 
+#pragma once
 #include "../typelist_type.h"
 
 namespace Arrow
 {
 
-namespace tlist
-{
-
 // 在尾部插入类型
-template <typename T, typename TList>
-struct push_back;
+template <typename T, typename typeList>
+struct PushBack;
 
 template <typename T, typename... Args>
-struct push_back<T, TypeList<Args...>>
+struct PushBack<T, TypeList<Args...>>
 {
-    typedef TypeList<Args..., T> type;
+    using type = TypeList<Args..., T>;
 };
-}
+
+template <typename T, typename typeList>
+using PushBack_t = typename PushBack<T, typeList>::type;
+
 }

@@ -60,7 +60,7 @@ struct get_enum_item_str_splite<index, TypeList<Args...> >
 {
 protected:
     static_assert(index >= 0, "index 小于0(请检查代码逻辑)");
-    typedef typename tlist::splite<index + 1, TypeList<Args...>> split_str;
+    typedef typename Splite<index + 1, TypeList<Args...>> split_str;
 
 public:
     typedef typename split_str::Tail type;
@@ -73,12 +73,12 @@ template<typename ... Args>
 struct get_enum_item_str<TypeList<Args...>>
 {
 protected:
-    typedef typename tlist::pop_back<TypeList<Args...>>::type static_str;
+    typedef typename PopBack<TypeList<Args...>>::type static_str;
 
-    typedef typename tlist::FindLast<ValueType<char, ' '>, static_str> find_last_forward_sapce;
+    typedef typename FindLast<ValueType<char, ' '>, static_str> find_last_forward_sapce;
     typedef typename get_enum_item_str_splite<find_last_forward_sapce::value, static_str>::type enum_long_name;
 
-    typedef typename tlist::FindLast<ValueType<char, ':'>, enum_long_name> find_last_forward_colon;
+    typedef typename FindLast<ValueType<char, ':'>, enum_long_name> find_last_forward_colon;
     typedef typename get_enum_item_str_splite<find_last_forward_colon::value, enum_long_name>::type enum_short_name;
 
 public:

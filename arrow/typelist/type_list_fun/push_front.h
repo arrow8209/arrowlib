@@ -5,18 +5,17 @@
 namespace Arrow
 {
 
-namespace tlist
-{
-
 // 在头部插入类型
-template <typename T, typename TList>
-struct push_front;
+template <typename T, typename typeList>
+struct PushFront;
 
 template <typename T, typename... Args>
-struct push_front<T, TypeList<Args...>>
+struct PushFront<T, TypeList<Args...>>
 {
-    typedef TypeList<T, Args...> type;
+    using type = TypeList<T, Args...> ;
 };
 
-}
+template <typename T, typename typeList>
+using PushFront_t = typename PushFront<T, typeList>::type;
+
 }

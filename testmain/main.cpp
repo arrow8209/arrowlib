@@ -81,10 +81,13 @@ int main(int argc, char* argv[])
     // App_Factory::Create(2);
     // App_Factory::Create(4);
     
-    test_typelist_type();
+    // test_typelist_type();
     // test_typelist_vlaue();
     // test_static_string();
     // test_define();
+    // TestIntSquence();
+    TestStaticSubStr();
+    // TestTypeName();
     // Arrow::static_string::outinf("123456");
     // test_static_string2();
     // log4cplus::initialize();
@@ -102,7 +105,7 @@ int main(int argc, char* argv[])
 
     // using bValue = std::true_type::value;
 
-    TestPair2();
+    // TestPair2();
     // CTestTask taskTestmp;
     // taskTestmp.Activate();
     // taskTestmp.TstAddTask();

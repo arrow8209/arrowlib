@@ -4,24 +4,25 @@
 namespace Arrow
 {
 
-namespace tlist
-{
 // 移除头部类型
-template <typename TList>
-struct pop_front;
+template <typename typeList>
+struct PopFront;
 
 template <typename T, typename... Args>
-struct pop_front<TypeList<T, Args...>>
+struct PopFront<TypeList<T, Args...>>
 {
-    typedef T Head;
-    typedef TypeList<Args...> type;
+    using Head = T;
+    using type = TypeList<Args...> ;
 };
 
 template <>
-struct pop_front<TypeList<>>
+struct PopFront<TypeList<>>
 {
-    typedef TypeList<> Head;
-    typedef TypeList<> type;
+    using Head = TypeList<>;
+    using type = TypeList<>;
 };
-}
+
+template <typename typeList>
+using PopFront_t = typename PopFront<typeList>::type;
+
 }

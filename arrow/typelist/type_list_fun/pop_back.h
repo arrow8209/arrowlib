@@ -5,31 +5,30 @@
 namespace Arrow
 {
 
-namespace tlist
-{
-
 // 移除尾部类型
-template <typename TList>
-struct pop_back;
+template <typename typeList>
+struct PopBack;
 
 template <typename... Args>
-struct pop_back<TypeList<Args...>>
+struct PopBack<TypeList<Args...>>
 {
 protected:
-    typedef TypeList<Args...> TList;
-    typedef remove_at<TList::length - 1, TList> remove_tmp;
+    using inputType = TypeList<Args...>;
+    using removeResult = Remove<inputType::length - 1, inputType>;
 
 public:
-    typedef typename remove_tmp::remove_type Tail;
-    typedef typename remove_tmp::type type;
+    using Tail = typename removeResult::remove_type;
+    using type = typename removeResult::type;
 };
 
 template <>
-struct pop_back<TypeList<>>
+struct PopBack<TypeList<>>
 {
     typedef TypeList<> Tail;
     typedef TypeList<> type;
 };
 
-}
+template <typename typeList>
+using PopBack_t = typename PopBack<typeList>::type;
+
 }

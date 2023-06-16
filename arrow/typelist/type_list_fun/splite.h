@@ -1,35 +1,40 @@
 
-#pragma once 
+#pragma once
 #include "../typelist_type.h"
 #include "push_front.h"
 
 namespace Arrow
 {
 
-namespace tlist
-{
-
 // 分割typelist遵循左开右闭原则
-template<int Index, typename TList>
-struct splite;
+template <int count, typename typeList>
+struct Splite;
 
-template<typename T, typename ...Args>
-struct splite<1, TypeList<T, Args...>>
+template <typename T, typename... Args>
+struct Splite<1, TypeList<T, Args...>>
 {
-    typedef TypeList<T> Head;
-    typedef TypeList<Args...> Tail;
+    using Head = TypeList<T>;
+    using Tail = TypeList<Args...>;
 };
 
-template<int Count, typename T, typename ...Args>
-struct splite<Count, TypeList<T, Args...>>
+template <int count, typename T, typename... Args>
+struct Splite<count, TypeList<T, Args...>>
 {
 protected:
-    typedef splite<Count - 1, TypeList<Args...>> splite_tmp;
-    static_assert(Count > 0, "Count 必须 >0");
-    static_assert(Count <= sizeof...(Args), "Count 必须小于列表的总长度 -1 ");
+    using spliteNext = Splite<count - 1, TypeList<Args...>>;
+
+    static_assert(count > 0, "count 必须 >0");
+    static_assert(count <= sizeof...(Args), "count 必须小于列表的总长度 -1 ");
+
 public:
-    typedef typename push_front<T, typename splite_tmp::Head>::type Head;
-    typedef typename splite_tmp::Tail Tail;
+    using Head = PushFront_t<T, typename spliteNext::Head>;
+    using Tail = typename spliteNext::Tail;
 };
-}
+
+template <int count, typename typeList>
+using SpliteHead = typename Splite<count, typeList>::Head;
+
+template <int count, typename typeList>
+using SpliteTail = typename Splite<count, typeList>::Tail;
+
 }

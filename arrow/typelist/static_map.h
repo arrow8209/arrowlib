@@ -48,9 +48,9 @@ template<typename TKey, TKey Key, typename T, T... args>
 struct static_pair<ValueType<TKey, Key>, TypeList<ValueType<T, args>...>>
 {
     typedef TKey KeyType;
-    typedef typename tlist::tvaluelist_to_data<TypeList<ValueType<T, args>...>>::type ValueDataType;
+    typedef typename ValueListToData<TypeList<ValueType<T, args>...>>::type ValueDataType;
     static constexpr TKey key = Key;
-    static constexpr const ValueDataType* value = tlist::tvaluelist_to_data<TypeList<ValueType<T, args>...>>::data;
+    static constexpr const ValueDataType* value = ValueListToData<TypeList<ValueType<T, args>...>>::data;
 };
 template <typename TKey, TKey Key, typename T, T... args>
 constexpr TKey static_pair<ValueType<TKey, Key>, TypeList<ValueType<T, args>...>>::key;
@@ -123,7 +123,7 @@ public:
     typedef typename find<Key, TypeList<Args...>>::Pair Pair;
 
     // 没有重复的key [zhuyb 2022-08-08 23:44:58]
-    typedef typename tlist::push_front<static_pair<Key, Value>, tail>::type one_key;
+    typedef typename PushFront<static_pair<Key, Value>, tail>::type one_key;
 
     // 有重复的key [zhuyb 2022-08-08 23:45:10]
     typedef tail two_key;
@@ -230,34 +230,31 @@ using static_map = smap::static_map<Args...>;
 template<typename TPariList, typename Item>
 using insert = smap::insert<TPariList, Item>;
 
-namespace tlist
-{
 
 
-static void print(smap::static_pair_null)
-{
-    std::cout<< "(nullptr, nullptr)" << std::endl;
-}
+// static void print(smap::static_pair_null)
+// {
+//     std::cout<< "(nullptr, nullptr)" << std::endl;
+// }
 
-template <typename Key, typename Value>
-static void print(static_pair<Key, Value>)
-{
-    std::cout<< "("<< static_pair<Key, Value>::key << "," << static_pair<Key, Value>::value << ")" << std::endl;
-}
+// template <typename Key, typename Value>
+// static void print(static_pair<Key, Value>)
+// {
+//     std::cout<< "("<< static_pair<Key, Value>::key << "," << static_pair<Key, Value>::value << ")" << std::endl;
+// }
 
-template <typename Key, typename Value, typename ...Args>
-static void print(TypeList<static_pair<Key, Value>, Args...>)
-{
-    print(static_pair<Key, Value>{});
-    std::cout << "\t";
-    print(TypeList<Args...>{});
-}
+// template <typename Key, typename Value, typename ...Args>
+// static void print(TypeList<static_pair<Key, Value>, Args...>)
+// {
+//     print(static_pair<Key, Value>{});
+//     std::cout << "\t";
+//     print(TypeList<Args...>{});
+// }
 
-template <typename... Args>
-static void print(static_map<Args...>)
-{
-    print(typename static_map<Args...>::type{});
-}
+// template <typename... Args>
+// static void print(static_map<Args...>)
+// {
+//     print(typename static_map<Args...>::type{});
+// }
 
-}
 }

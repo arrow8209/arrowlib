@@ -1,5 +1,5 @@
 /*
- * @FilePath: /arrowlib/arrow/TypeList/enum_to_str.h
+ * @FilePath: /arrowlib/arrow/typelist/enum_to_str.h
  * @Author: arrow arrow8209@foxmail.com
  * @Date: 2023-01-29 17:50:57
  * @Description: 使用C++11实现的枚举值，最后的数据结构还是属于运行期代码。如果使用C++14或者更高版本可以改写为编译期获取参数
@@ -48,7 +48,7 @@ struct get_enum_item_str_splite<index, TypeList<Args...> >
 {
 protected:
     static_assert(index >= 0, "index 小于0(请检查代码逻辑)");
-    typedef typename tlist::splite<index + 1, TypeList<Args...>> split_str;
+    typedef Splite<index + 1, TypeList<Args...>> split_str;
 
 public:
     typedef typename split_str::Tail type;
@@ -61,12 +61,12 @@ template<typename ... Args>
 struct get_enum_item_str<TypeList<Args...>>
 {
 protected:
-    typedef typename tlist::pop_back<TypeList<Args...>>::type static_str;
+    typedef typename PopBack<TypeList<Args...>>::type static_str;
 
-    typedef typename tlist::FindLast<ValueType<char, ' '>, static_str> find_last_forward_sapce;
+    typedef FindLast<ValueType<char, ' '>, static_str> find_last_forward_sapce;
     typedef typename get_enum_item_str_splite<find_last_forward_sapce::value, static_str>::type enum_long_name;
 
-    typedef typename tlist::FindLast<ValueType<char, ':'>, enum_long_name> find_last_forward_colon;
+    typedef FindLast<ValueType<char, ':'>, enum_long_name> find_last_forward_colon;
     typedef typename get_enum_item_str_splite<find_last_forward_colon::value, enum_long_name>::type enum_short_name;
 
 public:
@@ -79,9 +79,9 @@ template<typename TEnumType, TEnumType _emValue>
 struct EnumItemInfo
 {
     constexpr EnumItemInfo() : 
-        full_name(tlist::tvaluelist_to_data<typename STATIC_STRING(__PRETTY_FUNCTION__)>::data),
-        short_name(tlist::tvaluelist_to_data<typename get_enum_item_str<typename STATIC_STRING(__PRETTY_FUNCTION__)>::type_short_name>::data), 
-        long_name(tlist::tvaluelist_to_data<typename get_enum_item_str<typename STATIC_STRING(__PRETTY_FUNCTION__)>::type_long_name>::data), 
+        full_name(ValueListToData<typename STATIC_STRING(__PRETTY_FUNCTION__)>::data),
+        short_name(ValueListToData<typename get_enum_item_str<typename STATIC_STRING(__PRETTY_FUNCTION__)>::type_short_name>::data), 
+        long_name(ValueListToData<typename get_enum_item_str<typename STATIC_STRING(__PRETTY_FUNCTION__)>::type_long_name>::data), 
         value(_emValue){};
         
     const char* short_name;

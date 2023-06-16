@@ -152,9 +152,9 @@ public:
                 _log4cplus_buf << t;
                 log4cplus::detail::macro_forced_log(_l,
                                                     log4cplus_loglevel, _log4cplus_buf.str(),
-                                                    tlist::tvaluelist_to_data<TFileName>::data, 
+                                                    ValueListToData<TFileName>::data, 
                                                     line,
-                                                    tlist::tvaluelist_to_data<TFunName>::data);
+                                                    ValueListToData<TFunName>::data);
             }
         } while (0);
     }
@@ -170,13 +170,13 @@ public:
             if (LOG4CPLUS_UNLIKELY(_l.isEnabledFor(log4cplus_loglevel)))
             {
                 LOG4CPLUS_MACRO_INSTANTIATE_SNPRINTF_BUF(_snpbuf);
-                log4cplus::tchar const* _logEvent = _snpbuf.print(tlist::tvaluelist_to_data<TFmt>::data, args...);
+                log4cplus::tchar const* _logEvent = _snpbuf.print(ValueListToData<TFmt>::data, args...);
                 log4cplus::detail::macro_forced_log(_l,
                                                     log4cplus_loglevel,
                                                     _logEvent,
-                                                    tlist::tvaluelist_to_data<TFileName>::data,
+                                                    ValueListToData<TFileName>::data,
                                                     line,
-                                                    tlist::tvaluelist_to_data<TFunName>::data);
+                                                    ValueListToData<TFunName>::data);
             }
         } while (0);
     }
