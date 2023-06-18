@@ -188,16 +188,23 @@ static void TestTypeName()
 
 static void TestStaticSubStr()
 {
-    constexpr auto str = __PRETTY_FUNCTION__;
-    constexpr int n1 = Arrow::StaticStr::Find(__PRETTY_FUNCTION__, 'e');
-    constexpr auto s =Arrow::StaticStr::SubStr<0, n1>(str);
-    constexpr auto s0 = Arrow::StaticStr::details::SubStrImpl<Arrow::MakeIntegerSequence<n1>::type>(str);
-    constexpr auto s1 = Arrow::StaticStr::details::SubStrImpl<Arrow::MakeIntegerSequence<n1>::type>(str, 5);
+    // constexpr auto str = __PRETTY_FUNCTION__;
+    // constexpr int n1 = Arrow::StaticStr::Find(__PRETTY_FUNCTION__, 'e');
+    // constexpr auto s =Arrow::StaticStr::SubStr<0, n1>(str);
+    // constexpr auto s0 = Arrow::StaticStr::details::SubStrImpl<Arrow::MakeIntegerSequence<n1>::type>(str);
+    // constexpr auto s1 = Arrow::StaticStr::details::SubStrImpl<Arrow::MakeIntegerSequence<n1>::type>(str, 5);
 
-    using IntSequece5 = Arrow::MakeIntegerSequence<n1>::type;
+    // using IntSequece5 = Arrow::MakeIntegerSequence<n1>::type;
 
-    auto name = Arrow::TypeName2<IntSequece5>::Name();
-    std::cout << Arrow::TypeName2<std::vector<int>>::Name() << std::endl;
+    // auto name = Arrow::TypeName2<IntSequece5>::Name();
+
+    // std::cout << Arrow::TypeName2<std::vector<int>>::Name() << std::endl;
+
+    // std::cout << Arrow::TypeNameFun(IntSequece5{}) << std::endl;
+
+    // auto s2 = Arrow::TypeNameFun(IntSequece5{});
+
+    // constexpr auto s3 = Arrow::StringView<sizeof(__PRETTY_FUNCTION__)>(__PRETTY_FUNCTION__);
 
     //     typedef  Arrow::static_map<
     //  Arrow::static_pair<Arrow::IntValueType<1>,STATIC_STRING("1234")>,
@@ -207,4 +214,19 @@ static void TestStaticSubStr()
     //  > SMap1;
 
     // std::cout << Arrow::TypeName2<SMap1>::Name() << std::endl;
+}
+
+static void TestStringView()
+{
+    constexpr auto st1 = Arrow::str("123");
+    constexpr auto st2 = Arrow::str("456");
+    auto st3 = st1 + st2;
+
+    std::cout << st1.data << std::endl;
+    std::cout << st2.data << std::endl;
+    std::cout << st3.data << std::endl;
+
+    constexpr auto s4 = Arrow::StrToType("123");
+
+    // using str3Type = decltype(Arrow::StrToType(st3.data));
 }

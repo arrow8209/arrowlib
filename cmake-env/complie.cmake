@@ -25,7 +25,7 @@ set(GccCompailParam "${GccCompailParam} -Wno-unknown-pragmas -Wno-unused-result 
 # -Wno-maybe-uninitialized
 
 #设置编译参数（基本不改）
-set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS} -O0 -g ${GccCompailParam}" )
 set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS} -O2 ${GccCompailParam}")
 

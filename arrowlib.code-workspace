@@ -90,7 +90,8 @@
             "codecvt": "cpp",
             "forward_list": "cpp",
             "cinttypes": "cpp",
-            "set": "cpp"
+            "set": "cpp",
+            "queue": "cpp"
         }
     }
 }

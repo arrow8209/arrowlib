@@ -8,20 +8,25 @@
 namespace Arrow
 {
 
-template<typename T>
-struct TypeName2
-{
-    static std::string Name()
-    {
-        constexpr auto str = __PRETTY_FUNCTION__;
-        std::cout << str << std::endl;
-        constexpr int start = Arrow::StaticStr::Find(str, '=');
-        constexpr int end = Arrow::StaticStr::Find(str, ';');
-        constexpr auto subStr = Arrow::StaticStr::SubStr<start + 2, end-start - 2>(str);
-        return subStr.data;
-    }
-};
 
+// template<typename T>
+// struct TypeName2
+// {
+//     static const char*&& Name()
+//     {
+//         constexpr auto str = __PRETTY_FUNCTION__;
+//         std::cout << str << std::endl;
+//         constexpr int start = Arrow::StaticStr::Find(str, '=');
+//         constexpr int end = Arrow::StaticStr::Find(str, ']');
+//         constexpr auto subStr = Arrow::StaticStr::SubStr<start + 2, end-start>(str);
+//         return std::move(subStr.data);
+//     }
+// };
 
+// template<typename T>
+// constexpr const char* TypeNameFun(T t)
+// {
+//     return Arrow::StaticStr::SubStr<Arrow::StaticStr::Find(__PRETTY_FUNCTION__, '=') + 2, Arrow::StaticStr::Find(__PRETTY_FUNCTION__, ']') - Arrow::StaticStr::Find(__PRETTY_FUNCTION__, '=')>(__PRETTY_FUNCTION__).data;
+// }
 
 }

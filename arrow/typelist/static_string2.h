@@ -5,14 +5,155 @@
 namespace Arrow
 {
 
+
+template <int index>
+constexpr char at(const char* a) { return a[index]; }
+
+template <int index, int length>
+constexpr char at1(const char(&a)[length]) { return a[index]; }
+
+template<int>
+using charView=char;
+
+template <int ...args>
+struct StringView
+{
+    const char data[sizeof...(args) + 1];
+    // const int length = size;
+    constexpr StringView() : data{} {}
+
+    constexpr StringView(const char* str) : data{at<args>(str)..., 0} {}
+    // constexpr StringView(const char* str) : StringView(str, typename Arrow::MakeIntegerSequence<size>::type{}) {}
+    // constexpr StringView(const char* str, Arrow::IntegerSequence<args...>) : data{at<args>(str)..., 0} {}
+
+   constexpr StringView(charView<args>... argsChar) : data{argsChar..., 0} {}
+
+   template <int... args1>
+   constexpr StringView<args..., sizeof...(args) + args1...> operator+(StringView<args1...> b) const
+   {
+       return StringView<args..., sizeof...(args) + args1...>(at<args>(data)..., at<args1>(b.data)...);
+    }
+
+    // template <int... args1, int... args2>
+    // constexpr StringView(const char* str1,
+    //                      Arrow::IntegerSequence<args1...>,
+    //                      const char* str2,
+    //                      Arrow::IntegerSequence<args1...>) : data{at<args2>(str2)... ,0} {}
+
+    // template<int size1>
+    // StringView<size + size1> operator+(StringView<size1> b) const
+    // {
+    //     return StringView<size + size1>(this->data,
+    //                                     typename Arrow::MakeIntegerSequence<size>::type{},
+    //                                     b.data,
+    //                                     typename Arrow::MakeIntegerSequence<size1>::type{});
+    // }
+
+    // template<int size1>
+    // StringView<size + size1> operator+(StringView<size1> b) const
+    // {
+    //     return StringView<size + size1>(typename Arrow::MakeIntegerSequence<size + size1>::type{},
+    //                                     typename Arrow::MakeIntegerSequence<size>::type{},
+    //                                     b.data,
+    //                                     typename Arrow::MakeIntegerSequence<size>::type{});
+    // }
+};
+
+
+// template<int ...args>
+// static auto StrViewToType(const StringView<sizeof...(args)>& sv) ->decltype(Arrow::ValueTypeList<char, at<args>(sv.data)...>)
+// {
+//     return Arrow::ValueTypeList<char, at<args>(sv.data)...>;
+// }
+
+
+template <int I>
+struct get_string
+{
+    constexpr static auto g(const char* a) -> decltype(get_string<I - 1>::g(a) + StringView<0>(a + I))
+    {
+        return get_string<I - 1>::g(a) + StringView<0>(a + I);
+    }
+};
+
+template <>
+struct get_string<0>
+{
+    constexpr static StringView<0> g(const char* a)
+    {
+        return {a};
+    }
+};
+
+template <int I>
+constexpr auto str(const char (&a)[I]) -> decltype(get_string<I - 2>::g(a))
+{
+    return get_string<I - 2>::g(a);
+}
+
+template <char ch>
+struct CharViewTest
+{
+};
+
+// template <typename T>
+// struct StrToTypeImpl;
+// 
+// template<int ...args>
+// struct StrToTypeImpl<Arrow::IntegerSequence<args...>>
+// {
+// 
+//     constexpr static auto __impl(charView<args>... argsChar)
+//     {
+//         return CharViewTest<argsChar...>{};
+//     }
+// 
+//     template<int size>
+//     constexpr static auto impl(const char(&a)[size]) //->   decltype(StrToTypeImpl<index - 1>::impl(std::forward(a)))
+//     {
+//         return __impl(at<args>(a)...);
+//     }
+// };
+// 
+// template<int size>
+// constexpr auto StrToType(const char(&a)[size])// -> decltype(StrToTypeImpl<size - 1>::impl(a))
+// {
+//     return StrToTypeImpl<typename Arrow::MakeIntegerSequence<size>::type>::impl(a);
+// }
+
+template <int index>
+struct StrToTypeImpl
+{
+    template<int size>
+    constexpr static auto impl(const char(&a)[size]) //->   decltype(StrToTypeImpl<index - 1>::impl(std::forward(a)))
+    {
+        return CharViewTest<at1<index>(a)>{};
+        // return Arrow::PushBack<Arrow::ValueType<char, at<index>(a)>, decltype(StrToTypeImpl<index - 1>::impl(std::forward(a))) >{};
+    }
+};
+template <>
+struct StrToTypeImpl<-1>
+{
+    template<int size>
+    constexpr static Arrow::ValueTypeList<char, 0> impl(const char(&a)[size])
+    {
+        return Arrow::ValueTypeList<char, 0>{};
+    }
+};
+template<int size>
+constexpr auto StrToType(const char(&a)[size])// -> decltype(StrToTypeImpl<size - 1>::impl(a))
+{
+    return StrToTypeImpl<size - 1>::impl(a);
+}
+
 namespace StaticStr
 {
 
 namespace details
 {
 
-template <int index>
-constexpr char at(const char* a) { return a[index]; }
+// template <int index>
+// constexpr char at(const char* a) { return a[index]; }
 
 template<typename T>
 struct SubStrImpl;
@@ -20,10 +161,12 @@ struct SubStrImpl;
 template<int ...args>
 struct SubStrImpl<Arrow::IntegerSequence<args...>>
 {
-    const char data[sizeof...(args) + 1];
-    constexpr SubStrImpl() : data{0} {}
-    constexpr SubStrImpl(const char* a) : data{at<args>(a)..., 0} {}
-    constexpr SubStrImpl(const char* a ,int nStart) : data{at<args>(a + nStart)..., 0} {}
+    const StringView<sizeof...(args)> strView;
+    constexpr SubStrImpl() : strView() {}
+    constexpr SubStrImpl(const char* str) : strView(str) {}
+    constexpr SubStrImpl(const char* a ,int nStart) : strView(a + nStart) {}
+
+    
 };
 
 constexpr int FindImpl(const char* sz, char ch, int index)
@@ -48,11 +191,15 @@ constexpr int FindLast(const char* sz, char ch)
     return details::FindLastImpl(sz, ch, 0, -1);
 }
 
-template<int start, int length>
-constexpr auto SubStr(const char* sz) -> decltype(details::SubStrImpl<typename Arrow::MakeIntegerSequence<length>::type>{})
-{
-    return details::SubStrImpl<typename Arrow::MakeIntegerSequence<length>::type>(sz, start);
-}
+
+
+
+
+// template<int start, int length>
+// constexpr StringView<length> SubStr(const char* sz)
+// {
+//     return StringView<Arrow::MakeIntegerSequence<length>::type>(sz + start);
+// }
 
 
 
