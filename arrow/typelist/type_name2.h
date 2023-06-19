@@ -2,7 +2,6 @@
 #include <type_traits>
 #include "typelist_type.h"
 #include "make_integer_sequence.h"
-#include "static_string2.h"
 #include <iostream>
 
 namespace Arrow

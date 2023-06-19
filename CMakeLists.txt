@@ -3,8 +3,8 @@ cmake_minimum_required(VERSION 3.0)
 PROJECT(arrowlib)
 
 #设置编译参数和环境
-# SET(COMPILE_PLATFROM "x64")
-SET(COMPILE_PLATFROM "mac")
+SET(COMPILE_PLATFROM "x64")
+# SET(COMPILE_PLATFROM "mac")
 
 INCLUDE(cmake-env/version.cmake)
 

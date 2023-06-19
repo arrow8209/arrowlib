@@ -26,6 +26,7 @@
 // #include "test_enum_to_str.h"
 #include "test_enum_to_str2.h"
 #include "test_static_map.h"
+#include "demo/static_str2.h"
 typedef Arrow::TLog<Arrow::Log::LogImplDefault> Log;
 
 void CPlustThreadInit()
