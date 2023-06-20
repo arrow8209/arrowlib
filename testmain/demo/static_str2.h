@@ -17,13 +17,13 @@ template <int size>
 struct StringView
 {
     const char data[size + 1];
-    const int length = size;
-    constexpr StringView() : data{} {}
+    const int length = 0;
+    constexpr StringView() : data{}, length(0) {}
 
     constexpr StringView(const char* str) : StringView(typename Arrow::MakeIntegerSequence<size>::type{}, str) {}
 
     template <int... args>
-    constexpr StringView(Arrow::IntegerSequence<args...>, const char* str) : data{at<args>(str)..., 0} {}
+    constexpr StringView(Arrow::IntegerSequence<args...>, const char* str) : data{at<args>(str)..., 0}, length(sizeof...(args)){}
 
     // template<int ...args>
     // constexpr StringView(Arrow::IntegerSequence<args...>, charView<args>... argsChar) : data{argsChar..., 0} {}
@@ -42,7 +42,7 @@ struct StringView
 
     template <int... args1, int... args2>
     constexpr StringView(Arrow::IntegerSequence<args1...>, const char* sz1, Arrow::IntegerSequence<args2...>, const char* sz2)
-        : data{at<args1>(sz1)..., at<args2>(sz2)..., 0} {}
+        : data{at<args1>(sz1)..., at<args2>(sz2)..., 0}, length(sizeof...(args1) + sizeof...(args2)) {}
 
     template <int size1>
     constexpr StringView<size + size1> operator+(StringView<size1> b) const
@@ -55,8 +55,6 @@ struct StringView
 
 namespace details
 {
-
-
 
 constexpr int FindImpl(const char* sz, char ch, int index)
 {
@@ -84,9 +82,9 @@ struct SubStrImpl
 
 // gcc 版本 [zhuyb 2023-06-19 17:25:03]
 template<int length>
-constexpr auto TypeNameImpl(const char (&sz)[length])
+constexpr auto TypeNameImpl(const char (&sz)[length]) ->decltype(SubStrImpl<FindImpl(sz, '=', 0) + 2, length - 1 - FindImpl(sz, '=', 0) - 2 - 1>::Impl(sz))
 {
-    return SubStrImpl<FindImpl(sz, '=', 0) + 2, length - 1 - FindImpl(sz, '=', 0) - 2 - 1>::Impl(__PRETTY_FUNCTION__);
+    return SubStrImpl<FindImpl(sz, '=', 0) + 2, length - 1 - FindImpl(sz, '=', 0) - 2 - 1>::Impl(sz);
 }
 
 }
@@ -162,12 +160,85 @@ constexpr StringView<length - 1> Str(const char (&a)[length])
 //     TypeNameImpl1<T, FindLast(__PRETTY_FUNCTION__, '='), 1>(sv);
 // }
 
-template<typename T>
-constexpr auto TypeName() 
+
+// template<typename T>
+// constexpr auto TypeName() 
+// {
+//     return SubStr<FindLast(__PRETTY_FUNCTION__, '=') + 2, 
+//                     StrLen(__PRETTY_FUNCTION__) - FindLast(__PRETTY_FUNCTION__, '=') - 2 - 1>(__PRETTY_FUNCTION__).data;
+// }
+
+// template<typename T>
+// constexpr int TypeNameLength()
+// {
+//     // std::cout << __PRETTY_FUNCTION__ << std::endl;
+//     // std::cout << Find(__PRETTY_FUNCTION__, ']')  << std::endl;
+//     // std::cout << Find(__PRETTY_FUNCTION__, '=')  << std::endl;
+//     return Find(__PRETTY_FUNCTION__, ']') - Find(__PRETTY_FUNCTION__, '=')   -2;
+// }
+
+// // mac [zhuyb 2023-06-19 23:49:37]
+// template<typename T, int length = -1>
+// constexpr auto TypeName() ->
+// {
+//     // return SubStr<FindLast(__PRETTY_FUNCTION__, '['), 
+//     //                 FindLast(__PRETTY_FUNCTION__, ']') - FindLast(__PRETTY_FUNCTION__, '[') + 1>(__PRETTY_FUNCTION__);
+//     return StringView<128>(typename Arrow::MakeIntegerSequence<FindLast(__PRETTY_FUNCTION__, ']') - FindLast(__PRETTY_FUNCTION__, '=')  -2>::type{},
+//                                 __PRETTY_FUNCTION__ + FindLast(__PRETTY_FUNCTION__, '=') + 2);
+//     // return (FindLast(__PRETTY_FUNCTION__, ']') - FindLast(__PRETTY_FUNCTION__, '=')  -2) > length :
+//     //                             __PRETTY_FUNCTION__ + FindLast(__PRETTY_FUNCTION__, '=') + 2);
+// }
+
+template<typename T, int length = -1>
+struct TypeName
 {
-    return SubStr<FindLast(__PRETTY_FUNCTION__, '=') + 2, 
-                    StrLen(__PRETTY_FUNCTION__) - FindLast(__PRETTY_FUNCTION__, '=') - 2 - 1>(__PRETTY_FUNCTION__);
-}
+    constexpr static StringView<length> Name()
+    {
+        return StringView<length>(typename Arrow::MakeIntegerSequence<FindLast(__PRETTY_FUNCTION__, ',') - Find(__PRETTY_FUNCTION__, '=') - 2>::type{},
+                                 __PRETTY_FUNCTION__ + Find(__PRETTY_FUNCTION__, '=') + 2);
+    }
+
+    //  static void Name()
+    // {
+    //     std::cout << __PRETTY_FUNCTION__ << std::endl;
+    //     std::cout << Find(__PRETTY_FUNCTION__, ',') << std::endl;
+    //     std::cout << Find(__PRETTY_FUNCTION__, '=') << std::endl;
+    //     std::cout << Find(__PRETTY_FUNCTION__, ',') - Find(__PRETTY_FUNCTION__, '=') - 2  << std::endl;
+    // }
+};
+
+template<typename T>
+struct TypeName<T, -1>
+{
+    constexpr static int TypeNameLength1()
+    {
+        // std::cout << __PRETTY_FUNCTION__ << std::endl;
+        // std::cout << Find(__PRETTY_FUNCTION__, ']')  << std::endl;
+        // std::cout << Find(__PRETTY_FUNCTION__, '=')  << std::endl;
+        return FindLast(__PRETTY_FUNCTION__, ',') - Find(__PRETTY_FUNCTION__, '=') - 2;
+    }
+
+    constexpr static auto Name() -> decltype(TypeName<T, TypeName<T>::TypeNameLength1()>::Name())
+    {
+        // std::cout << TypeNameLength<T>() << std::endl;
+        return TypeName<T, TypeName<T>::TypeNameLength1()>::Name();
+    }
+
+
+};
+
+// template<typename T>
+// static void TypeName2()
+// {
+//     std::cout << __PRETTY_FUNCTION__ << std::endl;
+// }
+
+// template<typename T>
+// constexpr auto TypeName() -> decltype(TypeName1<T>())
+// {
+//     return TypeName1<T>();
+// }
+
 
 template<typename T, T t>
 constexpr auto EnumItemName()
@@ -192,7 +263,13 @@ static void TestStrView2()
 {
     // constexpr auto s1 = Arrow::StringView<3>("123");
     // constexpr auto s2 = Arrow::StringView<4>("4567");
-    ArrowTest::StaticStr::TypeName<std::map<int, std::string>>();
+    // constexpr auto s0 = ArrowTest::StaticStr::TypeName<std::map<int, std::string>>();
+    // std::cout << s0.data << std::endl;
+
+    // ArrowTest::StaticStr::TypeName<std::map<int, std::string>>::Name();
+    constexpr auto s0 = ArrowTest::StaticStr::TypeName<std::map<int, std::string>>::Name();
+    std::cout << s0.data << std::endl;
+
 
     // Arrow::StaticStr::EnumItemName<MyEnum, Em1A>();
 

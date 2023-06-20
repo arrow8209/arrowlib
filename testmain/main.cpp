@@ -88,7 +88,8 @@ int main(int argc, char* argv[])
     // test_define();
     // TestIntSquence();
     // TestStaticSubStr();
-    TestStringView();
+    // TestStringView();
+    TestStrView2();
     // TestTypeName();
     // Arrow::static_string::outinf("123456");
     // test_static_string2();
