@@ -59,7 +59,7 @@ namespace details
 
 struct StrLenImpl
 {
-    static constexpr size_t Impl(const char* sz, size_t nLength)
+    static constexpr size_t Impl(const char* sz, size_t nLength = 0)
     {
        return (*sz != 0) ? StrLenImpl::Impl(sz + 1, nLength + 1) : nLength;
     }
@@ -68,18 +68,22 @@ struct StrLenImpl
 struct FindStrImplAssist
 {
 
+private:
+    template<size_t N, int ...args>
+    static constexpr bool Equal(const char* str1, const char (&str2)[N], Arrow::IntegerSequence<args...>)
+    {
+        // bool bRet = ((at<args>(str1) == at<args>(str2)) && ... && true);
+        return ((at<args>(str1) == at<args>(str2)) && ... && true);
+    }
+
+public:
     template<size_t N>
     static constexpr bool Equal(const char* str1, const char (&str2)[N])
     {
         return StrLenImpl::Impl(str1, 0) < N - 1 ? false : Equal(str1, str2, typename Arrow::MakeIntegerSequence<N - 1>::type{});
     }
 
-    template<size_t N, int ...args>
-    static constexpr bool Equal(const char* str1, const char (&str2)[N], Arrow::IntegerSequence<args...>)
-    {
-        bool bRet = ((at<args>(str1) == at<args>(str2)) && ... && true);
-        return ((at<args>(str1) == at<args>(str2)) && ... && true);
-    }
+
 
     // template<size_t N1, size_t N2>
     // static constexpr bool Equal(const char (&str1)[N1], const char (&str2)[N2])
@@ -99,7 +103,7 @@ struct FindStrImplAssist
 template<size_t times>
 struct FindImpl
 {
-    static constexpr size_t Impl(const char* str, const char ch, size_t index, size_t pos)
+    static constexpr size_t Impl(const char* str, const char ch, size_t index = 0, size_t pos = -1)
     {
         return (str[index] == 0) ?  pos : ((str[index] == ch) ? 
                                             FindImpl<times - 1>::Impl(str, ch, index + 1, index) : 
@@ -107,7 +111,7 @@ struct FindImpl
     }
 
     template <size_t N>
-    static size_t Impl(const char* str1, const char (&str2)[N], size_t index, size_t pos)
+    static size_t Impl(const char* str1, const char (&str2)[N], size_t index = 0, size_t pos = -1)
     {
         return (str1[index] == 0) ? pos : (FindStrImplAssist::Equal(str1 + index, str2) ? 
                                             FindImpl<times - 1>::Impl(str1, str2, index + 1, index) : 
@@ -119,7 +123,7 @@ struct FindImpl
 template<>
 struct FindImpl<1>
 {
-    static constexpr size_t Impl(const char* str, const char ch, size_t index, size_t pos)
+    static constexpr size_t Impl(const char* str, const char ch, size_t index = 0, size_t pos = -1)
     {
         return (str[index] == 0) ?  pos : ((str[index] == ch) ? 
                                             index : 
@@ -127,7 +131,7 @@ struct FindImpl<1>
     }
 
     template<size_t N>
-    static constexpr size_t Impl(const char* str1, const char (&str2)[N], size_t index, size_t pos)
+    static constexpr size_t Impl(const char* str1, const char (&str2)[N], size_t index = 0, size_t pos = -1)
     {
         return (str1[index] == 0) ? pos : (FindStrImplAssist::Equal(str1 + index, str2) ? 
                                             index : 
@@ -139,7 +143,8 @@ struct FindImpl<1>
 template<>
 struct FindImpl<0>
 {
-    static constexpr size_t Impl(const char* str,const char ch, size_t index, size_t pos)
+
+    static constexpr size_t Impl(const char* str,const char ch, size_t index = 0, size_t pos = -1)
     {
         return (str[index] == 0) ? pos : ((str[index] == ch) ? 
                                             FindImpl<0>::Impl(str, ch, index + 1, index) : 
@@ -147,7 +152,7 @@ struct FindImpl<0>
     }
 
     template<size_t N>
-    static constexpr size_t Impl(const char* str1, const char (&str2)[N], size_t index, size_t pos)
+    static constexpr size_t Impl(const char* str1, const char (&str2)[N], size_t index = 0, size_t pos = -1)
     {
         return (str1[index] == 0) ? pos : (FindStrImplAssist::Equal(str1 + index, str2) ? 
                                         FindImpl<0>::Impl(str1, str2, index + 1, index) : 
@@ -176,23 +181,25 @@ struct SubStrImpl<start, size_t(-1)>
        return StringView<N - start - 1>(typename Arrow::MakeIntegerSequence<N - start - 1>::type{}, sz + start);
     }
 };
+
+
 }
 
 constexpr size_t StrLen(const char* sz)
 {
-    return details::StrLenImpl::Impl(sz, 0);
+    return details::StrLenImpl::Impl(sz);
 }
 
 template<size_t times = 1>
 constexpr size_t Find(const char* sz, const char ch, int startPos = 0)
 {
-    return details::FindImpl<times>::Impl(sz, ch, startPos, -1);
+    return details::FindImpl<times>::Impl(sz, ch, startPos);
 }
 
 template<size_t times = 1, size_t N>
 constexpr size_t Find(const char* str1, const char (&str2)[N], int startPos = 0)
 {
-    return details::FindImpl<times>::Impl(str1, str2, startPos, -1);
+    return details::FindImpl<times>::Impl(str1, str2, startPos);
 }
 
 template<size_t times, size_t size>
@@ -249,16 +256,17 @@ constexpr StringView<length - 1> Str(const char (&a)[length])
     return StringView<length - 1>(a);
 }
 
+
 template<typename T, int length = -1>
 struct TypeName
 {
-    static void Cout()
+    static void Trace()
     {
         std::cout << __PRETTY_FUNCTION__ << std::endl;
         std::cout << __PRETTY_FUNCTION__ + Find<1>(__PRETTY_FUNCTION__, '=') << std::endl;
     }
 
-    constexpr static StringView<length> Name()
+    constexpr static StringView<length> Impl()
     {
         return StringView<length>(typename Arrow::MakeIntegerSequence<length>::type{},
                                  __PRETTY_FUNCTION__ + Find<1>(__PRETTY_FUNCTION__, "T = ") + StrLen("T = "));
@@ -268,7 +276,7 @@ struct TypeName
 template<typename T>
 struct TypeName<T, -1>
 {
-    static void Cout()
+    static void Trace()
     {
         std::cout << __PRETTY_FUNCTION__ << std::endl;
         constexpr int start = Find<1>(__PRETTY_FUNCTION__, "T = ");
@@ -286,55 +294,100 @@ struct TypeName<T, -1>
         return Find<1>(__PRETTY_FUNCTION__, ", length =") - Find<1>(__PRETTY_FUNCTION__, "T = ") - StrLen("T = ");
     }
 
-    constexpr static auto Name() -> decltype(TypeName<T, TypeName<T>::Length()>::Name())
+    constexpr static auto Impl() -> decltype(TypeName<T, TypeName<T>::Length()>::Impl())
     {;
-        return TypeName<T, TypeName<T>::Length()>::Name();
+        return TypeName<T, TypeName<T>::Length()>::Impl();
+    }
+
+    constexpr static const char* Str()
+    {
+        return svName.data;
+    }
+
+    // static constexpr decltype(TypeName<T>::Impl()) svName = TypeName<T>::Impl();
+    static constexpr decltype(TypeName<T>::Impl()) svName = TypeName<T>::Impl();
+};
+template<typename T>
+constexpr decltype(TypeName<T>::Impl()) TypeName<T>::svName;
+
+
+template<typename T, T t, int length = -1>
+struct EnumItemName
+{
+    static void Trace()
+    {
+        std::cout << __PRETTY_FUNCTION__ << std::endl;
+    }
+
+    constexpr static StringView<length> Impl()
+    {
+        return StringView<length>(typename Arrow::MakeIntegerSequence<length>::type{},
+                                  __PRETTY_FUNCTION__ + Find<1>(__PRETTY_FUNCTION__, "t = ") + StrLen("t = "));
     }
 };
 
+template<typename T, T t>
+struct EnumItemName<T, t, -1>
+{
+    static void Trace()
+    {
+        std::cout << __PRETTY_FUNCTION__ << std::endl;
 
-// template<typename T, T t, int length = -1>
-// struct EnumItemName
-// {
-//     static void Cout()
-//     {
-//         std::cout << __PRETTY_FUNCTION__ << std::endl;
-//     }
+        constexpr int start1 = Find<1>(__PRETTY_FUNCTION__, "T = ") + StrLen("T = ");
+        constexpr int end1 = Find<1>(__PRETTY_FUNCTION__, ", t = ");
+        constexpr int length1 = end1 - start1;
+        constexpr auto svName1 = StringView<length1>(typename Arrow::MakeIntegerSequence<length1>::type{},
+                                  __PRETTY_FUNCTION__ + start1);
 
-//     static StringView<length> Name()
-//     {
-//         return StringView<length>(typename Arrow::MakeIntegerSequence<length>::type{},
-//                                   __PRETTY_FUNCTION__ + Find<2>(__PRETTY_FUNCTION__, '=') + 2);
-//     }
-// };
+        constexpr int start2 = Find<1>(__PRETTY_FUNCTION__, ", t = ") + StrLen(", t = ");
+        constexpr int end2 = Find<1>(__PRETTY_FUNCTION__, ", length = ");
+        constexpr int length2 = end2 - start2;
+        constexpr auto svName2 = StringView<length1>(typename Arrow::MakeIntegerSequence<length2>::type{},
+                                  __PRETTY_FUNCTION__ + start2);
 
-// template<typename T, T t>
-// struct EnumItemName<T, t, -1>
-// {
-//     static void Cout()
-//     {
-//         std::cout << __PRETTY_FUNCTION__ << std::endl;
-//         std::cout << Find<0>(__PRETTY_FUNCTION__, ',') << std::endl;
-//         std::cout << Find<2>(__PRETTY_FUNCTION__, '=')  << std::endl;
-//         std::cout << __PRETTY_FUNCTION__ + Find<2>(__PRETTY_FUNCTION__, '=') << std::endl;
-//         std::cout << __PRETTY_FUNCTION__ + Find<0>(__PRETTY_FUNCTION__, ',') << std::endl;
-//         std::cout << Find<0>(__PRETTY_FUNCTION__, ',') - Find<2>(__PRETTY_FUNCTION__ , '=') - 2 << std::endl;
-//         EnumItemName<T, t, 0>::Cout();
-//     }
 
-//     constexpr static int Length()
-//     {
-//         return Find<0>(__PRETTY_FUNCTION__, ',') - Find<2>(__PRETTY_FUNCTION__ , '=') - 2;
-//     }
+        std::cout << svName1.data << std::endl;
+        std::cout << svName2.data << std::endl;
+        EnumItemName<T, t, 0>::Trace();
+    }
+
+    constexpr static int Length()
+    {
+        return Find<1>(__PRETTY_FUNCTION__, ", length = ") - Find<1>(__PRETTY_FUNCTION__, "t = ")  - StrLen("t = ");
+    }
     
+    /**
+     * @description: 获取枚举值对应字符串
+     * @return {*}
+     */    
+    constexpr static auto Impl() -> decltype(EnumItemName<T, t, EnumItemName<T, t>::Length()>::Impl())
+    {
+        return EnumItemName<T, t, EnumItemName<T, t>::Length()>::Impl();
+    }
 
-//     static auto Name() -> decltype(EnumItemName<T, t, EnumItemName<T, t>::Length()>::Name())
-//     {
-//         return EnumItemName<T, t, EnumItemName<T, t>::Length()>::Name();
-//     }
-// };
+    constexpr static auto Impl1() -> decltype(TypeName<T>::Impl() + Str("::") + EnumItemName<T, t>::Impl())
+    {
+        return TypeName<T>::Impl() + Str("::") + EnumItemName<T, t>::Impl();
+    }
 
+    constexpr static const char* Name()
+    {
+        return value.data;
+    }
 
+    constexpr static const char* FullName()
+    {
+        return value1.data;
+    }
+
+    static constexpr decltype(EnumItemName<T, t>::Impl()) value = EnumItemName<T, t>::Impl();
+    static constexpr decltype(EnumItemName<T, t>::Impl1()) value1 = EnumItemName<T, t>::Impl1();
+
+};
+template<typename T, T t>
+constexpr decltype(EnumItemName<T, t>::Impl()) EnumItemName<T, t>::value;
+template<typename T, T t>
+constexpr decltype(EnumItemName<T, t>::Impl1()) EnumItemName<T, t>::value1;
 
 
 }
@@ -348,23 +401,23 @@ enum MyEnum
     Em3C
 };
 
+static constexpr auto ss1 = ArrowTest::StaticStr::StringView<3>("123");
+static constexpr auto ss2 = ArrowTest::StaticStr::StringView<4>("4567");
 static void TestStrView2()
 {
-    // constexpr auto s1 = Arrow::StringView<3>("123");
-    // constexpr auto s2 = Arrow::StringView<4>("4567");
-    // constexpr auto s0 = ArrowTest::StaticStr::TypeName<std::map<int, std::string>>();
-    // std::cout << s0.data << std::endl;
-
-    // std::cout << ArrowTest::StaticStr::Find<2>("01234567890123", '0') << std::endl;
-    // std::cout << "01234567890123" + ArrowTest::StaticStr::Find<0>("01234567890123", '0') << std::endl;
 
 
     // ArrowTest::StaticStr::TypeName<std::map<int, std::string>>::Cout();
-    constexpr auto s0 = ArrowTest::StaticStr::TypeName<std::map<int, std::string>>::Name();
-    std::cout << s0.data << std::endl;
+    // constexpr auto s0 = ArrowTest::StaticStr::TypeName<std::map<int, std::string>>::Name();
+    // std::cout << s0.data << std::endl;
 
-    // ArrowTest::StaticStr::EnumItemName<MyEnum, Em1A>::Cout();
-    // auto sA = ArrowTest::StaticStr::EnumItemName<MyEnum, Em1A>::Name();
+    std::cout << ArrowTest::StaticStr::TypeName<std::map<int, std::string>>::svName.data << std::endl;
+    std::cout << ArrowTest::StaticStr::TypeName<std::vector<int>>::svName.data << std::endl;
+    std::cout << ArrowTest::StaticStr::TypeName<std::map<int, float>>::Str() << std::endl;
+
+    ArrowTest::StaticStr::EnumItemName<MyEnum, Em1A>::Trace();
+    std::cout << ArrowTest::StaticStr::EnumItemName<MyEnum, Em1A>::Name() << std::endl;
+    std::cout << ArrowTest::StaticStr::EnumItemName<MyEnum, Em1A>::FullName() << std::endl;
     // std::cout << sA.data << std::endl;
 
 

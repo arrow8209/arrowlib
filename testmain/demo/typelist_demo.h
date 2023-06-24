@@ -174,9 +174,9 @@ void TestPair2()
 
 static void TestIntSquence()
 {
-    constexpr int n1 = Arrow::StaticStr::Find(__PRETTY_FUNCTION__, 'I');
-    using IntSequece5 = Arrow::MakeIntegerSequence<n1>::type;
-    std::cout << Arrow::TypeName<IntSequece5>::Name() << std::endl;
+    // constexpr int n1 = Arrow::StaticStr::Find(__PRETTY_FUNCTION__, 'I');
+    // using IntSequece5 = Arrow::MakeIntegerSequence<n1>::type;
+    // std::cout << Arrow::TypeName<IntSequece5>::Name() << std::endl;
     
 }
 
@@ -218,16 +218,16 @@ static void TestStaticSubStr()
 
 static void TestStringView()
 {
-    constexpr auto st1 = Arrow::StaticStr::Str("123");
-    constexpr auto st2 = Arrow::StaticStr::Str("4567");
-    constexpr auto st3 = st1 + st2;
-    constexpr auto start = Arrow::StaticStr::Find(st3, '2');
-    constexpr auto st4 = Arrow::StaticStr::SubStr<start, st3.length - start - 1>(st3);
+    // constexpr auto st1 = Arrow::StaticStr::Str("123");
+    // constexpr auto st2 = Arrow::StaticStr::Str("4567");
+    // constexpr auto st3 = st1 + st2;
+    // constexpr auto start = Arrow::StaticStr::Find(st3, '2');
+    // constexpr auto st4 = Arrow::StaticStr::SubStr<start, st3.length - start - 1>(st3);
 
-    std::cout << st1.data << std::endl;
-    std::cout << st2.data << std::endl;
-    std::cout << st3.data << std::endl;
-    std::cout << st4.data << std::endl;
+    // std::cout << st1.data << std::endl;
+    // std::cout << st2.data << std::endl;
+    // std::cout << st3.data << std::endl;
+    // std::cout << st4.data << std::endl;
 
     // constexpr auto s4 = Arrow::StrToType("123");
 

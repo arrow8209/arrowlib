@@ -91,7 +91,8 @@
             "forward_list": "cpp",
             "cinttypes": "cpp",
             "set": "cpp",
-            "queue": "cpp"
+            "queue": "cpp",
+            "__memory": "cpp"
         }
     }
 }

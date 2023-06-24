@@ -34,8 +34,8 @@ public:
     using type = typename findNext::type;
 };
 
-// C++11不支持，但是g++ 设置 std=C++11 能编译通过，但是会有警告 [zhuyb 2023-06-16 09:35:51]
-template<typename T, typename TList>
-static constexpr int Find_v= Find<T, TList>::value;
+// // C++11不支持，但是g++ 设置 std=C++11 能编译通过，但是会有警告 [zhuyb 2023-06-16 09:35:51]
+// template<typename T, typename TList>
+// static constexpr int Find_v= Find<T, TList>::value;
 
 }

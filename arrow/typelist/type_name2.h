@@ -2,30 +2,71 @@
 #include <type_traits>
 #include "typelist_type.h"
 #include "make_integer_sequence.h"
-#include <iostream>
 
 namespace Arrow
 {
 
+template<typename T>
+struct TypeName
+{
+    static std::string Name()
+    {
+        return typeid(T).name();
+    }
+};
 
-// template<typename T>
-// struct TypeName2
-// {
-//     static const char*&& Name()
-//     {
-//         constexpr auto str = __PRETTY_FUNCTION__;
-//         std::cout << str << std::endl;
-//         constexpr int start = Arrow::StaticStr::Find(str, '=');
-//         constexpr int end = Arrow::StaticStr::Find(str, ']');
-//         constexpr auto subStr = Arrow::StaticStr::SubStr<start + 2, end-start>(str);
-//         return std::move(subStr.data);
-//     }
-// };
+template<>
+struct TypeName<TypeList<>>
+{
+    static std::string Name()
+    {
+        static std::string strName = "TypeList<>";
+        return strName;
+    }
+};
 
-// template<typename T>
-// constexpr const char* TypeNameFun(T t)
-// {
-//     return Arrow::StaticStr::SubStr<Arrow::StaticStr::Find(__PRETTY_FUNCTION__, '=') + 2, Arrow::StaticStr::Find(__PRETTY_FUNCTION__, ']') - Arrow::StaticStr::Find(__PRETTY_FUNCTION__, '=')>(__PRETTY_FUNCTION__).data;
-// }
+template<typename T, typename ...Args>
+struct TypeName<TypeList<T, Args...>>
+{
+    static std::string Name()
+    {
+        std::string result = "TypeList<" + TypeName<T>::Name();
+        ((result += ", " + TypeName<Args>::Name()), ...);
+        result += ">";
+        return result;
+    }
+};
+
+template<typename T, T t>
+struct TypeName<ValueType<T, t>>
+{
+    static std::string Name()
+    {
+        std::string result = "ValueType<" + TypeName<T>::Name() + ":" + std::to_string(t) + ">";
+        return result;
+    }
+};
+
+template<>
+struct TypeName<IntegerSequence<>>
+{
+    static std::string Name()
+    {
+        std::string result = "IntegerSequence<>";
+        return result;
+    }
+};
+
+template<int n, int ...args>
+struct TypeName<IntegerSequence<n, args...>>
+{
+    static std::string Name()
+    {
+        std::string result = "IntegerSequence<" + std::to_string(n);
+        ((result += ", " +  std::to_string(args)), ...);
+        result += ">";
+        return result;
+    }
+};
 
 }
