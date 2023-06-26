@@ -6,9 +6,12 @@
  */
 
 #include "demo/test_static_str.h"
+#include "demo/test_type_name.h"
 
 int main(int argc, char* argv[])
 {
-    TestStaticStr();
+    // TestStaticStr();
+    TestTypeName();
+    TestEnumName();
     return 1;
 }
