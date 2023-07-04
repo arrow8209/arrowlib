@@ -1,5 +1,7 @@
 #pragma once
 #include <iostream>
+#include "arrow/typelist/static_str/djb.h"
+#include "arrow/typelist/static_str/string_view.h"
 #include "arrow/typelist/static_string2.h"
 #include "arrow/typelist/static_string.h"
 
@@ -29,4 +31,12 @@ static void TestStaticStr()
     std::cout << Arrow::StaticStr::StrLen(s4.data) << ":" << s4.data << std::endl;
     std::cout << Arrow::StaticStr::StrLen(s5.data) << ":" << s5.data << std::endl;
     // constexpr auto s3 = s1+s2;
+}
+
+static void TestStrDjb2()
+{
+    // constexpr auto value = Arrow::StaticStr::StrToUInt32(Arrow::StaticStr::Str("123") + Arrow::StaticStr::Str("45") + Arrow::StaticStr::Str("const char (&a)[length]") + Arrow::StaticStr::Str("abcde"));
+    constexpr auto value = Arrow::StaticStr::StrToUInt32(Arrow::StaticStr::Str("const char (&a)[length]"));
+    std::cout << value << std::endl;
+    
 }
