@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.0.0)
 
-PROJECT (${ProjectName})
+
 
 MESSAGE("* ${ProjectName} tagert: x64")
 

@@ -7,11 +7,14 @@
 
 #include "demo/test_static_str.h"
 #include "demo/test_type_name.h"
+#include "demo/test_file_name.h"
 
 int main(int argc, char* argv[])
 {
     // TestStaticStr();
-    TestTypeName();
-    TestEnumName();
+    // TestTypeName();
+    // TestEnumName();
+    // TestStrDjb2();
+    TestFileName();
     return 1;
 }

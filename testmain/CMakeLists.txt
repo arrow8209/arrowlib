@@ -4,7 +4,8 @@ cmake_minimum_required(VERSION 3.0)
 # SET(COMPILE_PLATFROM "linux_x64")
 # SET(COMPILE_PLATFROM "mac")
 
-SET(ProjectName arrow_lib_test)
+SET(ProjectName testmain)
+
 IF(${COMPILE_PLATFROM} STREQUAL "x64")
 	INCLUDE(cmake/x64.cmake)
 ELSEIF(${COMPILE_PLATFROM} STREQUAL "mac")
