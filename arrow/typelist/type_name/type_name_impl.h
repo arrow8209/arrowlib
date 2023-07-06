@@ -1,6 +1,6 @@
 #pragma once
 #include <type_traits>
-#include "../static_string2.h"
+#include "../static_string.h"
 
 namespace Arrow
 {

@@ -4,7 +4,7 @@
 // #include "../other/std_assist.h"
 #include "arrow/typelist/typelist.h"
 #include "arrow/other/std_assist.h"
-#include "arrow/typelist/static_string2.h"
+#include "arrow/typelist/static_string.h"
 #include "arrow/typelist/type_name2.h"
 
 void test_typelist_type()

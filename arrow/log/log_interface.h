@@ -1,8 +1,8 @@
 #pragma once
 #include "../typelist/typelist.h"
 
-#define LOG_PARAM(LogLevel) LogLevel, STATIC_FILE, typename STATIC_FUNC, __LINE__
-#define LOG_PARAM_FMT(LogLevel, fmt) LogLevel, STATIC_FILE, typename STATIC_FUNC, __LINE__, typename STATIC_STRING(fmt)
+#define LOG_PARAM(LogLevel) LogLevel, __ARROW_FILE_NAME_TYPE__, __ARROW_FUN_NAME_TYPE__, __LINE__
+#define LOG_PARAM_FMT(LogLevel, fmt) LogLevel, __ARROW_FILE_NAME_TYPE__, __ARROW_FUN_NAME_TYPE__, __LINE__, typename STATIC_STRING(fmt)
 
 namespace Arrow
 {

@@ -13,6 +13,12 @@ namespace StaticStr
 template <size_t index>
 constexpr char at(const char* a) { return a[index]; }
 
+template<std::size_t M, std::size_t N>
+constexpr const char get(const char (&arr)[N])
+{
+    return arr[ M < N ? M : N-1];
+}
+
 template <size_t size>
 struct StringView
 {

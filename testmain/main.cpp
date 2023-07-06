@@ -8,13 +8,15 @@
 #include "demo/test_static_str.h"
 #include "demo/test_type_name.h"
 #include "demo/test_file_name.h"
+#include "demo/test_func_name.h"
 
 int main(int argc, char* argv[])
 {
-    // TestStaticStr();
-    // TestTypeName();
-    // TestEnumName();
-    // TestStrDjb2();
+    TestStaticStr();
+    TestTypeName();
+    TestEnumName();
+    TestStrDjb2();
     TestFileName();
+    TestFunName();
     return 1;
 }

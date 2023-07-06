@@ -2,7 +2,7 @@
 #include <iostream>
 #include "arrow/typelist/static_str/djb.h"
 #include "arrow/typelist/static_str/string_view.h"
-#include "arrow/typelist/static_string2.h"
+#include "arrow/typelist/static_string.h"
 #include "arrow/typelist/static_string.h"
 
 

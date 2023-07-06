@@ -1,7 +1,7 @@
 #pragma once
 #include <type_traits>
 #include "type_name_impl.h"
-#include "../static_string2.h"
+#include "../static_string.h"
 
 namespace Arrow
 {
