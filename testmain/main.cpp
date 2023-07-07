@@ -12,11 +12,11 @@
 
 int main(int argc, char* argv[])
 {
-    TestStaticStr();
-    TestTypeName();
+    // TestStaticStr();
+    // TestTypeName();
     TestEnumName();
-    TestStrDjb2();
-    TestFileName();
-    TestFunName();
+    // TestStrDjb2();
+    // TestFileName();
+    // TestFunName();
     return 1;
 }

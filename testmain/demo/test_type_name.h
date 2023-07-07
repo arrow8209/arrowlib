@@ -4,11 +4,15 @@
 #include <string>
 #include <iostream>
 #include "arrow/typelist/type_name.h"
+#include "arrow/typelist/type_name/enum_name_impl.h"
 
 enum TestEnum
 {
-    EmItemA,
+    EmItem1 = 0,
     EmItem2,
+    EmItem3,
+    EmItemA = 10,
+    EmItemB,
     EmItemC
 };
 
@@ -29,6 +33,8 @@ static void TestEnumName()
     enumName1::Trace();
     std::cout << enumName1::Name() << std::endl;
     std::cout << enumName1::FullName() << std::endl;
-    
-    // std::cout << typeName1::Name() << std::endl;
+
+    using TestEnumListStr = Arrow::EnumListToStr<TestEnum, EmItem1, EmItem3, EmItemA, EmItemC>;
+    std::cout << TestEnumListStr::ItemStr(EmItem1) << std::endl;
+    std::cout << TestEnumListStr::ItemStr(EmItemC) << std::endl;
 }

@@ -1,3 +1,9 @@
+/*
+ * @FilePath: /arrowlib/arrow/typelist/type_name2.h
+ * @Author: arrow arrow8209@foxmail.com
+ * @Date: 2023-06-25 08:21:51
+ * @Description: 弃用。留着的目的是尝试修改struct TypeName<TypeList<T, Args...>>在C++11下的警告
+ */
 #pragma once
 #include <type_traits>
 #include "typelist_type.h"
