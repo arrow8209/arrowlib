@@ -95,8 +95,9 @@ struct FindImpl<0>
 };
 
 }
-
-
+// 查找第 times 次出现的位置 0:查找最后一次出现的位置  1:查找第一次出现的位置 N:查找第N次出现的位置(如果没有就返回最后一次出现的位置)[zhuyb 2023-06-21 22:31:48]
+constexpr static size_t FindTypeFirst = 1;
+constexpr static size_t FindTypeLast = 0;
 template<size_t times = 1>
 constexpr size_t Find(const char* sz, const char ch, int startPos = 0)
 {

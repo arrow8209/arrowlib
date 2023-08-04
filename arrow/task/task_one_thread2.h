@@ -21,7 +21,8 @@ namespace Pattern
 {
 
 // 此类近似于框架类，接口函数都比较特殊，所以不提供访问接口，只有子类能对其进行访问 [zhuyb 2022-07-05 08:57:47]
-class TaskOneThread
+template<typename T>
+class TaskMoreThread
 {
 protected:
     typedef std::function<void()> RunFunAddress;            // 任务执行函数定义 [zhuyb 2022-07-05 08:59:14]
@@ -50,11 +51,11 @@ protected:
     // 记录所有定时器 [zhuyb 2023-03-09 09:14:47]
     typedef std::vector<TimerData> VecTimer;
 protected:
-    TaskOneThread():m_bIsRun(false)
+    TaskOneThread2():m_bIsRun(false)
     {
         
     }
-    virtual ~TaskOneThread()
+    virtual ~TaskOneThread2()
     {
         Stop();
     }
@@ -125,7 +126,7 @@ protected:
      * @param {_Args...} args 调用参数，由于是异步调用，使用者需要保证参数的生命周期。
      * @return {*} 添加任务 使用自定义回收函数
      */
-    template<typename T, typename TRunFun, typename TClearCacheFun, typename ..._Args>
+    template<typename TRunFun, typename TClearCacheFun, typename ..._Args>
     bool AddTask(TRunFun pRunFun, TClearCacheFun pClearCacheFun, _Args... args)
     {
         if (m_bIsRun == false)
@@ -144,10 +145,10 @@ protected:
     }
 
     // 添加任务 使用空回收函数 回收函数只在线程退出后，缓存区还存在数据的时候才会调用 [zhuyb 2022-07-05 09:02:23]
-    template<typename T, typename TRunFun, typename ..._Args>
+    template<typename TRunFun, typename ..._Args>
     bool AddTaskClearCacheNull(TRunFun pRunFun, _Args... args)
     {
-        return AddTask<T>(pRunFun, &TaskOneThread::ClearCacheNull<_Args...>, std::forward<_Args>(args)...);
+        return AddTask(pRunFun, &TaskOneThread::ClearCacheNull<_Args...>, std::forward<_Args>(args)...);
 
         // if (m_bIsRun == false)
         // {
@@ -165,10 +166,10 @@ protected:
     }
 
     // 添加任务 使用delete 回收函数 线程退出后，缓存区还存在数据的时候会对缓存数据 调用 delete args [zhuyb 2022-07-05 09:02:23]
-    template<typename T, typename TRunFun, typename ..._Args>
+    template<typename TRunFun, typename ..._Args>
     bool AddTaskClearCacheDelete(TRunFun pRunFun, _Args... args)
     {
-        return AddTask<T>(pRunFun, &TaskOneThread::ClearCacheDelete<_Args...>, std::forward<_Args>(args)...);
+        return AddTask(pRunFun, &TaskOneThread::ClearCacheDelete<_Args...>, std::forward<_Args>(args)...);
 
     }
 
@@ -183,7 +184,7 @@ protected:
      * @param {_Args...} args 调用参数，由于是异步调用，使用者需要保证参数的生命周期。
      * @return {*} 添加任务 使用自定义回收函数
      */
-    template<typename T, typename TRunFun, typename TClearCacheFun, typename ..._Args>
+    template<typename TRunFun, typename TClearCacheFun, typename ..._Args>
     bool AddTimer(bool bOnce, uint32_t u32Interval, TRunFun pRunFun, TClearCacheFun pClearCacheFun, _Args... args)
     {
         std::chrono::milliseconds millInterval(u32Interval);
@@ -204,10 +205,10 @@ protected:
     }
 
     // 添加任务 使用空回收函数 回收函数只在线程退出后，缓存区还存在数据的时候才会调用 [zhuyb 2022-07-05 09:02:23]
-    template<typename T, typename TRunFun, typename ..._Args>
+    template<typename TRunFun, typename ..._Args>
     bool AddTimerClearCacheNull(bool bOnce, uint32_t u32Interval, TRunFun pRunFun, _Args... args)
     {
-        return AddTimer<T>(
+        return AddTimer(
             bOnce, u32Interval, pRunFun, &TaskOneThread::ClearCacheNull<_Args...>, std::forward<_Args>(args)...);
 
         // if (m_bIsRun == false)
@@ -232,10 +233,10 @@ protected:
     }
 
     // 添加任务 使用delete 回收函数 线程退出后，缓存区还存在数据的时候会对缓存数据 调用 delete args [zhuyb 2022-07-05 09:02:23]
-    template<typename T, typename TRunFun, typename ..._Args>
+    template<typename TRunFun, typename ..._Args>
     bool AddTimerClearCacheDelete(bool bOnce, uint32_t u32Interval, TRunFun pRunFun, _Args... args)
     {
-        return AddTimer<T>(bOnce, u32Interval, pRunFun, &TaskOneThread::ClearCacheDelete<_Args...>, std::forward<_Args>(args)...);
+        return AddTimer(bOnce, u32Interval, pRunFun, &TaskOneThread::ClearCacheDelete<_Args...>, std::forward<_Args>(args)...);
 
     }
 

@@ -9,14 +9,19 @@
 #include "demo/test_type_name.h"
 #include "demo/test_file_name.h"
 #include "demo/test_func_name.h"
+#include "demo/test_task.h"
+
+#include "../test_enum/test_enum.h"
 
 int main(int argc, char* argv[])
 {
     // TestStaticStr();
     // TestTypeName();
-    TestEnumName();
+    // TestEnumName();
     // TestStrDjb2();
     // TestFileName();
     // TestFunName();
+    // RunTestTask();
+    TestEnum();
     return 1;
 }
