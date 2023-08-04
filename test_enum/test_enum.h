@@ -59,7 +59,9 @@ static void TestEnum()
     std::cout << Arrow2::EnumItemName<MyEnumA, static_cast<MyEnumA>(0)>::Impl().data << std::endl;
     std::cout << Arrow2::EnumItemName<MyEnumB, static_cast<MyEnumB>(0)>::Impl().data << std::endl;
 
-    auto tmp = Arrow2::Vaild<10>();
+    constexpr auto tmp = Arrow2::ValidData<10>();
+    
+    // tmp.SetValidData<MyEnumA, 0>();
     // int n = 5;
     // Arrow2::EnumItemName<MyTestEnum, static_cast<MyTestEnum>(4)>::Trace();
     // Arrow2::EnumItemName<MyTestEnum, static_cast<MyTestEnum>(1)>::Trace();

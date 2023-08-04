@@ -156,11 +156,10 @@ struct ValidData
     std::size_t count=0;
     bool valid[N] = {false};
 
-    template<typename E,  std::underlying_type<E> val, std::size_t Size, int Min>
-    constexpr ValidData()
+    // template <typename E, std::size_t Size, int Min>
+    // constexpr ValidData() : SetValid<E, Min>() {}
 
-    template<typename E,  std::underlying_type<E> val
-    constexpr void SetValid
+
 };
 
 
