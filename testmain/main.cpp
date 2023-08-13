@@ -13,6 +13,7 @@
 
 #include "../test_enum/test_enum.h"
 
+
 int main(int argc, char* argv[])
 {
     // TestStaticStr();
@@ -23,5 +24,6 @@ int main(int argc, char* argv[])
     // TestFunName();
     // RunTestTask();
     TestEnum();
+
     return 1;
 }
