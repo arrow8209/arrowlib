@@ -33,6 +33,8 @@ struct ArrayView<T, size, Arrow::IntegerSequence<args...>>
     const size_t length = 0;
     constexpr ArrayView() : data{0}, length(0) {}
 
+    constexpr ArrayView(const T (&array)[size]): data{array[args]...}, length(size) {}
+
     constexpr ArrayView(TDummy<args>... vals) : data{vals...}, length(size) {}
 
     constexpr ArrayView(const T* array) : data{get<T, args>(array)...}, length(sizeof...(args)) {}
