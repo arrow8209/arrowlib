@@ -6,7 +6,7 @@ MESSAGE("* ${ProjectName} tagert: mac")
 ##编译环境和参数设置
 
 #编译环境和参数设置（按需修改）
-# set(CMAKE_CXX_STANDARD 11)
+
 
 #设置预定宏（按需修改）
 #add_definitions(-DATLAS500)

@@ -25,7 +25,7 @@ set(GccCompailParam "${GccCompailParam} -Wno-unknown-pragmas -Wno-unused-result 
 # -Wno-maybe-uninitialized
 
 #设置编译参数（基本不改）
-set(CMAKE_CXX_STANDARD 17)
+# set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS} -O0 -g ${GccCompailParam}" )
 set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS} -O2 ${GccCompailParam}")
 
@@ -35,7 +35,7 @@ set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS} -O2 ${GccCompailParam}")
 
 
 #编译环境和参数设置（按需修改）
-# set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD 11)
 
 # set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS} -fPIC -O0 -g -Wall -rdynamic -fpermissive -Werror=return-type -Wno-unused-but-set-variable  -Wno-reorder -Wno-deprecated -Wno-unused-variable -Wno-unused-function -Wno-unused-local-typedef")
 # set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS} -fPIC -O2 -Wall -rdynamic -fpermissive -Werror=return-type -Wno-unused-but-set-variable  -Wno-reorder -Wno-deprecated -Wno-unused-variable -Wno-unused-function -Wno-unused-local-typedef ")
