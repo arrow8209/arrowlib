@@ -5,7 +5,7 @@
 #include <iostream>
 #include "arrow/typelist/type_name.h"
 #include "test1/enum_name_impl2.h"
-#include "test1/enum_name_impl3.h"
+// #include "test1/enum_name_impl3.h"
 
 // enum class MyTestEnum {
 // 	MyTestEnum_0 = 0,
@@ -63,20 +63,39 @@ constexpr MyEnumB b= static_cast<MyEnumB>(1);
 
 static void TestEnum()
 {
-    auto itemName1 = Arrow2::EnumItemName<MyEnumA, static_cast<MyEnumA>(0)>();
-    std::cout << itemName1.data << std::endl;
+    Arrow2::Trace<MyEnumA, static_cast<MyEnumA>(0)>();
+    Arrow2::Trace<MyEnumB, static_cast<MyEnumB>(0)>();
 
-    auto itemName2 = Arrow2::EnumItemName<MyEnumB, static_cast<MyEnumB>(0)>();
-    std::cout << itemName2.data << std::endl;
+    // Arrow2::details::TraceLengthScopedEnum<MyEnumA, static_cast<MyEnumA>(0)>();
 
-    std::cout << Arrow2::details::IsSocpedEnum<MyEnumA>::value << std::endl;
-    std::cout << Arrow2::details::IsSocpedEnum<MyEnumB>::value << std::endl;
+    // Arrow2::details::TraceLengthNoScopedEnum<MyEnumB, static_cast<MyEnumB>(0)>();
+    // std::cout << Arrow2::details::Length<MyEnumA, static_cast<MyEnumA>(0)>() << std::endl;
+    // Arrow2::details::TraceLengthScopedEnum<MyEnumA, static_cast<MyEnumA>(0)>();
 
-    constexpr Arrow2::Array::ArrayView<bool, 2> tmp1(true, false);
-    constexpr Arrow2::Array::ArrayView<bool, 0> tmp2;
-    auto t3 = tmp1 + tmp2;
+    // std::cout << std::endl;
+    // std::cout << Arrow2::details::Length<MyEnumB, static_cast<MyEnumB>(0)>() << std::endl;
+    // Arrow2::details::TraceLengthNoScopedEnum<MyEnumB, static_cast<MyEnumB>(0)>();
 
-    constexpr auto tmp = Arrow2::ValidCount<MyEnumA, 0>();
+    // auto itemName1 = Arrow2::EnumItemName<MyEnumA, static_cast<MyEnumA>(0)>();
+    // std::cout << itemName1.data << std::endl;
+
+    // auto itemName2 = Arrow2::EnumItemName<MyEnumB, static_cast<MyEnumB>(0)>();
+    // std::cout << itemName2.data << std::endl;
+
+    // std::cout << Arrow2::details::IsSocpedEnum<MyEnumA>::value << std::endl;
+    // std::cout << Arrow2::details::IsSocpedEnum<MyEnumB>::value << std::endl;
+
+    // constexpr Arrow2::Array::ArrayView<bool, 2> tmp1(true, false);
+    // constexpr Arrow2::Array::ArrayView<bool, 0> tmp2;
+    // auto t3 = tmp1 + tmp2;
+
+    constexpr auto tmpA = Arrow2::MyEnumName1<MyEnumA, 0, 100>();
+    constexpr auto len = Arrow2::MyEnumName2<MyEnumA, 0, 100>();
+    constexpr auto tmpB = Arrow2::ValidCountConvert<MyEnumA,0, 0, len>::Impl(tmpA.data);
+
+    // constexpr auto tmp1 = Arrow2::ValidCount<MyEnumA, 0>();
+    // constexpr auto tmp2 = Arrow2::ValidCount<MyEnumA, 0>();
+    // auto t3 = tmp1 + tmp2 + tmp1;
 
     // FunName<MyEnumA, static_cast<MyEnumA>(0)>();
     // FunName<MyEnumA, static_cast<MyEnumA>(1)>();

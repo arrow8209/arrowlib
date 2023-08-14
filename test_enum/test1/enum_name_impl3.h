@@ -2,12 +2,14 @@
 #include <type_traits>
 #include <map>
 #include <iostream>
+#include "array_view.h"
 #include "arrow/typelist/type_name/type_name_impl.h"
 #include "arrow/typelist/static_string.h"
 
 namespace Arrow3
 {
 using namespace Arrow;
+
 namespace details
 {
 
@@ -15,19 +17,19 @@ namespace details
 #ifdef __clang__
 constexpr char NoSocpedEnumNameStart[] = "t = ";
 constexpr char NoSocpedEnumNameEnd[] = "]";
-constexpr char NoSocpedEnumInVain[] = " = (";
+constexpr char NoSocpedEnumInValid[] = " = (";
 
 constexpr char SocpedEnumNameStart[] = "::";
 constexpr char SocpedEnumNameEnd[] = "]";
-constexpr char SocpedEnumInVain[] = " = (";
+constexpr char SocpedEnumInValid[] = " = (";
 #elif __GNUC__
-constexpr char NoSocpedEnumNameStart[] = "t = ";
-constexpr char NoSocpedEnumNameEnd[] = "]";
-constexpr char NoSocpedEnumInVain[] = " = (";
+constexpr char NoSocpedEnumNameStart[] = "T t = ";
+constexpr char NoSocpedEnumNameEnd[] = ";";
+constexpr char NoSocpedEnumInValid[] = " = (";
 
 constexpr char SocpedEnumNameStart[] = "::";
-constexpr char SocpedEnumNameEnd[] = "]";
-constexpr char SocpedEnumInVain[] = " = (";
+constexpr char SocpedEnumNameEnd[] = ";";
+constexpr char SocpedEnumInValid[] = " = (";
 #else
 #endif
 
@@ -38,185 +40,218 @@ struct IsSocpedEnum : std::false_type {};
 template<typename T>
 struct IsSocpedEnum<T, typename std::enable_if<!std::is_convertible<T, int>::value>::type > : std::true_type {};
 
-}
+template<typename T, T l, T r, typename = typename std::enable_if<(l < r)>::type>
+struct less : std::true_type{};
 
-// 调试使用 [zhuyb 2023-08-13 17:13:49]
-template<typename T, T t>
-void Trace()
-{
-    std::cout << __PRETTY_FUNCTION__ << std::endl;
-}
+template<typename T, T l, T r>
+struct less <T, l, r, typename std::enable_if<(l >= r)>::type> : std::true_type{};
+
 
 // 判断枚举值是否合法 [zhuyb 2023-08-13 17:13:55]
 template<typename T, T t>
 constexpr bool IsValid()
 {
-    return StaticStr::Find<0>(__PRETTY_FUNCTION__, details::NoSocpedEnumInVain) == std::string::npos;
+    return StaticStr::Find<0>(__PRETTY_FUNCTION__, details::NoSocpedEnumInValid) == std::string::npos;
 }
 
-//  [zhuyb 2023-08-13 17:14:29]
+// 获取限定性枚举 名称的长度 gcc 在处理size_t会自动添加模板参数列表中添加 size_t = long unsigned int  [zhuyb 2023-08-13 17:14:29]
+// gcc 输出格式：size_t Arrow2::LengthScopedEnum() [with T = Enum...; T t = Enum...; size_t = long unsigned int]
+// clang 输出格式：size_t Arrow2::LengthScopedEnum() [with T = Enum...; T t = Enum...; size_t = long unsigned int]
 template<typename T, T t>
 constexpr size_t LengthScopedEnum()
 {
-    return StaticStr::Find<0>(__PRETTY_FUNCTION__, details::SocpedEnumNameEnd) - StaticStr::Find<0>(__PRETTY_FUNCTION__, details::SocpedEnumNameStart) - StaticStr::StrLen(details::SocpedEnumNameStart);
+    return StaticStr::Find<0>(__PRETTY_FUNCTION__, SocpedEnumNameEnd) - StaticStr::Find<0>(__PRETTY_FUNCTION__, SocpedEnumNameStart) - StaticStr::StrLen(SocpedEnumNameStart);
 }
 
+// 测试使用 [zhuyb 2023-08-14 13:42:33]
+template<typename T, T t>
+size_t TraceLengthScopedEnum()
+{
+    std::cout << "ScopedEnum" << std::endl;
+    std::cout << __PRETTY_FUNCTION__ << std::endl;
+    std::cout << StaticStr::Find<0>(__PRETTY_FUNCTION__, SocpedEnumNameEnd) << std::endl;
+    std::cout << StaticStr::Find<0>(__PRETTY_FUNCTION__, SocpedEnumNameStart) << std::endl;
+    std::cout << StaticStr::StrLen(SocpedEnumNameStart) << std::endl;
+    std::cout << StaticStr::Find<0>(__PRETTY_FUNCTION__, SocpedEnumNameEnd) - StaticStr::Find<0>(__PRETTY_FUNCTION__, SocpedEnumNameStart) - StaticStr::StrLen(SocpedEnumNameStart)<< std::endl;
+    std::cout << LengthScopedEnum<T, t>() << std::endl;
+    return 0;
+}
+
+// 获取非限定枚举 名称的长度 [zhuyb 2023-08-13 17:30:38]
 template<typename T, T t>
 constexpr size_t LengthNoScopedEnum()
 {
-    return StaticStr::Find<0>(__PRETTY_FUNCTION__, details::NoSocpedEnumNameEnd) - StaticStr::Find<1>(__PRETTY_FUNCTION__, details::NoSocpedEnumNameStart) - StaticStr::StrLen(details::NoSocpedEnumNameStart);
+    return StaticStr::Find<0>(__PRETTY_FUNCTION__, NoSocpedEnumNameEnd) - StaticStr::Find<1>(__PRETTY_FUNCTION__, NoSocpedEnumNameStart) - StaticStr::StrLen(NoSocpedEnumNameStart);
 }
 
+// 测试使用 [zhuyb 2023-08-14 15:19:20]
+template<typename T, T t>
+size_t TraceLengthNoScopedEnum()
+{
+    std::cout << "NoScopedEnum" << std::endl;
+    std::cout << __PRETTY_FUNCTION__ << std::endl;
+    std::cout << StaticStr::Find<0>(__PRETTY_FUNCTION__, NoSocpedEnumNameEnd) << std::endl;
+    std::cout << StaticStr::Find<1>(__PRETTY_FUNCTION__, NoSocpedEnumNameStart) << std::endl;
+    std::cout << StaticStr::StrLen(NoSocpedEnumNameStart) << std::endl;
+    std::cout << StaticStr::Find<0>(__PRETTY_FUNCTION__, NoSocpedEnumNameEnd) - StaticStr::Find<1>(__PRETTY_FUNCTION__, NoSocpedEnumNameStart) - StaticStr::StrLen(NoSocpedEnumNameStart) << std::endl;
+    std::cout << LengthNoScopedEnum<T, t>() << std::endl;
+    return 0;
+}
+
+// 获取长度 [zhuyb 2023-08-13 17:31:04]
 template<typename T, T t>
 constexpr size_t Length()
 {
-    return IsValid<T, t>() ? (details::IsSocpedEnum<T>::value ? LengthScopedEnum<T, t>() : LengthNoScopedEnum<T, t>()) : 0;
+    return IsValid<T, t>() ? (details::IsSocpedEnum<T>::value ? details::LengthScopedEnum<T, t>() : details::LengthNoScopedEnum<T, t>()) : 0;
 }
 
+// 获取长度 [zhuyb 2023-08-13 17:31:04]
+template<typename T, T t>
+void TraceLength()
+{
+    details::IsSocpedEnum<T>::value ? details::TraceLengthScopedEnum<T, t>() : details::TraceLengthNoScopedEnum<T, t>();
+}
 
-// template<typename T, T t, size_t length>
-// StaticStr::StringView<length> EnumItemNameTrace()
-// {
-//     std::cout << __PRETTY_FUNCTION__ << std::endl;
-//     return StaticStr::Str("12345");
-// }
-
-// template<typename T, T t, size_t length>
-// constexpr StaticStr::StringView<length> EnumItemName()
-// {
-//     return StaticStr::StringView<length>(__PRETTY_FUNCTION__ + StaticStr::Find<1>(__PRETTY_FUNCTION__, details::NoSocpedEnumNameStart) + StaticStr::StrLen(details::NoSocpedEnumNameStart),
-//                                          typename MakeIntegerSequence<length>::type{});
-// }
-
+// 获取非限定枚举的名称 [zhuyb 2023-08-13 17:31:10]
 template<typename T, T t>
 constexpr auto NoSpcpedEnumItemName() -> StaticStr::StringView<Length<T, t>()>
 {
-    return StaticStr::StringView<Length<T, t>()>(__PRETTY_FUNCTION__ + StaticStr::Find<1>(__PRETTY_FUNCTION__, details::NoSocpedEnumNameStart) + StaticStr::StrLen(details::NoSocpedEnumNameStart),
+    return StaticStr::StringView<Length<T, t>()>(__PRETTY_FUNCTION__ + StaticStr::Find<1>(__PRETTY_FUNCTION__, NoSocpedEnumNameStart) + StaticStr::StrLen(NoSocpedEnumNameStart),
                                          typename MakeIntegerSequence<Length<T, t>()>::type{});
 }
 
+// 获取限定枚举的名称 [zhuyb 2023-08-13 17:31:28]
 template<typename T, T t>
 constexpr auto SocpedEnumItemName() -> StaticStr::StringView<Length<T, t>()>
 {
-    return StaticStr::StringView<Length<T, t>()>(__PRETTY_FUNCTION__ + StaticStr::Find<0>(__PRETTY_FUNCTION__, details::SocpedEnumNameStart) + StaticStr::StrLen(details::SocpedEnumNameStart),
+    return StaticStr::StringView<Length<T, t>()>(__PRETTY_FUNCTION__ + StaticStr::Find<0>(__PRETTY_FUNCTION__, SocpedEnumNameStart) + StaticStr::StrLen(SocpedEnumNameStart),
                                          typename MakeIntegerSequence<Length<T, t>()>::type{});
 }
 
-template<typename T, T t>
-constexpr auto EnumItemName() -> StaticStr::StringView<Length<T, t>()>
-{
-    // return EnumItemName(typename details::IsSocpedEnum<T>::type{});
-    return  details::IsSocpedEnum<T>::value ? SocpedEnumItemName<T, t>(std::false_type{}) : EnumItemName<T, t>(std::true_type{});
 }
 
-// // 核心代码用于获取枚举类型 [zhuyb 2023-08-04 11:29:37]
-// template<typename T, T t, int length = -1>
-// struct EnumItemName
+// 调试使用 [zhuyb 2023-08-13 17:13:49]
+template<typename T, T t>
+size_t Trace()
+{
+    std::cout << __PRETTY_FUNCTION__ << std::endl;
+    return 0;
+}
+
+// 获取枚举短名称(不包括限定域名称) [zhuyb 2023-08-14 15:19:38]
+template<typename T, T t>
+constexpr auto EnumItemName() -> StaticStr::StringView<details::Length<T, t>()>
+{
+    return  details::IsSocpedEnum<T>::value ? details::SocpedEnumItemName<T, t>() : details::NoSpcpedEnumItemName<T, t>();
+}
+
+#define ARROW_ENUM_FOR_EACH_1(T, startIndex, i, j) details::IsValid<T, static_cast<T>(startIndex + 0x##i##j)>()
+
+#define ARROW_ENUM_FOR_EACH_16(T, startIndex, i)                                                \
+    ARROW_ENUM_FOR_EACH_1(T, startIndex, i, 0), ARROW_ENUM_FOR_EACH_1(T, startIndex, i, 1),        \
+        ARROW_ENUM_FOR_EACH_1(T, startIndex, i, 2), ARROW_ENUM_FOR_EACH_1(T, startIndex, i, 3), \
+        ARROW_ENUM_FOR_EACH_1(T, startIndex, i, 4), ARROW_ENUM_FOR_EACH_1(T, startIndex, i, 5), \
+        ARROW_ENUM_FOR_EACH_1(T, startIndex, i, 6), ARROW_ENUM_FOR_EACH_1(T, startIndex, i, 7), \
+        ARROW_ENUM_FOR_EACH_1(T, startIndex, i, 8), ARROW_ENUM_FOR_EACH_1(T, startIndex, i, 9), \
+        ARROW_ENUM_FOR_EACH_1(T, startIndex, i, a), ARROW_ENUM_FOR_EACH_1(T, startIndex, i, b), \
+        ARROW_ENUM_FOR_EACH_1(T, startIndex, i, c), ARROW_ENUM_FOR_EACH_1(T, startIndex, i, d), \
+        ARROW_ENUM_FOR_EACH_1(T, startIndex, i, e), ARROW_ENUM_FOR_EACH_1(T, startIndex, i, f)
+
+#define ARROW_ENUM_FOR_EACH_128(T, startIndex)                                              \
+    ARROW_ENUM_FOR_EACH_16(T, startIndex, 0), ARROW_ENUM_FOR_EACH_16(T, startIndex, 1),     \
+        ARROW_ENUM_FOR_EACH_16(T, startIndex, 2), ARROW_ENUM_FOR_EACH_16(T, startIndex, 3), \
+        ARROW_ENUM_FOR_EACH_16(T, startIndex, 4), ARROW_ENUM_FOR_EACH_16(T, startIndex, 5), \
+        ARROW_ENUM_FOR_EACH_16(T, startIndex, 6), ARROW_ENUM_FOR_EACH_16(T, startIndex, 7)
+
+#define ARROW_ENUM_FOR_EACH_256(T, startIndex)                                              \
+    ARROW_ENUM_FOR_EACH_16(T, startIndex, 0), ARROW_ENUM_FOR_EACH_16(T, startIndex, 1),     \
+        ARROW_ENUM_FOR_EACH_16(T, startIndex, 2), ARROW_ENUM_FOR_EACH_16(T, startIndex, 3), \
+        ARROW_ENUM_FOR_EACH_16(T, startIndex, 4), ARROW_ENUM_FOR_EACH_16(T, startIndex, 5), \
+        ARROW_ENUM_FOR_EACH_16(T, startIndex, 6), ARROW_ENUM_FOR_EACH_16(T, startIndex, 7), \
+        ARROW_ENUM_FOR_EACH_16(T, startIndex, 8), ARROW_ENUM_FOR_EACH_16(T, startIndex, 9), \
+        ARROW_ENUM_FOR_EACH_16(T, startIndex, a), ARROW_ENUM_FOR_EACH_16(T, startIndex, b), \
+        ARROW_ENUM_FOR_EACH_16(T, startIndex, c), ARROW_ENUM_FOR_EACH_16(T, startIndex, d), \
+        ARROW_ENUM_FOR_EACH_16(T, startIndex, e), ARROW_ENUM_FOR_EACH_16(T, startIndex, f)
+
+#define ARROW_ENUM_FOR_EACH_Impl(T, startIndex, StepSize) ARROW_ENUM_FOR_EACH_##StepSize(T, startIndex)
+#define ARROW_ENUM_FOR_EACH(T, startIndex, StepSize) ARROW_ENUM_FOR_EACH_Impl(T, startIndex, StepSize)
+
+#define EnumStepSize 128
+using IntegerSequence_EnumStepSize = Arrow::MakeIntegerSequence<EnumStepSize>::type;
+
+// // 探测对应的数值哪些位置有枚举定义 [zhuyb 2023-08-14 15:20:36]
+// template<typename T, typename std::underlying_type<T>::type enumStart>
+// constexpr Array::ArrayView<bool, EnumStepSize> ValidCount()
 // {
-//     static void Trace()
-//     {
-//         std::cout << __PRETTY_FUNCTION__ << std::endl;
-//     }
+//     return Array::ArrayView<bool, EnumStepSize>({ARROW_ENUM_FOR_EACH(T, enumStart, EnumStepSize)});
+// }
 
-//     constexpr static StaticStr::StringView<length> Impl()
-//     {
-//         return details::IsSocpedEnum<T>::value ? SocpedEnumName() : NoSocpedEnumName();
-//     }
+// 计算有效枚举个数 [zhuyb 2023-08-14 18:00:55]
+template<typename T>
+struct ValidSize;
 
-//     constexpr static StaticStr::StringView<length> NoSocpedEnumName()
-//     {
-//         return StaticStr::StringView<length>(__PRETTY_FUNCTION__ + StaticStr::Find<1>(__PRETTY_FUNCTION__, details::NoSocpedEnumNameStart) + StaticStr::StrLen(details::NoSocpedEnumNameStart),
-//                                              typename MakeIntegerSequence<length>::type{});
-//     }
+template<int ...args>
+struct ValidSize<Arrow::IntegerSequence<args...>>
+{
+    constexpr static size_t Impl(const bool* array)
+    {
+        return (... + (array[args] ? 1 : 0));
+    }
+};
 
-//     constexpr static StaticStr::StringView<length> SocpedEnumName()
-//     {
-//         return StaticStr::StringView<length>(__PRETTY_FUNCTION__ + StaticStr::Find<0>(__PRETTY_FUNCTION__, details::SocpedEnumNameStart) + StaticStr::StrLen(details::SocpedEnumNameStart),
-//                                              typename MakeIntegerSequence<length>::type{});
-//     }
-// };
+//  [zhuyb 2023-08-14 18:01:34]
+template <size_t index, size_t length>
+struct ValidCountConvert
+{
+    constexpr static Array::ArrayView<int, length> Impl(const bool* array)
+    {
+        return array[index] ? Array::ArrayView<int, 1>(index) + ValidCountConvert<index + 1, length - 1>::Impl(array) : ValidCountConvert<index + 1, length>::Impl(array);
+    }
+};
 
-// // 错误的枚举值 [zhuyb 2023-08-04 11:29:55]
-// template<typename T, T t>
-// struct EnumItemName<T, t, 0>
-// {
-//     static void Trace()
-//     {
-//         std::cout << __PRETTY_FUNCTION__ << std::endl;
-//     }
+template <>
+struct ValidCountConvert<EnumStepSize, 0>
+{
+    constexpr static Array::ArrayView<int, 0> Impl(const bool* array)
+    {
+        return Array::ArrayView<int, 0>();
+    }
+};
 
-//     constexpr static StaticStr::StringView<0> Impl()
-//     {
-//         return StaticStr::Str("");
-//     }
-// };
+// 临时变量，找出enumStart ~ enumStart+EnumStepSize 有效的枚举 [zhuyb 2023-08-14 18:02:03]
+template<typename T, typename std::underlying_type<T>::type enumStart, typename std::underlying_type<T>::type enumEnd, typename SFINAE = void>
+struct ValidCountTmp
+{
+    constexpr static size_t length = (EnumStepSize + enumEnd - enumStart) / EnumStepSize * EnumStepSize;
 
-// // 最初的入口 用于计算枚举字符串的长度 [zhuyb 2023-08-04 11:30:17]
-// template<typename T, T t>
-// struct EnumItemName<T, t, -1>
-// {
-//     template<typename T2, T2 t2>
-//     static void Trace()
-//     {
-//         std::cout << __PRETTY_FUNCTION__ << std::endl;
-//         EnumItemName<T, t, Length()>::Trace();
-//     }
+    constexpr static Array::ArrayView<bool, length> Impl()
+    {
+        return Array::ArrayView<bool, EnumStepSize>({ARROW_ENUM_FOR_EACH(T, enumStart, EnumStepSize)}) + ValidCountTmp<T, enumStart + EnumStepSize, enumEnd>::Impl();
+    }
+};
 
-//     /**
-//      * @description: 判断值是否合法
-//      * @return {*}
-//      */
-//     constexpr static bool IsValid()
-//     {
-//         return StaticStr::Find<0>(__PRETTY_FUNCTION__, details::NoSocpedEnumInVain) == std::string::npos;
-//     }
+template<typename T, typename std::underlying_type<T>::type enumStart, typename std::underlying_type<T>::type enumEnd>
+struct ValidCountTmp<T, enumStart, enumEnd, typename std::enable_if<(enumStart >= enumEnd)>::type>
+{
+    constexpr static size_t length = 0;
+    constexpr static Array::ArrayView<bool, length> Impl()
+    {
+        return Array::ArrayView<bool, 0>{};
+    }
+};
 
-//     /**
-//      * @description: 获取枚举类型对应字符串的长度
-//      * @return {*}
-//      */
-//     constexpr static int Length()
-//     {
-//         return IsValid() ? (details::IsSocpedEnum<T>::value ? LengthScopedEnum() : LengthNoScopedEnum()) : 0;
-//     }
-    
-//     constexpr static int LengthScopedEnum()
-//     {
-//         return StaticStr::Find<0>(__PRETTY_FUNCTION__, details::SocpedEnumNameEnd) - StaticStr::Find<0>(__PRETTY_FUNCTION__, details::SocpedEnumNameStart) - StaticStr::StrLen(details::SocpedEnumNameStart);
-//     }
+// 探测对应的数值哪些位置有枚举定义 [zhuyb 2023-08-14 15:20:36]
+template<typename T, typename std::underlying_type<T>::type enumStart, typename std::underlying_type<T>::type enumEnd>
+constexpr auto MyEnumName1() -> decltype(ValidCountTmp<T, enumStart, enumEnd>::Impl())
+{
+    return ValidCountTmp<T, enumStart, enumEnd>::Impl();
+}
 
-//     constexpr static int LengthNoScopedEnum()
-//     {
-//         return StaticStr::Find<0>(__PRETTY_FUNCTION__, details::NoSocpedEnumNameEnd) - StaticStr::Find<1>(__PRETTY_FUNCTION__, details::NoSocpedEnumNameStart) - StaticStr::StrLen(details::NoSocpedEnumNameStart);
-//     }
-
-//     /**
-//      * @description: 获取枚举值对应字符串
-//      * @return {*}
-//      */    
-//     constexpr static auto Impl() -> decltype(EnumItemName<T, t, EnumItemName<T, t>::Length()>::Impl())
-//     {
-//         return EnumItemName<T, t, EnumItemName<T, t>::Length()>::Impl();
-//     }
-
-//     // constexpr static auto Impl1() -> decltype(TypeName<T>::Impl() + StaticStr::Str("::") + EnumItemName<T, t>::Impl())
-//     // {
-//     //     return TypeName<T>::Impl() + StaticStr::Str("::") + EnumItemName<T, t>::Impl();
-//     // }
-
-//     constexpr static const char* Name()
-//     {
-//         return value.data;
-//     }
-
-//     // constexpr static const char* FullName()
-//     // {
-//     //     return long_value.data;
-//     // }
-
-//     static constexpr decltype(EnumItemName<T, t>::Impl()) value = EnumItemName<T, t>::Impl();
-//     // static constexpr decltype(EnumItemName<T, t>::Impl1()) long_value = EnumItemName<T, t>::Impl1();
-
-// };
+// 探测对应的数值哪些位置有枚举定义 [zhuyb 2023-08-14 15:20:36]
+template<typename T, typename std::underlying_type<T>::type enumStart, typename std::underlying_type<T>::type enumEnd>
+constexpr size_t MyEnumName2()
+{
+    return Arrow2::ValidSize<Arrow2::IntegerSequence_EnumStepSize>::Impl(MyEnumName1<T, enumStart, enumEnd>().data);
+}
 
 }
