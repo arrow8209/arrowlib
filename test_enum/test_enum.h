@@ -90,9 +90,9 @@ static void TestEnum()
     // auto t3 = tmp1 + tmp2;
 
     constexpr auto tmpA = Arrow2::MyEnumName1<MyEnumA, 0, 100>();
-    constexpr auto len = Arrow2::MyEnumName2<MyEnumA, 0, 100>();
+    constexpr auto len = Arrow2::MyEnumName2<MyEnumA, 0, 129>();
     constexpr auto tmpB = Arrow2::ValidCountConvert<MyEnumA,0, 0, len>::Impl(tmpA.data);
-
+    constexpr auto tmpC= Arrow2::MyEnumName3<MyEnumA, 0, 100>();
     // constexpr auto tmp1 = Arrow2::ValidCount<MyEnumA, 0>();
     // constexpr auto tmp2 = Arrow2::ValidCount<MyEnumA, 0>();
     // auto t3 = tmp1 + tmp2 + tmp1;
