@@ -5,6 +5,7 @@
 #include <iostream>
 #include "arrow/typelist/type_name.h"
 #include "test1/enum_name_impl2.h"
+#include "test1/enum_name_impl3.h"
 
 // enum class MyTestEnum {
 // 	MyTestEnum_0 = 0,
@@ -40,26 +41,58 @@ enum class MyTestEnum {
 	MyTestEnum_13 = 13
 };
 
-enum class MyEnumA {
-	MyEnumA_0 = 0
+enum class MyEnumA
+{
+    MyEnumA_0 = 0,
+    MyEnumA_20 = 20,
+    MyEnumA_220 = 220
 };
 
 enum MyEnumB {
 	MyEnumB_0 = 0
 };
 
+template<typename T, T val>
+void FunName()
+{
+    std::cout << __PRETTY_FUNCTION__ << std::endl;
+}
+
+constexpr MyEnumA a= static_cast<MyEnumA>(1);
+constexpr MyEnumB b= static_cast<MyEnumB>(1);
+
 static void TestEnum()
 {
-    Arrow2::EnumItemName<MyEnumA, static_cast<MyEnumA>(0)>::Trace();
-    Arrow2::EnumItemName<MyEnumB, static_cast<MyEnumB>(0)>::Trace();
+    auto itemName1 = Arrow2::EnumItemName<MyEnumA, static_cast<MyEnumA>(0)>();
+    std::cout << itemName1.data << std::endl;
 
-    std::cout << Arrow2::EnumItemName<MyEnumA, static_cast<MyEnumA>(0)>::Length() << std::endl;
-    std::cout << Arrow2::EnumItemName<MyEnumB, static_cast<MyEnumB>(0)>::Length() << std::endl;
+    auto itemName2 = Arrow2::EnumItemName<MyEnumB, static_cast<MyEnumB>(0)>();
+    std::cout << itemName2.data << std::endl;
 
-    std::cout << Arrow2::EnumItemName<MyEnumA, static_cast<MyEnumA>(0)>::Impl().data << std::endl;
-    std::cout << Arrow2::EnumItemName<MyEnumB, static_cast<MyEnumB>(0)>::Impl().data << std::endl;
+    std::cout << Arrow2::details::IsSocpedEnum<MyEnumA>::value << std::endl;
+    std::cout << Arrow2::details::IsSocpedEnum<MyEnumB>::value << std::endl;
 
-    constexpr auto tmp = Arrow2::ValidData<10>();
+    constexpr Arrow2::Array::ArrayView<bool, 2> tmp1(true, false);
+    constexpr Arrow2::Array::ArrayView<bool, 0> tmp2;
+    auto t3 = tmp1 + tmp2;
+
+    constexpr auto tmp = Arrow2::ValidCount<MyEnumA, 0>();
+
+    // FunName<MyEnumA, static_cast<MyEnumA>(0)>();
+    // FunName<MyEnumA, static_cast<MyEnumA>(1)>();
+
+    // Arrow2::EnumItemName<MyEnumA, MyEnumA(1)>::Trace<MyEnumA, a>();
+    // Arrow2::EnumItemName<MyEnumB, MyEnumB(2)>::Trace<MyEnumB, b>();
+
+    // std::cout << typeid(static_cast<MyEnumA>(2)).name() << std::endl;
+    // std::cout << typeid(static_cast<MyEnumB>(2)).name() << std::endl;
+    // std::cout << Arrow2::EnumItemName<MyEnumA, static_cast<MyEnumA>(0)>::Length() << std::endl;
+    // std::cout << Arrow2::EnumItemName<MyEnumB, static_cast<MyEnumB>(0)>::Length() << std::endl;
+
+    // std::cout << Arrow2::EnumItemName<MyEnumA, static_cast<MyEnumA>(0)>::Impl().data << std::endl;
+    // std::cout << Arrow2::EnumItemName<MyEnumB, static_cast<MyEnumB>(0)>::Impl().data << std::endl;
+
+    // constexpr auto tmp = Arrow2::ValidData<10>();
     
     // tmp.SetValidData<MyEnumA, 0>();
     // int n = 5;
