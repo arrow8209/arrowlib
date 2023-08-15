@@ -102,13 +102,16 @@ static void TestEnum()
     // constexpr auto len = Arrow2::MyEnumName2<MyEnumA, 0, 129>();
     constexpr auto tmpA = Arrow2::ValidInOneStepSize<MyEnumA, 0>::validTmp;
     constexpr auto tmpB = Arrow2::ValidArrayInOneStepSize<MyEnumA, 0>::array;
-    constexpr auto tmpC = Arrow2::ValidArray<MyEnumA, 0 , 258>::validArray;
-    constexpr auto tmpD = Arrow2::ValidArray<MyEnumA, 0 , 258>::itemNameArray;
+    constexpr auto tmpC = Arrow2::ValidArray<MyEnumA, 0, 258>::validArray;
+    MyEnumA enumA = MyEnumA::MyEnumA_20;
+    auto tmpD = Arrow2::ValidItemName<MyEnumA, 0, 258>::ItemName(enumA);
+    // constexpr auto tmpD = Arrow2::EnumItemName<MyEnumA, tmpC[0]>;
+    // constexpr auto tmpE = tmpD.data;
 
-        constexpr auto tmpA1 = Arrow2::ValidInOneStepSize<MyEnumB, 0>::validTmp;
+    constexpr auto tmpA1 = Arrow2::ValidInOneStepSize<MyEnumB, 0>::validTmp;
     constexpr auto tmpB1 = Arrow2::ValidArrayInOneStepSize<MyEnumB, 0>::array;
     constexpr auto tmpC1 = Arrow2::ValidArray<MyEnumB, 0 , 258>::validArray;
-    constexpr auto tmpD1 = Arrow2::ValidArray<MyEnumB, 0 , 258>::itemNameArray;
+    // constexpr auto tmpD1 = Arrow2::ValidArray<MyEnumB, 0 , 258>::itemNameArray;
     // constexpr auto tmpB = Arrow2::ValidArray<MyEnumA, 0, 100>::array;
 
     // constexpr auto tmp1 = Arrow2::ValidCount<MyEnumA, 0>();
