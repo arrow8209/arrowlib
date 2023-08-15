@@ -46,21 +46,42 @@ struct ArrayView<T, size, Arrow::IntegerSequence<args...>>
         : data{get<T, args1>(array1)..., get<T, args2>(array2)...}, length(sizeof...(args1) + sizeof...(args2)) {}
 
     template <size_t size1>
-    constexpr ArrayView<T, size + size1> operator+(ArrayView<T, size1> b) const
+    constexpr ArrayView<T, size + size1> operator+(const ArrayView<T, size1>& b) const
     {
         return ArrayView<T, size + size1>(data, typename Arrow::MakeIntegerSequence<size>::type{},
                                         b.data, typename Arrow::MakeIntegerSequence<size1>::type{});
     }
 
-    constexpr ArrayView<T, size> operator+(ArrayView<T, 0> b) const
+    constexpr ArrayView<T, size> operator+(const ArrayView<T, 0>& b)
     {
         return *this;
     }
+
+    constexpr T operator[](size_t i) const
+    {
+        return data[i];
+    }
+
+    T& operator[](size_t i)
+    {
+        return data[i];
+    }
+
 };
 
 template<typename T, int... argsMain>
 struct ArrayView<T, 0, Arrow::IntegerSequence<argsMain...>>
 {
+    template <size_t size1>
+    constexpr ArrayView<T, size1> operator+(const ArrayView<T, size1>& b) const
+    {
+        return ArrayView<T, size1>(b.data, typename Arrow::MakeIntegerSequence<size1>::type{});
+    }
+
+    constexpr ArrayView<T, 0> operator+(const ArrayView<T, 0>& b) const
+    {
+        return *this;
+    }
 };
 
 namespace details
