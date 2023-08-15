@@ -147,7 +147,7 @@ size_t Trace()
 
 #define ARROW_ENUM_FOR_EACH_1(T, startIndex, i, j) details::IsValid<T, static_cast<T>(startIndex + 0x##i##j)>()
 
-#define ARROW_ENUM_FOR_EACH_16(T, startIndex, i)                                                \
+#define ARROW_ENUM_FOR_EACH_X(T, startIndex, i)                                                \
     ARROW_ENUM_FOR_EACH_1(T, startIndex, i, 0), ARROW_ENUM_FOR_EACH_1(T, startIndex, i, 1),        \
         ARROW_ENUM_FOR_EACH_1(T, startIndex, i, 2), ARROW_ENUM_FOR_EACH_1(T, startIndex, i, 3), \
         ARROW_ENUM_FOR_EACH_1(T, startIndex, i, 4), ARROW_ENUM_FOR_EACH_1(T, startIndex, i, 5), \
@@ -157,26 +157,29 @@ size_t Trace()
         ARROW_ENUM_FOR_EACH_1(T, startIndex, i, c), ARROW_ENUM_FOR_EACH_1(T, startIndex, i, d), \
         ARROW_ENUM_FOR_EACH_1(T, startIndex, i, e), ARROW_ENUM_FOR_EACH_1(T, startIndex, i, f)
 
+#define ARROW_ENUM_FOR_EACH_16(T, startIndex) ARROW_ENUM_FOR_EACH_X(T, startIndex, 0)      
+
 #define ARROW_ENUM_FOR_EACH_128(T, startIndex)                                              \
-    ARROW_ENUM_FOR_EACH_16(T, startIndex, 0), ARROW_ENUM_FOR_EACH_16(T, startIndex, 1),     \
-        ARROW_ENUM_FOR_EACH_16(T, startIndex, 2), ARROW_ENUM_FOR_EACH_16(T, startIndex, 3), \
-        ARROW_ENUM_FOR_EACH_16(T, startIndex, 4), ARROW_ENUM_FOR_EACH_16(T, startIndex, 5), \
-        ARROW_ENUM_FOR_EACH_16(T, startIndex, 6), ARROW_ENUM_FOR_EACH_16(T, startIndex, 7)
+    ARROW_ENUM_FOR_EACH_X(T, startIndex, 0), ARROW_ENUM_FOR_EACH_X(T, startIndex, 1),     \
+        ARROW_ENUM_FOR_EACH_X(T, startIndex, 2), ARROW_ENUM_FOR_EACH_X(T, startIndex, 3), \
+        ARROW_ENUM_FOR_EACH_X(T, startIndex, 4), ARROW_ENUM_FOR_EACH_X(T, startIndex, 5), \
+        ARROW_ENUM_FOR_EACH_X(T, startIndex, 6), ARROW_ENUM_FOR_EACH_X(T, startIndex, 7)
 
 #define ARROW_ENUM_FOR_EACH_256(T, startIndex)                                              \
-    ARROW_ENUM_FOR_EACH_16(T, startIndex, 0), ARROW_ENUM_FOR_EACH_16(T, startIndex, 1),     \
-        ARROW_ENUM_FOR_EACH_16(T, startIndex, 2), ARROW_ENUM_FOR_EACH_16(T, startIndex, 3), \
-        ARROW_ENUM_FOR_EACH_16(T, startIndex, 4), ARROW_ENUM_FOR_EACH_16(T, startIndex, 5), \
-        ARROW_ENUM_FOR_EACH_16(T, startIndex, 6), ARROW_ENUM_FOR_EACH_16(T, startIndex, 7), \
-        ARROW_ENUM_FOR_EACH_16(T, startIndex, 8), ARROW_ENUM_FOR_EACH_16(T, startIndex, 9), \
-        ARROW_ENUM_FOR_EACH_16(T, startIndex, a), ARROW_ENUM_FOR_EACH_16(T, startIndex, b), \
-        ARROW_ENUM_FOR_EACH_16(T, startIndex, c), ARROW_ENUM_FOR_EACH_16(T, startIndex, d), \
-        ARROW_ENUM_FOR_EACH_16(T, startIndex, e), ARROW_ENUM_FOR_EACH_16(T, startIndex, f)
+    ARROW_ENUM_FOR_EACH_X(T, startIndex, 0), ARROW_ENUM_FOR_EACH_X(T, startIndex, 1),     \
+        ARROW_ENUM_FOR_EACH_X(T, startIndex, 2), ARROW_ENUM_FOR_EACH_X(T, startIndex, 3), \
+        ARROW_ENUM_FOR_EACH_X(T, startIndex, 4), ARROW_ENUM_FOR_EACH_X(T, startIndex, 5), \
+        ARROW_ENUM_FOR_EACH_X(T, startIndex, 6), ARROW_ENUM_FOR_EACH_X(T, startIndex, 7), \
+        ARROW_ENUM_FOR_EACH_X(T, startIndex, 8), ARROW_ENUM_FOR_EACH_X(T, startIndex, 9), \
+        ARROW_ENUM_FOR_EACH_X(T, startIndex, a), ARROW_ENUM_FOR_EACH_X(T, startIndex, b), \
+        ARROW_ENUM_FOR_EACH_X(T, startIndex, c), ARROW_ENUM_FOR_EACH_X(T, startIndex, d), \
+        ARROW_ENUM_FOR_EACH_X(T, startIndex, e), ARROW_ENUM_FOR_EACH_X(T, startIndex, f)
 
 #define ARROW_ENUM_FOR_EACH_Impl(T, startIndex, StepSize) ARROW_ENUM_FOR_EACH_##StepSize(T, startIndex)
 #define ARROW_ENUM_FOR_EACH(T, startIndex, StepSize) ARROW_ENUM_FOR_EACH_Impl(T, startIndex, StepSize)
 
-#define EnumStepSize 256
+//clang 只能用128个不能使用256 gcc编译期可以使用256
+#define EnumStepSize 16
 using IntegerSequence_EnumStepSize = Arrow::MakeIntegerSequence<EnumStepSize>::type;
 
 // 获取一个步长的基础信息 [zhuyb 2023-08-14 18:01:34]
@@ -313,6 +316,12 @@ struct ValidArray<T, enumStart, enumEnd, typename std::enable_if<(enumStart > en
     // static constexpr Array::ArrayView<const char*, 0> itemNameArray = Array::ArrayView<const char*, 0>();
 };
 
+// template<typename T, T val>
+// struct EnumItemName
+// {
+//     static constexpr auto ItemView = details::EnumItemNameImpl<T, val>();
+// };
+
 template<typename T, typename std::underlying_type<T>::type enumStart, typename std::underlying_type<T>::type enumEnd, 
     size_t index=ValidArray<T, enumStart, enumEnd>::count>
 struct ValidItemName
@@ -321,10 +330,10 @@ struct ValidItemName
 
     static const char* ItemName(const T& v)
     {
-        constexpr auto tmpC = ValidArray<T, enumStart, enumEnd>::validArray;
-        if(tmpC[index - 1] == v)
+        static constexpr auto validArray = ValidArray<T, enumStart, enumEnd>::validArray;
+        if(validArray[index - 1] == v)
         {
-            static constexpr auto itemDataView = details::EnumItemNameImpl<T, tmpC[index - 1]>();
+            static constexpr auto itemDataView = details::EnumItemNameImpl<T, validArray[index - 1]>();
             return itemDataView.data;
         }
         return ValidItemName<T, enumStart, enumEnd, index - 1>::ItemName(v);

@@ -75,7 +75,7 @@ struct ArrayView<T, 0, Arrow::IntegerSequence<argsMain...>>
     template <size_t size1>
     constexpr ArrayView<T, size1> operator+(const ArrayView<T, size1>& b) const
     {
-        return ArrayView<T, size1>(b.data, typename Arrow::MakeIntegerSequence<size1>::type{});
+        return b;
     }
 
     constexpr ArrayView<T, 0> operator+(const ArrayView<T, 0>& b) const
