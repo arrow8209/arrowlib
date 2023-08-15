@@ -45,7 +45,7 @@ enum class MyEnumA
 {
     MyEnumA_0 = 0,
     MyEnumA_20 = 20,
-    MyEnumA_220 = 220
+    MyEnumA_220 = 270
 };
 
 enum MyEnumB {
@@ -100,10 +100,16 @@ static void TestEnum()
     // int i = 1;
     // auto tmpA1 = tmpA[1];
     // constexpr auto len = Arrow2::MyEnumName2<MyEnumA, 0, 129>();
-    // constexpr auto tmpB = Arrow2::ValidCountConvert<MyEnumA,0, 0, len>::Impl(tmpA.data);
     constexpr auto tmpA = Arrow2::ValidInOneStepSize<MyEnumA, 0>::validTmp;
-    std::cout << Arrow2::ValidInOneStepSize<MyEnumA, 0>::validCount << std::endl;
-    constexpr auto tmpC= Arrow2::MyEnumName3<MyEnumA, 0, 100>();
+    constexpr auto tmpB = Arrow2::ValidArrayInOneStepSize<MyEnumA, 0>::array;
+    constexpr auto tmpC = Arrow2::ValidArray<MyEnumA, 0 , 258>::validArray;
+    constexpr auto tmpD = Arrow2::ValidArray<MyEnumA, 0 , 258>::itemNameArray;
+
+        constexpr auto tmpA1 = Arrow2::ValidInOneStepSize<MyEnumB, 0>::validTmp;
+    constexpr auto tmpB1 = Arrow2::ValidArrayInOneStepSize<MyEnumB, 0>::array;
+    constexpr auto tmpC1 = Arrow2::ValidArray<MyEnumB, 0 , 258>::validArray;
+    constexpr auto tmpD1 = Arrow2::ValidArray<MyEnumB, 0 , 258>::itemNameArray;
+    // constexpr auto tmpB = Arrow2::ValidArray<MyEnumA, 0, 100>::array;
 
     // constexpr auto tmp1 = Arrow2::ValidCount<MyEnumA, 0>();
     // constexpr auto tmp2 = Arrow2::ValidCount<MyEnumA, 0>();

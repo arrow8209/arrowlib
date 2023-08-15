@@ -128,6 +128,13 @@ constexpr auto SocpedEnumItemName() -> StaticStr::StringView<Length<T, t>()>
                                          typename MakeIntegerSequence<Length<T, t>()>::type{});
 }
 
+// 获取枚举短名称(不包括限定域名称) [zhuyb 2023-08-14 15:19:38]
+template<typename T, T t>
+constexpr auto EnumItemName() -> StaticStr::StringView<details::Length<T, t>()>
+{
+    return  details::IsSocpedEnum<T>::value ? details::SocpedEnumItemName<T, t>() : details::NoSpcpedEnumItemName<T, t>();
+}
+
 }
 
 // 调试使用 [zhuyb 2023-08-13 17:13:49]
@@ -138,15 +145,9 @@ size_t Trace()
     return 0;
 }
 
-// 获取枚举短名称(不包括限定域名称) [zhuyb 2023-08-14 15:19:38]
-template<typename T, T t>
-constexpr auto EnumItemName() -> StaticStr::StringView<details::Length<T, t>()>
-{
-    return  details::IsSocpedEnum<T>::value ? details::SocpedEnumItemName<T, t>() : details::NoSpcpedEnumItemName<T, t>();
-}
-
+// 获取枚举名称 [zhuyb 2023-08-13 17:13:49]
 template<typename T, typename std::underlying_type<T>::type val>
-constexpr auto ItemName = EnumItemName<T, static_cast<T>(val)>();
+constexpr auto EnumItemName = details::EnumItemName<T, static_cast<T>(val)>();
 
 #define ARROW_ENUM_FOR_EACH_1(T, startIndex, i, j) details::IsValid<T, static_cast<T>(startIndex + 0x##i##j)>()
 
@@ -182,48 +183,7 @@ constexpr auto ItemName = EnumItemName<T, static_cast<T>(val)>();
 #define EnumStepSize 256
 using IntegerSequence_EnumStepSize = Arrow::MakeIntegerSequence<EnumStepSize>::type;
 
-//  [zhuyb 2023-08-14 18:01:34]
-template <typename T, typename std::underlying_type<T>::type enumStart, size_t length, size_t index = 0>
-struct ValidCountConvert
-{
-    static_assert(index < EnumStepSize, "index超出界限");
-    static_assert(length <= EnumStepSize, "length超出界限");
-    constexpr static Array::ArrayView<T, length> Impl(const bool* array)
-    {
-        return array[index] ? 
-            Array::ArrayView<T, 1>(static_cast<T>(enumStart + index)) + ValidCountConvert<T, enumStart, length - 1, index + 1>::Impl(array) : 
-            ValidCountConvert<T, enumStart, length, index + 1>::Impl(array);
-    }
-};
-
-template <typename T, typename std::underlying_type<T>::type enumStart, size_t length>
-struct ValidCountConvert<T, enumStart, length, EnumStepSize>
-{
-    constexpr static Array::ArrayView<T, length> Impl(const bool* array)
-    {
-        return Array::ArrayView<T, length>();
-    }
-};
-
-template <typename T, typename std::underlying_type<T>::type enumStart, size_t index>
-struct ValidCountConvert<T, enumStart, 0, index>
-{
-    constexpr static Array::ArrayView<T, 0> Impl(const bool* array)
-    {
-        return Array::ArrayView<T, 0>();
-    }
-};
-
-template <typename T, typename std::underlying_type<T>::type enumStart>
-struct ValidCountConvert<T, enumStart, 0, EnumStepSize>
-{
-    constexpr static Array::ArrayView<T, 0> Impl(const bool* array)
-    {
-        return Array::ArrayView<T, 0>();
-    }
-};
-
-//  [zhuyb 2023-08-14 18:01:34]
+// 获取一个步长的基础信息 [zhuyb 2023-08-14 18:01:34]
 template <typename T, typename std::underlying_type<T>::type enumStart, typename IntegerSeq=IntegerSequence_EnumStepSize >
 struct ValidInOneStepSize{};
 
@@ -244,65 +204,117 @@ struct ValidInOneStepSize<T, enumStart, Arrow::IntegerSequence<args...>>
     static constexpr size_t validCount = ValidCount();
 };
 
-
-
-// //  [zhuyb 2023-08-14 18:01:34]
-// template <typename T, typename std::underlying_type<T>::type enumStart,  size_t length, size_t index = 0>
-// struct ValidArrayInOneStepSize
-// {
-//     constexpr static Array::ArrayView<T, length> Impl(const bool* array)
-//     {
-//         return array[index] ? Array::ArrayView<T, 1>(static_cast<T>(enumStart + index)) + ValidArrayInOneStepSize<T, enumStart, length - 1, index + 1>::Impl(array) : ValidArrayInOneStepSize<T, enumStart, length, index + 1>::Impl(array);
-//     }
-// };
-
-// template <typename T, typename std::underlying_type<T>::type enumStart, size_t length>
-// struct ValidArrayInOneStepSize<T, enumStart, length, EnumStepSize>
-// {
-//     constexpr static Array::ArrayView<T, length> Impl(const bool* array)
-//     {
-//         return Array::ArrayView<T, length>();
-//     }
-// };
-
-// template <typename T, typename std::underlying_type<T>::type enumStart,  size_t index>
-// struct ValidArrayInOneStepSize<T, enumStart, 0, index>
-// {
-//     constexpr static Array::ArrayView<T, 0> Impl(const bool* array)
-//     {
-//         return Array::ArrayView<T, 0>();
-//     }
-// };
-
-// template <typename T, typename std::underlying_type<T>::type enumStart>
-// struct ValidArrayInOneStepSize<T, enumStart, 0,  EnumStepSize>
-// {
-//     constexpr static Array::ArrayView<T, 0> Impl(const bool* array)
-//     {
-//         return Array::ArrayView<T, 0>();
-//     }
-// };
-
-
-//  [zhuyb 2023-08-14 18:01:34]
-template <typename T, typename std::underlying_type<T>::type enumStart>
+// 获取一个步长的有效枚举数组 [zhuyb 2023-08-14 18:01:34]
+template <typename T,
+          typename std::underlying_type<T>::type enumStart,
+          size_t length = EnumStepSize + 1,
+          size_t index = EnumStepSize + 1>
 struct ValidArrayInOneStepSize
 {
-    constexpr static auto array = ValidCountConvert<T, enumStart, 0, ValidInOneStepSize<T, enumStart>::validCount>::Impl(ValidInOneStepSize<T, enumStart>::validTmp.data);
+    constexpr static Array::ArrayView<T, length> Impl(const bool* array)
+    {
+        return array[index] ? 
+                Array::ArrayView<T, 1>(static_cast<T>(enumStart + index)) + ValidArrayInOneStepSize<T, enumStart, length - 1, index + 1>::Impl(array) : 
+                ValidArrayInOneStepSize<T, enumStart, length, index + 1>::Impl(array);
+    }
 };
 
+template <typename T, typename std::underlying_type<T>::type enumStart>
+struct ValidArrayInOneStepSize<T, enumStart, EnumStepSize + 1, EnumStepSize + 1>
+{
+    constexpr static auto array = ValidArrayInOneStepSize<T, enumStart, ValidInOneStepSize<T, enumStart>::validCount, 0>::Impl(ValidInOneStepSize<T, enumStart>::validTmp.data);
+};
+
+template <typename T, typename std::underlying_type<T>::type enumStart, size_t length>
+struct ValidArrayInOneStepSize<T, enumStart, length, EnumStepSize>
+{
+    constexpr static Array::ArrayView<T, length> Impl(const bool* array)
+    {
+        return Array::ArrayView<T, length>();
+    }
+};
+
+template <typename T, typename std::underlying_type<T>::type enumStart,  size_t index>
+struct ValidArrayInOneStepSize<T, enumStart, 0, index>
+{
+    constexpr static Array::ArrayView<T, 0> Impl(const bool* array)
+    {
+        return Array::ArrayView<T, 0>();
+    }
+};
+
+template <typename T, typename std::underlying_type<T>::type enumStart>
+struct ValidArrayInOneStepSize<T, enumStart, 0,  EnumStepSize>
+{
+    constexpr static Array::ArrayView<T, 0> Impl(const bool* array)
+    {
+        return Array::ArrayView<T, 0>();
+    }
+};
+
+//////////////////////
+template <typename T,
+          typename std::underlying_type<T>::type enumStart,
+          size_t length = EnumStepSize + 1,
+          size_t index = EnumStepSize + 1>
+struct ValidInOneStepSizeItemName
+{
+    constexpr static Array::ArrayView<const char*, length> Impl(const bool* array)
+    {
+        return array[index] ? 
+                Array::ArrayView<const char*, 1>(EnumItemName<T, enumStart + index>.data) + ValidInOneStepSizeItemName<T, enumStart, length - 1, index + 1>::Impl(array) : 
+                ValidInOneStepSizeItemName<T, enumStart, length, index + 1>::Impl(array);
+    }
+};
+
+template <typename T, typename std::underlying_type<T>::type enumStart>
+struct ValidInOneStepSizeItemName<T, enumStart, EnumStepSize + 1, EnumStepSize + 1>
+{
+    constexpr static auto array = ValidInOneStepSizeItemName<T, enumStart, ValidInOneStepSize<T, enumStart>::validCount, 0>::Impl(ValidInOneStepSize<T, enumStart>::validTmp.data);
+};
+
+template <typename T, typename std::underlying_type<T>::type enumStart, size_t length>
+struct ValidInOneStepSizeItemName<T, enumStart, length, EnumStepSize>
+{
+    constexpr static Array::ArrayView<const char*, length> Impl(const bool* array)
+    {
+        return Array::ArrayView<const char*, length>();
+    }
+};
+
+template <typename T, typename std::underlying_type<T>::type enumStart,  size_t index>
+struct ValidInOneStepSizeItemName<T, enumStart, 0, index>
+{
+    constexpr static Array::ArrayView<const char*, 0> Impl(const bool* array)
+    {
+        return Array::ArrayView<const char*, 0>();
+    }
+};
+
+template <typename T, typename std::underlying_type<T>::type enumStart>
+struct ValidInOneStepSizeItemName<T, enumStart, 0,  EnumStepSize>
+{
+    constexpr static Array::ArrayView<const char*, 0> Impl(const bool* array)
+    {
+        return Array::ArrayView<const char*, 0>();
+    }
+};
+
+// enumStart~enumEnd 有效的枚举信息
 template <typename T, typename std::underlying_type<T>::type enumStart, typename std::underlying_type<T>::type enumEnd, typename SFINEA=void>
 struct ValidArray
 {
     static constexpr size_t count = ValidInOneStepSize<T, enumStart>::validCount + ValidArray<T, enumStart + EnumStepSize, enumEnd>::count;
-    static constexpr auto array = ValidArrayInOneStepSize<T, enumStart>::array + ValidArray<T, enumStart + EnumStepSize, enumEnd>::array;
+    static constexpr auto validArray = ValidArrayInOneStepSize<T, enumStart>::array + ValidArray<T, enumStart + EnumStepSize, enumEnd>::validArray;
+    static constexpr auto itemNameArray = ValidInOneStepSizeItemName<T, enumStart>::array + ValidArray<T, enumStart + EnumStepSize, enumEnd>::itemNameArray; 
 };
 
 template <typename T, typename std::underlying_type<T>::type enumStart, typename std::underlying_type<T>::type enumEnd>
 struct ValidArray<T, enumStart, enumEnd, typename std::enable_if<(enumStart > enumEnd)>::type>
 {
     static constexpr size_t count = 0;
-    static constexpr Array::ArrayView<T, 0> array = Array::ArrayView<T, 0>();
+    static constexpr Array::ArrayView<T, 0> validArray = Array::ArrayView<T, 0>();
+    static constexpr Array::ArrayView<const char*, 0> itemNameArray = Array::ArrayView<const char*, 0>();
 };
 
 // 探测对应的数值哪些位置有枚举定义 [zhuyb 2023-08-14 15:20:36]
@@ -319,11 +331,6 @@ constexpr size_t MyEnumName2()
     return ValidArray<T, enumStart, enumEnd>::count;
 }
 
-// 探测对应的数值哪些位置有枚举定义 [zhuyb 2023-08-14 15:20:36]
-template<typename T, typename std::underlying_type<T>::type enumStart, typename std::underlying_type<T>::type enumEnd>
-constexpr auto MyEnumName3() -> Array::ArrayView<T, ValidInOneStepSize<T, enumStart>::validCount>
-{
-    return ValidCountConvert<T, enumStart, ValidInOneStepSize<T, enumStart>::validCount>::Impl(ValidInOneStepSize<T, enumStart>::validTmp.data);
-}
+
 
 }
