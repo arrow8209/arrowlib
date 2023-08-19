@@ -2,7 +2,7 @@
 #include <type_traits>
 #include <map>
 #include <iostream>
-#include "array_view.h"
+#include "arrow/typelist/static_array.h"
 #include "arrow/typelist/type_name/type_name_impl.h"
 #include "arrow/typelist/static_string.h"
 
@@ -40,12 +40,8 @@ struct IsSocpedEnum : std::false_type {};
 template<typename T>
 struct IsSocpedEnum<T, typename std::enable_if<!std::is_convertible<T, int>::value>::type > : std::true_type {};
 
-// template<typename T, T l, T r, typename = typename std::enable_if<(l < r)>::type>
-// struct less : std::true_type{};
-
-// template<typename T, T l, T r>
-// struct less <T, l, r, typename std::enable_if<(l >= r)>::type> : std::true_type{};
-
+// template <typename T, T t>
+// struct Valid : public std::false_type{};
 
 // 判断枚举值是否合法 [zhuyb 2023-08-13 17:13:55]
 template<typename T, T t>
@@ -53,6 +49,14 @@ constexpr bool IsValid()
 {
     return StaticStr::Find<0>(__PRETTY_FUNCTION__, details::NoSocpedEnumInValid) == std::string::npos;
 }
+
+// template <typename T, T t, typename SFINEA = void>
+// struct Valid : public std::false_type
+// {
+// };
+
+// template <typename T, T t>
+// struct Valid<T, t, typename std::enable_if<IsVaild()>::type> : public std::false_type{};
 
 // 获取限定性枚举 名称的长度 gcc 在处理size_t会自动添加模板参数列表中添加 size_t = long unsigned int  [zhuyb 2023-08-13 17:14:29]
 // gcc 输出格式：size_t Arrow2::LengthScopedEnum() [with T = Enum...; T t = Enum...; size_t = long unsigned int]
@@ -116,24 +120,36 @@ void TraceLength()
 template<typename T, T t>
 constexpr auto NoSpcpedEnumItemName() -> StaticStr::StringView<Length<T, t>()>
 {
-    return StaticStr::StringView<Length<T, t>()>(__PRETTY_FUNCTION__ + StaticStr::Find<1>(__PRETTY_FUNCTION__, NoSocpedEnumNameStart) + StaticStr::StrLen(NoSocpedEnumNameStart),
-                                         typename MakeIntegerSequence<Length<T, t>()>::type{});
+    return StaticStr::StringView<Length<T, t>()>(__PRETTY_FUNCTION__ + StaticStr::Find<1>(__PRETTY_FUNCTION__, NoSocpedEnumNameStart) + StaticStr::StrLen(NoSocpedEnumNameStart));
 }
 
 // 获取限定枚举的名称 [zhuyb 2023-08-13 17:31:28]
 template<typename T, T t>
 constexpr auto SocpedEnumItemName() -> StaticStr::StringView<Length<T, t>()>
 {
-    return StaticStr::StringView<Length<T, t>()>(__PRETTY_FUNCTION__ + StaticStr::Find<0>(__PRETTY_FUNCTION__, SocpedEnumNameStart) + StaticStr::StrLen(SocpedEnumNameStart),
-                                         typename MakeIntegerSequence<Length<T, t>()>::type{});
+    return StaticStr::StringView<Length<T, t>()>(__PRETTY_FUNCTION__ + StaticStr::Find<0>(__PRETTY_FUNCTION__, SocpedEnumNameStart) + StaticStr::StrLen(SocpedEnumNameStart));
 }
 
-// 获取枚举短名称(不包括限定域名称) [zhuyb 2023-08-14 15:19:38]
-template<typename T, T t>
-constexpr auto EnumItemNameImpl() -> StaticStr::StringView<details::Length<T, t>()>
+// // 获取枚举短名称(不包括限定域名称) [zhuyb 2023-08-14 15:19:38]
+// template<typename T, T t>
+// constexpr auto EnumItemNameImpl() -> StaticStr::StringView<details::Length<T, t>()>
+// {
+//     return  details::IsSocpedEnum<T>::value ? details::SocpedEnumItemName<T, t>() : details::NoSpcpedEnumItemName<T, t>();
+// }
+
+template<typename T, T v>
+struct EnumItemName
 {
-    return  details::IsSocpedEnum<T>::value ? details::SocpedEnumItemName<T, t>() : details::NoSpcpedEnumItemName<T, t>();
-}
+
+    static constexpr auto Impl() -> StaticStr::StringView<details::Length<T, v>()>
+    {
+        return details::IsSocpedEnum<T>::value ? details::SocpedEnumItemName<T, v>() : details::NoSpcpedEnumItemName<T, v>();
+    }
+
+    static constexpr decltype(Impl()) itemView = Impl();
+};
+template<typename T, T v>
+constexpr decltype(EnumItemName<T, v>::Impl()) EnumItemName<T, v>::itemView;
 
 }
 
@@ -145,222 +161,125 @@ size_t Trace()
     return 0;
 }
 
-#define ARROW_ENUM_FOR_EACH_1(T, startIndex, i, j) details::IsValid<T, static_cast<T>(startIndex + 0x##i##j)>()
+#define IS_VAILD(T, startIndex, i, j) details::IsValid<T, static_cast<T>(startIndex + 0x##i##j)>()
 
-#define ARROW_ENUM_FOR_EACH_X(T, startIndex, i)                                                \
-    ARROW_ENUM_FOR_EACH_1(T, startIndex, i, 0), ARROW_ENUM_FOR_EACH_1(T, startIndex, i, 1),        \
-        ARROW_ENUM_FOR_EACH_1(T, startIndex, i, 2), ARROW_ENUM_FOR_EACH_1(T, startIndex, i, 3), \
-        ARROW_ENUM_FOR_EACH_1(T, startIndex, i, 4), ARROW_ENUM_FOR_EACH_1(T, startIndex, i, 5), \
-        ARROW_ENUM_FOR_EACH_1(T, startIndex, i, 6), ARROW_ENUM_FOR_EACH_1(T, startIndex, i, 7), \
-        ARROW_ENUM_FOR_EACH_1(T, startIndex, i, 8), ARROW_ENUM_FOR_EACH_1(T, startIndex, i, 9), \
-        ARROW_ENUM_FOR_EACH_1(T, startIndex, i, a), ARROW_ENUM_FOR_EACH_1(T, startIndex, i, b), \
-        ARROW_ENUM_FOR_EACH_1(T, startIndex, i, c), ARROW_ENUM_FOR_EACH_1(T, startIndex, i, d), \
-        ARROW_ENUM_FOR_EACH_1(T, startIndex, i, e), ARROW_ENUM_FOR_EACH_1(T, startIndex, i, f)
+#define ENUM_ITEM_NAME(T, startIndex, i, j) details::EnumItemName<T, static_cast<T>(startIndex + 0x##i##j)>::itemView.data
 
-#define ARROW_ENUM_FOR_EACH_16(T, startIndex) ARROW_ENUM_FOR_EACH_X(T, startIndex, 0)      
+#define ENUM_ITEM_INFO(T, startIndex, i, j) EnumItemInfo<T>(static_cast<T>(startIndex + 0x##i##j), ENUM_ITEM_NAME(T, startIndex, i, j))
+    // using __EnumItemInfo = EnumItemInfo<T>;
+    // using __EnumItemName = details::EnumItemName<T, static_cast<T>(enumStart)>;
+// __EnumItemInfo(static_cast<T>(enumStart), __EnumItemName::itemView.data)
 
-#define ARROW_ENUM_FOR_EACH_128(T, startIndex)                                              \
-    ARROW_ENUM_FOR_EACH_X(T, startIndex, 0), ARROW_ENUM_FOR_EACH_X(T, startIndex, 1),     \
-        ARROW_ENUM_FOR_EACH_X(T, startIndex, 2), ARROW_ENUM_FOR_EACH_X(T, startIndex, 3), \
-        ARROW_ENUM_FOR_EACH_X(T, startIndex, 4), ARROW_ENUM_FOR_EACH_X(T, startIndex, 5), \
-        ARROW_ENUM_FOR_EACH_X(T, startIndex, 6), ARROW_ENUM_FOR_EACH_X(T, startIndex, 7)
+#define ARROW_ENUM_FOR_EACH_1(F, T, startIndex, i, j) F(T, startIndex, i,j)
 
-#define ARROW_ENUM_FOR_EACH_256(T, startIndex)                                              \
-    ARROW_ENUM_FOR_EACH_X(T, startIndex, 0), ARROW_ENUM_FOR_EACH_X(T, startIndex, 1),     \
-        ARROW_ENUM_FOR_EACH_X(T, startIndex, 2), ARROW_ENUM_FOR_EACH_X(T, startIndex, 3), \
-        ARROW_ENUM_FOR_EACH_X(T, startIndex, 4), ARROW_ENUM_FOR_EACH_X(T, startIndex, 5), \
-        ARROW_ENUM_FOR_EACH_X(T, startIndex, 6), ARROW_ENUM_FOR_EACH_X(T, startIndex, 7), \
-        ARROW_ENUM_FOR_EACH_X(T, startIndex, 8), ARROW_ENUM_FOR_EACH_X(T, startIndex, 9), \
-        ARROW_ENUM_FOR_EACH_X(T, startIndex, a), ARROW_ENUM_FOR_EACH_X(T, startIndex, b), \
-        ARROW_ENUM_FOR_EACH_X(T, startIndex, c), ARROW_ENUM_FOR_EACH_X(T, startIndex, d), \
-        ARROW_ENUM_FOR_EACH_X(T, startIndex, e), ARROW_ENUM_FOR_EACH_X(T, startIndex, f)
+#define ARROW_ENUM_FOR_EACH_X(F, T, startIndex, i)                                                \
+    ARROW_ENUM_FOR_EACH_1(F, T, startIndex, i, 0), ARROW_ENUM_FOR_EACH_1(F, T, startIndex, i, 1),        \
+        ARROW_ENUM_FOR_EACH_1(F, T, startIndex, i, 2), ARROW_ENUM_FOR_EACH_1(F, T, startIndex, i, 3), \
+        ARROW_ENUM_FOR_EACH_1(F, T, startIndex, i, 4), ARROW_ENUM_FOR_EACH_1(F, T, startIndex, i, 5), \
+        ARROW_ENUM_FOR_EACH_1(F, T, startIndex, i, 6), ARROW_ENUM_FOR_EACH_1(F, T, startIndex, i, 7), \
+        ARROW_ENUM_FOR_EACH_1(F, T, startIndex, i, 8), ARROW_ENUM_FOR_EACH_1(F, T, startIndex, i, 9), \
+        ARROW_ENUM_FOR_EACH_1(F, T, startIndex, i, a), ARROW_ENUM_FOR_EACH_1(F, T, startIndex, i, b), \
+        ARROW_ENUM_FOR_EACH_1(F, T, startIndex, i, c), ARROW_ENUM_FOR_EACH_1(F, T, startIndex, i, d), \
+        ARROW_ENUM_FOR_EACH_1(F, T, startIndex, i, e), ARROW_ENUM_FOR_EACH_1(F, T, startIndex, i, f)
 
-#define ARROW_ENUM_FOR_EACH_Impl(T, startIndex, StepSize) ARROW_ENUM_FOR_EACH_##StepSize(T, startIndex)
-#define ARROW_ENUM_FOR_EACH(T, startIndex, StepSize) ARROW_ENUM_FOR_EACH_Impl(T, startIndex, StepSize)
+#define ARROW_ENUM_FOR_EACH_16(F, T, startIndex) ARROW_ENUM_FOR_EACH_X(F, T, startIndex, 0)      
 
-//clang 只能用128个不能使用256 gcc编译期可以使用256
-#define EnumStepSize 16
-using IntegerSequence_EnumStepSize = Arrow::MakeIntegerSequence<EnumStepSize>::type;
+#define ARROW_ENUM_FOR_EACH_32(F, T, startIndex) ARROW_ENUM_FOR_EACH_X(F, T, startIndex, 0), ARROW_ENUM_FOR_EACH_X(F, T, startIndex, 1)
 
-// 获取一个步长的基础信息 [zhuyb 2023-08-14 18:01:34]
-template <typename T, typename std::underlying_type<T>::type enumStart, typename IntegerSeq=IntegerSequence_EnumStepSize >
-struct ValidInOneStepSize{};
+#define ARROW_ENUM_FOR_EACH_64(F, T, startIndex) ARROW_ENUM_FOR_EACH_X(F, T, startIndex, 0),ARROW_ENUM_FOR_EACH_X(F, T, startIndex, 1), \
+    ARROW_ENUM_FOR_EACH_X(F, T, startIndex, 2),ARROW_ENUM_FOR_EACH_X(F, T, startIndex, 3)
 
-template <typename T, typename std::underlying_type<T>::type enumStart, int ...args>
-struct ValidInOneStepSize<T, enumStart, Arrow::IntegerSequence<args...>>
+#define ARROW_ENUM_FOR_EACH_128(F, T, startIndex)                                              \
+    ARROW_ENUM_FOR_EACH_X(F, T, startIndex, 0), ARROW_ENUM_FOR_EACH_X(F, T, startIndex, 1),     \
+        ARROW_ENUM_FOR_EACH_X(F, T, startIndex, 2), ARROW_ENUM_FOR_EACH_X(F, T, startIndex, 3), \
+        ARROW_ENUM_FOR_EACH_X(F, T, startIndex, 4), ARROW_ENUM_FOR_EACH_X(F, T, startIndex, 5), \
+        ARROW_ENUM_FOR_EACH_X(F, T, startIndex, 6), ARROW_ENUM_FOR_EACH_X(F, T, startIndex, 7)
+
+#define ARROW_ENUM_FOR_EACH_256(F, T, startIndex)                                              \
+    ARROW_ENUM_FOR_EACH_X(F, T, startIndex, 0), ARROW_ENUM_FOR_EACH_X(F, T, startIndex, 1),     \
+        ARROW_ENUM_FOR_EACH_X(F, T, startIndex, 2), ARROW_ENUM_FOR_EACH_X(F, T, startIndex, 3), \
+        ARROW_ENUM_FOR_EACH_X(F, T, startIndex, 4), ARROW_ENUM_FOR_EACH_X(F, T, startIndex, 5), \
+        ARROW_ENUM_FOR_EACH_X(F, T, startIndex, 6), ARROW_ENUM_FOR_EACH_X(F, T, startIndex, 7), \
+        ARROW_ENUM_FOR_EACH_X(F, T, startIndex, 8), ARROW_ENUM_FOR_EACH_X(F, T, startIndex, 9), \
+        ARROW_ENUM_FOR_EACH_X(F, T, startIndex, a), ARROW_ENUM_FOR_EACH_X(F, T, startIndex, b), \
+        ARROW_ENUM_FOR_EACH_X(F, T, startIndex, c), ARROW_ENUM_FOR_EACH_X(F, T, startIndex, d), \
+        ARROW_ENUM_FOR_EACH_X(F, T, startIndex, e), ARROW_ENUM_FOR_EACH_X(F, T, startIndex, f)
+
+
+#define ARROW_ENUM_FOR_EACH_Impl(F, T, startIndex, StepSize) ARROW_ENUM_FOR_EACH_##StepSize(F, T, startIndex)
+#define ARROW_ENUM_FOR_EACH(F, T, startIndex, StepSize) ARROW_ENUM_FOR_EACH_Impl(F, T, startIndex, StepSize)
+
+//clang最大只支持128个参数初始化 gcc最大支持256个参数
+#define ENUM_STEP_SIZE_16 16
+#define ENUM_STEP_SIZE_32 32
+#define ENUM_STEP_SIZE_64 64
+#define ENUM_STEP_SIZE_128 128
+using IntegerSequenceEnumStepSize16 = Arrow::MakeIntegerSequence<ENUM_STEP_SIZE_16>::type;
+using IntegerSequenceEnumStepSize32 = Arrow::MakeIntegerSequence<ENUM_STEP_SIZE_32>::type;
+using IntegerSequenceEnumStepSize64 = Arrow::MakeIntegerSequence<ENUM_STEP_SIZE_64>::type;
+using IntegerSequenceEnumStepSize128 = Arrow::MakeIntegerSequence<ENUM_STEP_SIZE_128>::type;
+
+
+template<typename T>
+struct EnumItemInfo
 {
-    constexpr static Array::ArrayView<bool, EnumStepSize> ValidTmp()
-    {
-        return Array::ArrayView<bool, EnumStepSize>({ARROW_ENUM_FOR_EACH(T, enumStart, EnumStepSize)});
-    }
+    constexpr EnumItemInfo() : value(0), name(nullptr){}
+    constexpr EnumItemInfo(T v, const char* data) : value(v), name(data) {}
 
-    constexpr static size_t ValidCount()
-    {
-        return (... + (validTmp.data[args] ? 1 : 0));
-    }
-
-    static constexpr auto validTmp = ValidTmp();
-    static constexpr size_t validCount = ValidCount();
+    T value;
+    const char* name;
 };
 
-// 获取一个步长的有效枚举数组 [zhuyb 2023-08-14 18:01:34]
-template <typename T,
-          typename std::underlying_type<T>::type enumStart,
-          size_t length = EnumStepSize + 1,
-          size_t index = EnumStepSize + 1>
-struct ValidArrayInOneStepSize
+// 常规执行 [zhuyb 2023-08-19 22:34:31]
+template <typename T, typename std::underlying_type<T>::type enumStart, typename std::underlying_type<T>::type enumEnd, typename SFINEA = void>
+struct EnumItemList
 {
-    constexpr static Array::ArrayView<T, length> Impl(const bool* array)
+    using __EnumItemInfo = EnumItemInfo<T>;
+    using __EnumItemName = details::EnumItemName<T, static_cast<T>(enumStart)>;
+    static constexpr Array::ArrayView<__EnumItemInfo, static_cast<size_t>(enumEnd - enumStart + 1)> Array()
     {
-        return array[index] ? 
-                Array::ArrayView<T, 1>(static_cast<T>(enumStart + index)) + ValidArrayInOneStepSize<T, enumStart, length - 1, index + 1>::Impl(array) : 
-                ValidArrayInOneStepSize<T, enumStart, length, index + 1>::Impl(array);
-    }
-};
-
-template <typename T, typename std::underlying_type<T>::type enumStart>
-struct ValidArrayInOneStepSize<T, enumStart, EnumStepSize + 1, EnumStepSize + 1>
-{
-    constexpr static auto array = ValidArrayInOneStepSize<T, enumStart, ValidInOneStepSize<T, enumStart>::validCount, 0>::Impl(ValidInOneStepSize<T, enumStart>::validTmp.data);
-};
-
-template <typename T, typename std::underlying_type<T>::type enumStart, size_t length>
-struct ValidArrayInOneStepSize<T, enumStart, length, EnumStepSize>
-{
-    constexpr static Array::ArrayView<T, length> Impl(const bool* array)
-    {
-        return Array::ArrayView<T, length>();
+        return Array::ArrayView<__EnumItemInfo, 1>(__EnumItemInfo(static_cast<T>(enumStart), __EnumItemName::itemView.data)) + EnumItemList<T, enumStart + 1, enumEnd>::Array();
     }
 };
 
-template <typename T, typename std::underlying_type<T>::type enumStart,  size_t index>
-struct ValidArrayInOneStepSize<T, enumStart, 0, index>
-{
-    constexpr static Array::ArrayView<T, 0> Impl(const bool* array)
-    {
-        return Array::ArrayView<T, 0>();
-    }
-};
-
-template <typename T, typename std::underlying_type<T>::type enumStart>
-struct ValidArrayInOneStepSize<T, enumStart, 0,  EnumStepSize>
-{
-    constexpr static Array::ArrayView<T, 0> Impl(const bool* array)
-    {
-        return Array::ArrayView<T, 0>();
-    }
-};
-
-//////////////////////
-
-// template <typename T,
-//           typename std::underlying_type<T>::type enumStart,
-//           size_t length = EnumStepSize + 1,
-//           size_t index = EnumStepSize + 1>
-// struct ValidInOneStepSizeItemName
-// {
-//     using ValidArrayOSS = ValidArrayInOneStepSize<T, enumStart>;
-//     constexpr static Array::ArrayView<const char*, length> Impl()
-//     {
-//         return Array::ArrayView<const char*, 1>(EnumItemName<T, ValidArrayOSS.array[index]>.data) + ValidInOneStepSizeItemName<T, enumStart, length - 1, index + 1>::Impl();
-//     }
-// };
-
-// template <typename T, typename std::underlying_type<T>::type enumStart>
-// struct ValidInOneStepSizeItemName<T, enumStart, EnumStepSize + 1, EnumStepSize + 1>
-// {
-//     constexpr static auto array = ValidInOneStepSizeItemName<T, enumStart, ValidInOneStepSize<T, enumStart>::validCount, 0>::Impl();
-// };
-
-// template <typename T, typename std::underlying_type<T>::type enumStart, size_t length>
-// struct ValidInOneStepSizeItemName<T, enumStart, length, EnumStepSize>
-// {
-//     constexpr static Array::ArrayView<const char*, 0> Impl()
-//     {
-//         return Array::ArrayView<const char*, 0>();
-//     }
-// };
-
-// template <typename T, typename std::underlying_type<T>::type enumStart,  size_t index>
-// struct ValidInOneStepSizeItemName<T, enumStart, 0, index>
-// {
-//     constexpr static Array::ArrayView<const char*, 0> Impl()
-//     {
-//         return Array::ArrayView<const char*, 0>();
-//     }
-// };
-
-// template <typename T, typename std::underlying_type<T>::type enumStart>
-// struct ValidInOneStepSizeItemName<T, enumStart, 0,  EnumStepSize>
-// {
-//     constexpr static Array::ArrayView<const char*, 0> Impl()
-//     {
-//         return Array::ArrayView<const char*, 0>();
-//     }
-// };
-
-// enumStart~enumEnd 有效的枚举信息
-template <typename T, typename std::underlying_type<T>::type enumStart, typename std::underlying_type<T>::type enumEnd, typename SFINEA=void>
-struct ValidArray
-{
-    static constexpr size_t count = ValidInOneStepSize<T, enumStart>::validCount + ValidArray<T, enumStart + EnumStepSize, enumEnd>::count;
-    static constexpr auto validArray = ValidArrayInOneStepSize<T, enumStart>::array + ValidArray<T, enumStart + EnumStepSize, enumEnd>::validArray;
-    // static constexpr auto itemNameArray = ValidInOneStepSizeItemName<T, enumStart>::array + ValidArray<T, enumStart + EnumStepSize, enumEnd>::itemNameArray; 
-};
-
+// 递归结束 [zhuyb 2023-08-19 22:34:31]
 template <typename T, typename std::underlying_type<T>::type enumStart, typename std::underlying_type<T>::type enumEnd>
-struct ValidArray<T, enumStart, enumEnd, typename std::enable_if<(enumStart > enumEnd)>::type>
+struct EnumItemList<T, enumStart, enumEnd, typename std::enable_if<(enumStart == enumEnd)>::type>
 {
-    static constexpr size_t count = 0;
-    static constexpr Array::ArrayView<T, 0> validArray = Array::ArrayView<T, 0>();
-    // static constexpr Array::ArrayView<const char*, 0> itemNameArray = Array::ArrayView<const char*, 0>();
+    using __EnumItemInfo = EnumItemInfo<T>;
+    using __EnumItemName = details::EnumItemName<T, static_cast<T>(enumStart)>;
+    static constexpr Array::ArrayView<__EnumItemInfo, 1> Array()
+    {
+        return Array::ArrayView<__EnumItemInfo, 1>(__EnumItemInfo(static_cast<T>(enumStart), __EnumItemName::itemView.data));
+    }
 };
 
-// template<typename T, T val>
-// struct EnumItemName
+// 用于提高编译效率。 多倍率执行 [zhuyb 2023-08-19 22:35:25]
+#define ENUM_ITEM_LIST_StepSize(StepSize)                                                                                                                                               \
+    template <typename T, typename std::underlying_type<T>::type enumStart, typename std::underlying_type<T>::type enumEnd>                                                             \
+    struct EnumItemList<T, enumStart, enumEnd, typename std::enable_if<(enumEnd  >= StepSize + enumStart - 1&& enumEnd  < StepSize * 2 + enumStart - 1)>::type>                          \
+    {                                                                                                                                                                                   \
+        using __EnumItemInfo = EnumItemInfo<T>;                                                                                                                                         \
+        static constexpr Array::ArrayView<__EnumItemInfo, static_cast<size_t>(enumEnd - enumStart + 1)> Array()                                                                         \
+        {                                                                                                                                                                               \
+            return Array::ArrayView<__EnumItemInfo, StepSize>({ARROW_ENUM_FOR_EACH(ENUM_ITEM_INFO, T, enumStart, StepSize)}) + EnumItemList<T, enumStart + StepSize, enumEnd>::Array(); \
+        }                                                                                                                                                                               \
+    };
+
+//定义16倍执行力
+ENUM_ITEM_LIST_StepSize(16)
+ENUM_ITEM_LIST_StepSize(32)
+ENUM_ITEM_LIST_StepSize(64)
+ENUM_ITEM_LIST_StepSize(128)
+
+// template <typename T, typename std::underlying_type<T>::type enumStart, typename std::underlying_type<T>::type enumEnd, typename SFINEA = void>
+// struct EnumItemList<T, enumStart, enumEnd, SFINEA, typename std::enable_if<(enumStart <= enumEnd && enumStart + 16 > enumEnd)>::type>
 // {
-//     static constexpr auto ItemView = details::EnumItemNameImpl<T, val>();
-// };
+//     constexpr Array::ArrayView<EnumItem> Array()
+//     {
+//         return Array::ArrayView<EnumItem, 1>(EnumItem<T, static_cast<enumStart>()) + EnumItemList<T, enumStart + 1, enumEnd>::Array()；
+//     }
+// }
 
-template<typename T, typename std::underlying_type<T>::type enumStart, typename std::underlying_type<T>::type enumEnd, 
-    size_t index=ValidArray<T, enumStart, enumEnd>::count>
-struct ValidItemName
-{
-    using ValidArrayType = ValidArray<T, enumStart, enumEnd>;
-
-    static const char* ItemName(const T& v)
-    {
-        static constexpr auto validArray = ValidArray<T, enumStart, enumEnd>::validArray;
-        if(validArray[index - 1] == v)
-        {
-            static constexpr auto itemDataView = details::EnumItemNameImpl<T, validArray[index - 1]>();
-            return itemDataView.data;
-        }
-        return ValidItemName<T, enumStart, enumEnd, index - 1>::ItemName(v);
-    }
-};
-
-template<typename T, typename std::underlying_type<T>::type enumStart, typename std::underlying_type<T>::type enumEnd>
-struct ValidItemName<T, enumStart, enumEnd, 0>
-{
-    static const char* ItemName(const T& v)
-    {
-        return "";
-    }
-};
-
-// 探测对应的数值哪些位置有枚举定义 [zhuyb 2023-08-14 15:20:36]
-template<typename T, typename std::underlying_type<T>::type enumStart, typename std::underlying_type<T>::type enumEnd>
-constexpr auto MyEnumName1() -> decltype(ValidArray<T, enumStart, enumEnd>::array)
-{
-    return ValidArray<T, enumStart, enumEnd>::array;
-}
-
-// 探测对应的数值哪些位置有枚举定义 [zhuyb 2023-08-14 15:20:36]
-template<typename T, typename std::underlying_type<T>::type enumStart, typename std::underlying_type<T>::type enumEnd>
-constexpr size_t MyEnumName2()
-{
-    return ValidArray<T, enumStart, enumEnd>::count;
-}
 
 }
