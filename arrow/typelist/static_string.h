@@ -51,16 +51,14 @@
 #define STATIC_STRING_1024(str) Arrow::Splite<sizeof(str) - 1, Arrow::ValueTypeList<char, MakeCharSequence_1024(str)>>::Head
 #define STATIC_STRING(str) STATIC_STRING_1024(str)
 
-
-
 #ifdef WIN32
 #define GET_FILE_NAME(fullFileName) Arrow::StaticStr::SubStr<Arrow::StaticStr::FindLast(fullFileName, '\\') + 1>(fullFileName)
 #else
 #define GET_FILE_NAME(fullFileName) Arrow::StaticStr::SubStr<Arrow::StaticStr::FindLast(fullFileName, '/') + 1>(fullFileName)
 #endif
 
-#define __ARROW_FILE_NAME_VALUE__ GET_FILE_NAME(__FILE__)
-#define __ARROW_FILE_NAME_TYPE__ STATIC_STRING(__ARROW_FILE_NAME_VALUE__.data)
+#define __ARROW_FILE_NAME_VALUE__ (GET_FILE_NAME(__FILE__).data)
+#define __ARROW_FILE_NAME_TYPE__ STATIC_STRING(__ARROW_FILE_NAME_VALUE__)
 
 #define __ARROW_FUN_NAME_VALUE__ Arrow::StaticStr::Str(__func__)
 #define __ARROW_FUN_NAME_TYPE__ STATIC_STRING(__func__)

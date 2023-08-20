@@ -29,7 +29,7 @@ struct SubStrImpl<start, size_t(-1)>
     template<size_t N>
     static constexpr StringView<N - start - 1> Impl(const char (&sz)[N])
     {
-       return StringView<N - start - 1>(sz + start, typename Arrow::MakeIntegerSequence<N - start - 1>::type{});
+       return StringView<N - start - 1>(sz + start);
     }
 };
 }

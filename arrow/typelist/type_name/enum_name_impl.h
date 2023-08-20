@@ -31,8 +31,7 @@ struct EnumItemName
 
     constexpr static StaticStr::StringView<length> Impl()
     {
-        return StaticStr::StringView<length>(__PRETTY_FUNCTION__ + StaticStr::Find<1>(__PRETTY_FUNCTION__, details::enumNameStart) + StaticStr::StrLen(details::enumNameStart),
-                                             typename MakeIntegerSequence<length>::type{});
+        return StaticStr::StringView<length>(__PRETTY_FUNCTION__ + StaticStr::Find<1>(__PRETTY_FUNCTION__, details::enumNameStart) + StaticStr::StrLen(details::enumNameStart));
     }
 };
 
@@ -148,7 +147,7 @@ struct EnumListToStr
     // static bool gInit;
     static const char* ItemStr(EnumType enumValue)
     {
-        static bool bInit = type::Init();
+        // static bool bInit = type::Init();
         auto it = value::value.find(enumValue);
         if(it == value::value.end())
         {

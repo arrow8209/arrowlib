@@ -19,17 +19,19 @@ constexpr const char get(const char (&arr)[N])
     return arr[ M < N ? M : N-1];
 }
 
-template <size_t size>
+template <size_t size, typename Sequence=typename Arrow::MakeIntegerSequence<size>::type>
 struct StringView
+{};
+
+
+template <size_t size, int ...args>
+struct StringView<size, Arrow::IntegerSequence<args...>>
 {
     const char data[size + 1];
     const size_t length = 0;
     constexpr StringView() : data{}, length(0) {}
 
-    constexpr StringView(const char* str) : StringView(str, typename Arrow::MakeIntegerSequence<size>::type{}) {}
-
-    template <int... args>
-    constexpr StringView(const char* str, Arrow::IntegerSequence<args...>) : data{at<args>(str)..., 0}, length(sizeof...(args)) {}
+    constexpr StringView(const char* str) : data{at<args>(str)..., 0}, length(sizeof...(args)) {}
 
     template <int... args1, int... args2>
     constexpr StringView(const char* sz1, Arrow::IntegerSequence<args1...>, const char* sz2, Arrow::IntegerSequence<args2...>)
@@ -60,6 +62,7 @@ struct StringView
 
 };
 
+
 namespace details
 {
 
@@ -70,6 +73,51 @@ struct StrLenImpl
        return (*sz != 0) ? StrLenImpl::Impl(sz + 1, nLength + 1) : nLength;
     }
 };
+
+constexpr StringView<1> StringViewNo[10] = {StringView<1>("0"),
+                                            StringView<1>("1"),
+                                            StringView<1>("2"),
+                                            StringView<1>("3"),
+                                            StringView<1>("4"),
+                                            StringView<1>("5"),
+                                            StringView<1>("6"),
+                                            StringView<1>("7"),
+                                            StringView<1>("8"),
+                                            StringView<1>("9")};
+
+template<typename T, T v, typename SFINEA = void>
+struct TConvertStrView;
+
+// v小于0 转换为正数 [zhuyb 2023-08-20 13:32:29]
+template<typename T, T v>
+struct TConvertStrView<T, v, typename std::enable_if<v < 0>::type>
+{
+    static constexpr auto Impl() -> decltype(StringView<1>() + TConvertStrView<T, v * -1>::Impl())
+    {
+        return StringView<1>("-") + TConvertStrView<T, v * -1>::Impl();
+    }
+};
+
+// 结束操作 [zhuyb 2023-08-20 13:33:00]
+template<typename T, T v>
+struct TConvertStrView<T, v, typename std::enable_if<v >= 10>::type>
+{
+    static constexpr auto Impl() -> decltype(StringView<1>() + TConvertStrView<T, v / 10>::Impl())
+    {
+        return TConvertStrView<T, v / 10>::Impl() + StringViewNo[v % 10];
+    }
+};
+
+// 结束操作 [zhuyb 2023-08-20 13:33:00]
+template<typename T, T v>
+struct TConvertStrView<T, v, typename std::enable_if<v <= 9 && v >=0>::type>
+{
+    static constexpr StringView<1> Impl()
+    {
+        return StringViewNo[v];
+    }
+};
+
 }
 
 constexpr size_t StrLen(const char* sz)
@@ -83,6 +131,17 @@ constexpr StringView<length - 1> Str(const char (&a)[length])
     return StringView<length - 1>(a);
 }
 
+template<uint32_t val>
+constexpr auto IntToStr() -> decltype(details::TConvertStrView<uint32_t, val>::Impl())
+{
+    return details::TConvertStrView<uint32_t, val>::Impl();
+}
+
+template<typename T, T val>
+constexpr auto NumToStr() -> decltype(details::TConvertStrView<T, val>::Impl())
+{
+    return details::TConvertStrView<T, val>::Impl();
+}
 
 }
 }

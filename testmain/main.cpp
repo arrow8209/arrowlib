@@ -12,7 +12,7 @@
 #include "demo/test_task.h"
 
 #include "../test_enum/test_enum.h"
-
+#include "../test_enum/test1/map_view.h"
 
 int main(int argc, char* argv[])
 {
@@ -25,5 +25,6 @@ int main(int argc, char* argv[])
     // RunTestTask();
     TestEnum();
 
+    // TestMapView();
     return 1;
 }

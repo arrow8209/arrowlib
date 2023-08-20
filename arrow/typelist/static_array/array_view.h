@@ -1,10 +1,7 @@
 #pragma once
-#include "arrow/typelist/make_integer_sequence.h"
-#include <map>
-#include <stdint.h>
-#include <string>
+#include "../make_integer_sequence.h"
 
-namespace Arrow2
+namespace Arrow
 {
 
 namespace Array

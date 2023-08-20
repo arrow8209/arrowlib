@@ -1,6 +1,6 @@
 #pragma once
-#include <type_traits>
 #include "../static_string.h"
+#include <type_traits>
 
 namespace Arrow
 {
@@ -19,8 +19,7 @@ constexpr char typeNameEnd[] = "]";
 
 }
 
-
-template<typename T, int length = -1>
+template <typename T, int length = -1>
 struct TypeName
 {
     static void Trace()
@@ -30,19 +29,18 @@ struct TypeName
 
     constexpr static StaticStr::StringView<length> Impl()
     {
-        return StaticStr::StringView<length>(__PRETTY_FUNCTION__ + StaticStr::Find<1>(__PRETTY_FUNCTION__, details::typeNameStart) + StaticStr::StrLen(details::typeNameStart),
-                                 typename MakeIntegerSequence<length>::type{});
+        return StaticStr::StringView<length>(__PRETTY_FUNCTION__ + StaticStr::Find<1>(__PRETTY_FUNCTION__, details::typeNameStart) + StaticStr::StrLen(details::typeNameStart));
     }
 };
 
-template<typename T>
+template <typename T>
 struct TypeName<T, -1>
 {
 
 private:
     constexpr static int Length()
     {
-        return StaticStr::Find<0>(__PRETTY_FUNCTION__,details::typeNameEnd) - StaticStr::Find<1>(__PRETTY_FUNCTION__, details::typeNameStart) - StaticStr::StrLen(details::typeNameStart);
+        return StaticStr::Find<0>(__PRETTY_FUNCTION__, details::typeNameEnd) - StaticStr::Find<1>(__PRETTY_FUNCTION__, details::typeNameStart) - StaticStr::StrLen(details::typeNameStart);
     }
 
 public:
@@ -67,8 +65,7 @@ public:
 template <typename T>
 constexpr decltype(TypeName<T>::Impl()) TypeName<T>::value;
 
-
-template<typename T>
+template <typename T>
 constexpr const char* GetTypeName(T t)
 {
     return TypeName<typename std::remove_cv<T>::type>::Name();
@@ -86,8 +83,5 @@ constexpr const char* GetTypeName(T t)
 // };
 // template<>
 // constexpr decltype(StaticStr::Str("int")) TypeName<int>::value;
-
-
-
 
 }

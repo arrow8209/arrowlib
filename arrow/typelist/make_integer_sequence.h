@@ -11,16 +11,16 @@ struct IntegerSequence
 namespace details
 {
 
-template<int... seq>
+template<size_t... seq>
 struct MakeIntegerSequenceImpl;
 
-template<int start, int... seq>
+template<size_t start, size_t... seq>
 struct MakeIntegerSequenceImpl<start, seq...>
 {
   using type = typename MakeIntegerSequenceImpl<start - 1, start - 1, seq...>::type;
 };
 
-template<int... seq>
+template<size_t... seq>
 struct MakeIntegerSequenceImpl<0, seq...>
 {
   using type = IntegerSequence<seq...>;
@@ -28,7 +28,7 @@ struct MakeIntegerSequenceImpl<0, seq...>
 
 }
 
-template<int count>
+template<size_t count>
 using MakeIntegerSequence = typename details::MakeIntegerSequenceImpl<count>;
 
 }

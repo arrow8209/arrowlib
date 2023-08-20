@@ -17,10 +17,21 @@ static void TestStaticStr()
     using typeS1= STATIC_STRING(s1.data);
 
     constexpr auto s2 = Arrow::StaticStr::Str("4567");
-    constexpr auto s3 = s1 + s2 + s1;
+    constexpr auto s3 = s1 + s2;
     constexpr auto start = Arrow::StaticStr::Find<1>(s3, '2');
+
+    std::cout << s1.data << std::endl;
+    std::cout << s2.data << std::endl;
+    std::cout << s3.data << std::endl;
+    std::cout << start << std::endl;
+
     constexpr auto s4 = Arrow::StaticStr::SubStr<start>(s3.data);
     constexpr auto s5 = Arrow::StaticStr::SubStr<2>(s3);
+
+
+    std::cout << s4.data << std::endl;
+    std::cout << s5.data << std::endl;
+
     std::cout << Arrow::StaticStr::Find(s3.data, "23") << std::endl;
     std::cout << Arrow::StaticStr::Find(s3.data, "34") << std::endl;
     std::cout << Arrow::StaticStr::Find<2>(s3.data, "23") << std::endl;
