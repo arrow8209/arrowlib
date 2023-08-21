@@ -5,6 +5,7 @@
 #include <iostream>
 #include "arrow/typelist/type_name.h"
 #include "test1/enum_name_impl2.h"
+#include "test1/type_name_assist.h"
 // #include "test1/enum_name_impl3.h"
 
 // enum class MyTestEnum {
@@ -75,23 +76,24 @@ struct TTmp
 static void TestEnum()
 {
     // constexpr auto tmpS = Arrow::StaticStr::NumToStr<uint32_t, 10>();
-    Arrow2::details::Trace<MyEnumA, static_cast<MyEnumA>(0)>();
-    Arrow2::details::Trace<MyEnumA, static_cast<MyEnumA>(1)>();
-    Arrow2::details::Trace<MyEnumB, static_cast<MyEnumB>(0)>();
-    Arrow2::details::Trace<MyEnumB, static_cast<MyEnumB>(1)>();
+
+    // 测试枚举的合法性 [zhuyb 2023-08-21 11:00:26]
     std::cout << Arrow2::details::IsValid<MyEnumA, static_cast<MyEnumA>(0)>() << std::endl;
     std::cout << Arrow2::details::IsValid<MyEnumA, static_cast<MyEnumA>(1)>() << std::endl;
     std::cout << Arrow2::details::IsValid<MyEnumB, static_cast<MyEnumB>(0)>() << std::endl;
     std::cout << Arrow2::details::IsValid<MyEnumB, static_cast<MyEnumB>(1)>() << std::endl;
 
-    std::cout << Arrow2::details::Valid<MyEnumA, static_cast<MyEnumA>(0)>::value << std::endl;
-    std::cout << Arrow2::details::Valid<MyEnumA, static_cast<MyEnumA>(1)>::value << std::endl;
-    Arrow2::details::EnumItemStrView<MyEnumA, static_cast<MyEnumA>(0)>::TraceLengthScopedEnum();
-    // Arrow2::details::TraceLengthScopedEnum<MyEnumA, static_cast<MyEnumA>(0)>();
-    // Arrow2::details::TraceLengthNoScopedEnum<MyEnumB, static_cast<MyEnumB>(1)>();
-    // Arrow2::details::TraceLengthNoScopedEnum<MyEnumB, static_cast<MyEnumB>(0)>();
-    constexpr auto tmpA =Arrow2::details::EnumItemStrView<MyEnumA, static_cast<MyEnumA>(0)>::value;
-    constexpr auto tmpB =Arrow2::EnumItemArrayInterval<MyEnumA, 0, 20>::Array();
-    std::cout << tmpA.data << std::endl;
-    // std::cout << TTmp<MyEnumA, static_cast<MyEnumA>(1)>::Str() << std::endl;
+
+    // // 测试枚举名称 [zhuyb 2023-08-21 11:00:37]
+    constexpr auto tmp1 = Arrow2::details::EnumItemStrView<MyEnumA, static_cast<MyEnumA>(0)>::strView;
+    constexpr auto tmp2 = Arrow2::details::EnumItemStrView<MyEnumA, static_cast<MyEnumA>(1)>::strView;
+    constexpr auto tmp3 = Arrow2::details::EnumItemStrView<MyEnumB, static_cast<MyEnumB>(0)>::strView;
+    constexpr auto tmp4 = Arrow2::details::EnumItemStrView<MyEnumB, static_cast<MyEnumB>(1)>::strView;
+    std::cout << tmp1.data << std::endl;
+    std::cout << tmp2.data << std::endl;
+    std::cout << tmp3.data << std::endl;
+    std::cout << tmp4.data << std::endl;
+
+    // 测试枚举值单区间列表 [zhuyb 2023-08-21 11:00:
+    constexpr auto tmp5 = Arrow2::details::EnumItemArrayInterval<MyEnumA, 0, 250>::Array();
 }

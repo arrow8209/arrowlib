@@ -44,7 +44,7 @@ struct FindImpl
     }
 
     template <size_t N>
-    static size_t Impl(const char* str1, const char (&str2)[N], size_t index = 0, size_t pos = -1)
+    static constexpr size_t Impl(const char* str1, const char (&str2)[N], size_t index = 0, size_t pos = -1)
     {
         return (str1[index] == 0) ? pos : (FindStrImplAssist::Equal(str1 + index, str2) ? 
                                             FindImpl<times - 1>::Impl(str1, str2, index + 1, index) : 

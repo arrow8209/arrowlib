@@ -45,7 +45,7 @@ struct Valid<EnumType , val, typename std::enable_if<IsValid<EnumType , val>()>:
 
 // 获取枚举的字符串 [zhuyb 2023-08-21 15:46:23]
 template <typename T, T val, typename EndTag=void>
-struct EnumItemStrViewTmp
+struct EnumItemStrView
 {
     static size_t TraceLength()
     {
@@ -61,73 +61,73 @@ struct EnumItemStrViewTmp
     {   
         return StaticStr::StringView<Length()>(__PRETTY_FUNCTION__ + StaticStr::Find<1>(__PRETTY_FUNCTION__, " val = ") + StaticStr::StrLen(" val = "));
     }
-    static constexpr decltype(EnumItemStrViewTmp<T, val, EndTag>::View()) value = EnumItemStrViewTmp<T, val, EndTag>::View();
+    static constexpr decltype(EnumItemStrView<T, val, EndTag>::View()) value = EnumItemStrView<T, val, EndTag>::View();
     static constexpr size_t length = Length();
 };
 template <typename T, T val, typename EndTag>
-constexpr decltype(EnumItemStrViewTmp<T, val, EndTag>::View()) EnumItemStrViewTmp<T, val, EndTag>::value;
+constexpr decltype(EnumItemStrView<T, val, EndTag>::View()) EnumItemStrView<T, val, EndTag>::value;
 template<typename T, T val, typename EndTag>
-constexpr size_t EnumItemStrViewTmp<T, val, EndTag>::length;
+constexpr size_t EnumItemStrView<T, val, EndTag>::length;
 
 
 // 结构体定义 [zhuyb 2023-08-21 15:42:48]
 template <typename EnumType, EnumType val,
           typename Valid = typename Valid<EnumType, val>::type,
           typename ScopedEnum = typename IsScopedEnum<EnumType>::type>
-struct EnumItemStrView
+struct EnumItemInfo
 {
 };
 
 // 限定枚举类型 [zhuyb 2023-08-21 15:42:36]
 template <typename EnumType, EnumType val>
-struct EnumItemStrView<EnumType , val, std::true_type, std::true_type>
+struct EnumItemInfo<EnumType , val, std::true_type, std::true_type>
 {
-    using __EnumItemStrViewTmp = EnumItemStrViewTmp<EnumType, val>;
+    using __EnumItemStrView = EnumItemStrView<EnumType, val>;
 
     constexpr static size_t Length()
     {
-        return __EnumItemStrViewTmp::length - StaticStr::StrLen("::") - StaticStr::Find<1>(__EnumItemStrViewTmp::value, "::");
+        return __EnumItemStrView::length - StaticStr::StrLen("::") - StaticStr::Find<1>(__EnumItemStrView::value, "::");
     }
 
     // 获取限定枚举的名称 [zhuyb 2023-08-13 17:31:28]
     static constexpr auto Str() -> StaticStr::StringView<Length()>
     {
-        return StaticStr::SubStr<__EnumItemStrViewTmp::length - Length()>(__EnumItemStrViewTmp::value);
+        return StaticStr::SubStr<__EnumItemStrView::length - Length()>(__EnumItemStrView::value);
     }
 
-    static constexpr decltype(EnumItemStrView<EnumType, val, std::true_type, std::true_type>::Str()) strView = 
-                EnumItemStrView<EnumType, val, std::true_type, std::true_type>::Str();
+    static constexpr decltype(EnumItemInfo<EnumType, val, std::true_type, std::true_type>::Str()) strView = 
+                EnumItemInfo<EnumType, val, std::true_type, std::true_type>::Str();
     static constexpr const char* str =strView.data;
     static constexpr EnumType value=val;
 };
 template <typename EnumType, EnumType val>
-constexpr decltype(EnumItemStrView<EnumType, val, std::true_type, std::true_type>::Str())
-    EnumItemStrView<EnumType, val, std::true_type, std::true_type>::strView;
+constexpr decltype(EnumItemInfo<EnumType, val, std::true_type, std::true_type>::Str())
+    EnumItemInfo<EnumType, val, std::true_type, std::true_type>::strView;
 template <typename EnumType, EnumType val>
-constexpr const char* EnumItemStrView<EnumType, val, std::true_type, std::true_type>::str;
+constexpr const char* EnumItemInfo<EnumType, val, std::true_type, std::true_type>::str;
 template <typename EnumType, EnumType val>
-constexpr EnumType EnumItemStrView<EnumType, val, std::true_type, std::true_type>::value;
+constexpr EnumType EnumItemInfo<EnumType, val, std::true_type, std::true_type>::value;
 
 // 非限定枚举类型 [zhuyb 2023-08-21 15:42:15]
 template <typename EnumType, EnumType val>
-struct EnumItemStrView<EnumType , val, std::true_type, std::false_type>
+struct EnumItemInfo<EnumType , val, std::true_type, std::false_type>
 {
-    using __EnumItemStrViewTmp = EnumItemStrViewTmp<EnumType, val>;
+    using __EnumItemStrView = EnumItemStrView<EnumType, val>;
 
-    static constexpr decltype(__EnumItemStrViewTmp::value) strView = __EnumItemStrViewTmp::value;
+    static constexpr decltype(__EnumItemStrView::value) strView = __EnumItemStrView::value;
     static constexpr const char* str =strView.data;
     static constexpr EnumType value=val;
 };
 template <typename EnumType, EnumType val>
-constexpr decltype(EnumItemStrViewTmp<EnumType, val>::value) EnumItemStrView<EnumType, val, std::true_type, std::false_type>::strView;
+constexpr decltype(EnumItemStrView<EnumType, val>::value) EnumItemInfo<EnumType, val, std::true_type, std::false_type>::strView;
 template <typename EnumType, EnumType val>
-constexpr const char* EnumItemStrView<EnumType, val, std::true_type, std::false_type>::str;
+constexpr const char* EnumItemInfo<EnumType, val, std::true_type, std::false_type>::str;
 template <typename EnumType, EnumType val>
-constexpr EnumType EnumItemStrView<EnumType, val, std::true_type, std::false_type>::value;
+constexpr EnumType EnumItemInfo<EnumType, val, std::true_type, std::false_type>::value;
 
 // 不合法的枚举类型 [zhuyb 2023-08-21 15:43:01]
 template <typename EnumType, EnumType val, typename ScopedEnum>
-struct EnumItemStrView<EnumType , val, std::false_type, ScopedEnum>
+struct EnumItemInfo<EnumType , val, std::false_type, ScopedEnum>
 {
     using valueType = typename std::underlying_type<EnumType >::type;
     static constexpr auto Str() -> decltype(Arrow::TypeName<EnumType >::Impl() + StaticStr::Str(" undefined:") + StaticStr::NumToStr<valueType, static_cast<valueType>(val)>())
@@ -135,35 +135,35 @@ struct EnumItemStrView<EnumType , val, std::false_type, ScopedEnum>
         return Arrow::TypeName<EnumType >::Impl() + StaticStr::Str(" undefined:") + StaticStr::NumToStr<valueType, static_cast<valueType>(val)>();
     }
 
-    static constexpr decltype(EnumItemStrView<EnumType, val, std::false_type, ScopedEnum>::Str()) strView = EnumItemStrView<EnumType, val, std::false_type, ScopedEnum>::Str();
+    static constexpr decltype(EnumItemInfo<EnumType, val, std::false_type, ScopedEnum>::Str()) strView = EnumItemInfo<EnumType, val, std::false_type, ScopedEnum>::Str();
     static constexpr const char* str = strView.data;
     static constexpr EnumType value = val;
 };
 template <typename EnumType, EnumType val, typename ScopedEnum>
-constexpr decltype(EnumItemStrView<EnumType, val, std::false_type, ScopedEnum>::Str())
-    EnumItemStrView<EnumType, val, std::false_type, ScopedEnum>::strView;
+constexpr decltype(EnumItemInfo<EnumType, val, std::false_type, ScopedEnum>::Str())
+    EnumItemInfo<EnumType, val, std::false_type, ScopedEnum>::strView;
     template <typename EnumType, EnumType val, typename ScopedEnum>
-constexpr const char* EnumItemStrView<EnumType, val, std::false_type, ScopedEnum>::str;
+constexpr const char* EnumItemInfo<EnumType, val, std::false_type, ScopedEnum>::str;
 template <typename EnumType, EnumType val, typename ScopedEnum>
-constexpr EnumType EnumItemStrView<EnumType, val, std::false_type, ScopedEnum>::value;
+constexpr EnumType EnumItemInfo<EnumType, val, std::false_type, ScopedEnum>::value;
+}
+
+// template<typename EnumType>
+// struct EnumItemInfo
+// {
+//     constexpr EnumItemInfo() : value(0), name(nullptr){}
+//     constexpr EnumItemInfo(EnumType v, const char* data) : value(v), name(data) {}
+
+//     EnumType value;
+//     const char* name;
+// };
 
 
-template<typename EnumType>
-struct EnumItemInfo
-{
-    constexpr EnumItemInfo() : value(static_cast<EnumType>(0)), name(nullptr){}
-    constexpr EnumItemInfo(EnumType v, const char* data) : value(v), name(data) {}
+#define IS_VALID(T, startIndex, i, j) Arrow2::details::IsValid<EnumType , static_cast<EnumType >(startIndex + 0x##i##j)>()
 
-    EnumType value;
-    const char* name;
-};
+#define ENUM_ITEM_NAME(T, startIndex, i, j) Arrow2::details::EnumItemStrView<EnumType , static_cast<EnumType >(startIndex + 0x##i##j)>::value.data
 
-
-#define IS_VALID(T, startIndex, i, j) IsValid<T, static_cast<T>(startIndex + 0x##i##j)>()
-
-#define ENUM_ITEM_NAME(T, startIndex, i, j) EnumItemStrView<T , static_cast<T>(startIndex + 0x##i##j)>::str
-
-#define ENUM_ITEM_INFO(T, startIndex, i, j) EnumItemInfo<T>(static_cast<T>(startIndex + 0x##i##j), ENUM_ITEM_NAME(T, startIndex, i, j))
+#define ENUM_ITEM_INFO(T, startIndex, i, j) Arrow2::EnumItemInfo<EnumType >(static_cast<EnumType >(startIndex + 0x##i##j), ENUM_ITEM_NAME(T, startIndex, i, j))
 
 #define ARROW_ENUM_FOR_EACH_I_J(F, T, startIndex, i, j) F(T, startIndex, i,j)
 
@@ -235,62 +235,51 @@ struct EnumItemInfo
 // using IntegerSequenceEnumStepSize64 = Arrow::MakeIntegerSequence<ENUM_STEP_SIZE_64>::type;
 // using IntegerSequenceEnumStepSize128 = Arrow::MakeIntegerSequence<ENUM_STEP_SIZE_128>::type;
 
-// 常规执行 [zhuyb 2023-08-19 22:34:31]
-template <typename EnumType,
-          typename std::underlying_type<EnumType>::type enumStart,
-          typename std::underlying_type<EnumType>::type enumEnd,
-          typename SFINEA = void>
-struct EnumItemArrayInterval
-{
-    using __EnumItemInfo = EnumItemInfo<EnumType>;
-    using __EnumItemStrView = EnumItemStrView<EnumType, static_cast<EnumType>(enumStart)>;
-    static constexpr auto Array() -> decltype(Array::ArrayView<__EnumItemInfo, 1>() + EnumItemArrayInterval<EnumType , enumStart + 1, enumEnd>::Array())
-    {
-        return Array::ArrayView<__EnumItemInfo, 1>(__EnumItemInfo(static_cast<EnumType >(enumStart), __EnumItemStrView::str)) + 
-                EnumItemArrayInterval<EnumType , enumStart + 1, enumEnd>::Array();
-    }
-};
 
-// 递归结束 [zhuyb 2023-08-19 22:34:31]
-template <typename EnumType, typename std::underlying_type<EnumType >::type enumStart, typename std::underlying_type<EnumType >::type enumEnd>
-struct EnumItemArrayInterval<EnumType , enumStart, enumEnd, typename std::enable_if<(enumStart > enumEnd)>::type>
-{
-    using __EnumItemInfo = EnumItemInfo<EnumType >;
-    static constexpr Array::ArrayView<__EnumItemInfo, 0> Array()
-    {
-        return Array::ArrayView<__EnumItemInfo, 0>();
-    }
-};
+// // 常规执行 [zhuyb 2023-08-19 22:34:31]
+// template <typename EnumType, typename std::underlying_type<EnumType >::type enumStart, typename std::underlying_type<EnumType >::type enumEnd, typename SFINEA = void>
+// struct EnumItemArrayInterval
+// {
+//     using __EnumItemInfo = EnumItemInfo<EnumType >;
+//     using __EnumItemStrView = details::EnumItemStrView<EnumType , static_cast<EnumType >(enumStart)>;
+//     static constexpr Array::ArrayView<__EnumItemInfo, static_cast<size_t>(enumEnd - enumStart + 1)> Array()
+//     {
+//         return Array::ArrayView<__EnumItemInfo, 1>(__EnumItemInfo(static_cast<EnumType >(enumStart), __EnumItemStrView::value.data)) + 
+//                 EnumItemArrayInterval<EnumType , enumStart + 1, enumEnd>::Array();
+//     }
+// };
 
-// 用于提高编译效率。 多执行 [zhuyb 2023-08-19 22:35:25]
-#define ENUM_ITEM_LIST_StepSize(StepSize)                                                                                                                                                                      \
-    template <typename EnumType, typename std::underlying_type<EnumType>::type enumStart, typename std::underlying_type<EnumType>::type enumEnd>                                                               \
-    struct EnumItemArrayInterval<EnumType, enumStart, enumEnd, typename std::enable_if<(enumEnd >= StepSize + enumStart - 1 && enumEnd < StepSize * 2 + enumStart - 1)>::type>                                 \
-    {                                                                                                                                                                                                          \
-        using __EnumItemInfo = EnumItemInfo<EnumType>;                                                                                                                                                         \
-        static constexpr auto Array() -> decltype(Array::ArrayView<__EnumItemInfo, StepSize>() + EnumItemArrayInterval<EnumType, enumStart + StepSize, enumEnd>::Array())                                      \
-        {                                                                                                                                                                                                      \
-            return Array::ArrayView<__EnumItemInfo, StepSize>({ARROW_ENUM_FOR_EACH(ENUM_ITEM_INFO, EnumType, enumStart, StepSize)}) + EnumItemArrayInterval<EnumType, enumStart + StepSize, enumEnd>::Array(); \
-        }                                                                                                                                                                                                      \
-    };
+// // 递归结束 [zhuyb 2023-08-19 22:34:31]
+// template <typename EnumType, typename std::underlying_type<EnumType >::type enumStart, typename std::underlying_type<EnumType >::type enumEnd>
+// struct EnumItemArrayInterval<EnumType , enumStart, enumEnd, typename std::enable_if<(enumStart == enumEnd)>::type>
+// {
+//     using __EnumItemInfo = EnumItemInfo<EnumType >;
+//     using __EnumItemStrView = details::EnumItemStrView<EnumType , static_cast<EnumType >(enumStart)>;
+//     static constexpr Array::ArrayView<__EnumItemInfo, 1> Array()
+//     {
+//         return Array::ArrayView<__EnumItemInfo, 1>(__EnumItemInfo(static_cast<EnumType >(enumStart), __EnumItemStrView::value.data));
+//     }
+// };
 
-//定义16倍执行力
-ENUM_ITEM_LIST_StepSize(4)
-ENUM_ITEM_LIST_StepSize(8)
-ENUM_ITEM_LIST_StepSize(16)
-ENUM_ITEM_LIST_StepSize(32)
-ENUM_ITEM_LIST_StepSize(64)
+// // 用于提高编译效率。 多倍率执行 [zhuyb 2023-08-19 22:35:25]
+// #define ENUM_ITEM_LIST_StepSize(StepSize)                                                                                                                                                               \
+//     template <typename EnumType, typename std::underlying_type<EnumType>::type enumStart, typename std::underlying_type<EnumType>::type enumEnd>                                                        \
+//     struct EnumItemArrayInterval<EnumType, enumStart, enumEnd, typename std::enable_if<(enumEnd >= StepSize + enumStart - 1 && enumEnd < StepSize * 2 + enumStart - 1)>::type>                          \
+//     {                                                                                                                                                                                                   \
+//         using __EnumItemInfo = EnumItemInfo<EnumType>;                                                                                                                                                  \
+//         static constexpr Array::ArrayView<__EnumItemInfo, static_cast<size_t>(enumEnd - enumStart + 1)> Array()                                                                                         \
+//         {                                                                                                                                                                                               \
+//             return Array::ArrayView<__EnumItemInfo, StepSize>({ARROW_ENUM_FOR_EACH(ENUM_ITEM_INFO, T, enumStart, StepSize)}) + EnumItemArrayInterval<EnumType, enumStart + StepSize, enumEnd>::Array(); \
+//         }                                                                                                                                                                                               \
+//     };
 
-#define MAX_STEP_SIZE 128
-template <typename EnumType, typename std::underlying_type<EnumType>::type enumStart, typename std::underlying_type<EnumType>::type enumEnd>                                                               
-struct EnumItemArrayInterval<EnumType, enumStart, enumEnd, typename std::enable_if<(enumEnd >= MAX_STEP_SIZE + enumStart - 1 )>::type>                                 
-{                                                                                                                                                                                                          
-    using __EnumItemInfo = EnumItemInfo<EnumType>;                                                                                                                                                         
-    static constexpr auto Array() -> decltype(Array::ArrayView<__EnumItemInfo, MAX_STEP_SIZE>() + EnumItemArrayInterval<EnumType, enumStart + MAX_STEP_SIZE, enumEnd>::Array())                                      
-    {                                                                                                                                                                                                      
-        return Array::ArrayView<__EnumItemInfo, MAX_STEP_SIZE>({ARROW_ENUM_FOR_EACH(ENUM_ITEM_INFO, EnumType, enumStart, MAX_STEP_SIZE)}) + EnumItemArrayInterval<EnumType, enumStart + MAX_STEP_SIZE, enumEnd>::Array(); 
-    }                                                                                                                                                                                                      
-};
+// //定义16倍执行力
+// ENUM_ITEM_LIST_StepSize(4)
+// ENUM_ITEM_LIST_StepSize(8)
+// ENUM_ITEM_LIST_StepSize(16)
+// ENUM_ITEM_LIST_StepSize(32)
+// ENUM_ITEM_LIST_StepSize(64)
+// ENUM_ITEM_LIST_StepSize(128)
 
 // template <typename EnumType, EnumType... enumArgs>
 // struct EnumItemArray{};
@@ -317,5 +306,5 @@ struct EnumItemArrayInterval<EnumType, enumStart, enumEnd, typename std::enable_
 //     //     return it->second;
 //     // }
 // };
-}
+
 }

@@ -31,7 +31,7 @@ static void TestStaticStr()
 
     std::cout << s4.data << std::endl;
     std::cout << s5.data << std::endl;
-
+    
     std::cout << Arrow::StaticStr::Find(s3.data, "23") << std::endl;
     std::cout << Arrow::StaticStr::Find(s3.data, "34") << std::endl;
     std::cout << Arrow::StaticStr::Find<2>(s3.data, "23") << std::endl;
