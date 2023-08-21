@@ -108,7 +108,7 @@ static void TestEnum()
     for(int i = -10; i < 100; i++)
     {
         MyEnumA tmp =static_cast<MyEnumA>(i);
-        constexpr auto pStr = MyEnumAStr::Str(tmp);
+        auto pStr = MyEnumAStr::Str(tmp);
         std::cout << i << ":" << pStr << std::endl;
     }
 

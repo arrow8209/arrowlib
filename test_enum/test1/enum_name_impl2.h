@@ -369,7 +369,7 @@ struct EnumItemToStr
                             Str(enumValue, (nStartIndex + nEndIndex) / 2, nEndIndex))));
     }
 };
-// template <typename EnumType, EnumType... enumArgs>
-// constexpr decltype(EnumItemArray<EnumType, enumArgs...>::array) EnumItemToStr<EnumType, enumArgs...>::array;
+template <typename EnumType, EnumType... enumArgs>
+constexpr decltype(EnumItemArray<EnumType, enumArgs...>::array) EnumItemToStr<EnumType, enumArgs...>::array;
 
 }
