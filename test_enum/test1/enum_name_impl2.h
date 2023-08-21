@@ -151,11 +151,11 @@ constexpr EnumType EnumItemStrView<EnumType, val, std::false_type, ScopedEnum>::
 template<typename EnumType>
 struct EnumItemInfo
 {
-    constexpr EnumItemInfo() : value(static_cast<EnumType>(0)), name(nullptr){}
-    constexpr EnumItemInfo(EnumType v, const char* data) : value(v), name(data) {}
+    constexpr EnumItemInfo() : value(static_cast<EnumType>(0)), str(nullptr){}
+    constexpr EnumItemInfo(EnumType v, const char* data) : value(v), str(data) {}
 
     EnumType value;
-    const char* name;
+    const char* str;
 };
 
 
@@ -291,31 +291,85 @@ struct EnumItemArrayInterval<EnumType, enumStart, enumEnd, typename std::enable_
         return Array::ArrayView<__EnumItemInfo, MAX_STEP_SIZE>({ARROW_ENUM_FOR_EACH(ENUM_ITEM_INFO, EnumType, enumStart, MAX_STEP_SIZE)}) + EnumItemArrayInterval<EnumType, enumStart + MAX_STEP_SIZE, enumEnd>::Array(); 
     }                                                                                                                                                                                                      
 };
-
-// template <typename EnumType, EnumType... enumArgs>
-// struct EnumItemArray{};
-
-// template <typename EnumType, EnumType enumStart1, EnumType enumEnd1, EnumType enumStart2, EnumType... enumArgs>
-// struct EnumItemArray<EnumType, enumStart1, enumEnd1, enumStart2, enumArgs...>
-// {
-
-//     static_assert(sizeof...(enumArgs) % 2 == 1 , "枚举参数的个数必须为偶数个，首尾成对出现");
-//     static_assert(enumEnd1 >= enumStart1 ,"枚举值必须连续,且为递增序列");
-//     static_assert(enumEnd1 <= enumStart2 ,"枚举值必须连续,且为递增序列");
-//     // using type = details::EnumListToStrImpl<EnumType, enumArgs...>;
-//     // using value = details::EnumListData<EnumType>;
-
-//     // // static bool gInit;
-//     // static const char* ItemStr(EnumType enumValue)
-//     // {
-//     //     // static bool bInit = type::Init();
-//     //     auto it = value::value.find(enumValue);
-//     //     if(it == value::value.end())
-//     //     {
-//     //         return "";
-//     //     }
-//     //     return it->second;
-//     // }
-// };
 }
+
+
+template <typename EnumType, EnumType... enumArgs>
+struct EnumItemArray{};
+
+// 一个参数 [zhuyb 2023-08-21 21:06:35]
+template <typename EnumType, EnumType enumStart>
+struct EnumItemArray<EnumType, enumStart>
+{
+    using __DataType = typename std::underlying_type<EnumType>::type;
+    using __EnumItemInfo = details::EnumItemInfo<EnumType>;                                                                                                                                                         
+    constexpr static auto Array() -> Array::ArrayView<__EnumItemInfo, MAX_STEP_SIZE>
+    {
+        return details::EnumItemArrayInterval<EnumType, static_cast<__DataType>(enumStart), static_cast<__DataType>(enumStart) + MAX_STEP_SIZE - 1>::Array();
+    }
+
+    constexpr static decltype(Array()) array = Array();
+    constexpr static size_t length = array.length;
+};
+template <typename EnumType, EnumType enumStart>
+constexpr decltype(EnumItemArray<EnumType, enumStart>::Array()) EnumItemArray<EnumType, enumStart>::array;
+
+// 二个参数 [zhuyb 2023-08-21 21:06:35]
+template <typename EnumType, EnumType enumStart, EnumType enumEnd>
+struct EnumItemArray<EnumType, enumStart, enumEnd>
+{
+    using __DataType = typename std::underlying_type<EnumType>::type;
+    using __EnumItemInfo = details::EnumItemInfo<EnumType>;                                                                                                                                                         
+    constexpr static auto Array() -> decltype(details::EnumItemArrayInterval<EnumType, static_cast<__DataType>(enumStart), static_cast<__DataType>(enumEnd)>::Array())
+    {
+        return details::EnumItemArrayInterval<EnumType, static_cast<__DataType>(enumStart), static_cast<__DataType>(enumEnd)>::Array();
+    }
+
+    constexpr static decltype(Array()) array = Array();
+    constexpr static size_t length = array.length;
+
+};
+template <typename EnumType, EnumType enumStart, EnumType enumEnd>
+constexpr decltype(EnumItemArray<EnumType, enumStart, enumEnd>::Array()) EnumItemArray<EnumType, enumStart, enumEnd>::array;
+
+template <typename EnumType, EnumType enumStart1, EnumType enumEnd1, EnumType enumStart2, EnumType... enumArgs>
+struct EnumItemArray<EnumType, enumStart1, enumEnd1, enumStart2, enumArgs...>
+{
+
+    static_assert(sizeof...(enumArgs) % 2 == 1 , "枚举参数的个数必须为偶数个，首尾成对出现");
+    static_assert(enumStart1 <= enumEnd1 && enumEnd1 < enumStart2 ,"枚举值必须连续,且为递增序列");
+
+    using __DataType = typename std::underlying_type<EnumType>::type;
+    using __EnumItemInfo = details::EnumItemInfo<EnumType>; 
+
+    constexpr static auto Array() -> decltype(EnumItemArray<EnumType, enumStart1, enumEnd1>::Array() + EnumItemArray<EnumType, enumStart2, enumArgs...>::Array())
+    {
+        return EnumItemArray<EnumType, enumStart1, enumEnd1>::Array() + EnumItemArray<EnumType, enumStart2, enumArgs...>::Array();
+    }
+    constexpr static decltype(Array()) array = Array();
+    constexpr static size_t length = array.length;
+
+};
+template <typename EnumType, EnumType enumStart1, EnumType enumEnd1, EnumType enumStart2, EnumType... enumArgs>
+constexpr decltype(EnumItemArray<EnumType, enumStart1, enumEnd1, enumStart2, enumArgs...>::Array()) EnumItemArray<EnumType, enumStart1, enumEnd1, enumStart2, enumArgs...>::array;
+
+template <typename EnumType, EnumType... enumArgs>
+struct EnumItemToStr
+{
+    constexpr static decltype(EnumItemArray<EnumType, enumArgs...>::array) array = EnumItemArray<EnumType, enumArgs...>::array;
+    constexpr static size_t length = EnumItemArray<EnumType, enumArgs...>::length;
+
+    static const char* Str(EnumType enumValue, int nStartIndex = 0, int nEndIndex = length)
+    {
+        return (nStartIndex >= nEndIndex || enumValue < array[nStartIndex].value ||  enumValue > array[nEndIndex - 1].value) ? "can't find enum value" :
+                (array[nStartIndex].value == enumValue ? array[nStartIndex].str :
+                    (array[nEndIndex - 1].value == enumValue ? array[nEndIndex - 1].str :
+                        (enumValue < array[(nStartIndex + nEndIndex) / 2].value ? 
+                            Str(enumValue, nStartIndex, (nStartIndex + nEndIndex) / 2) :
+                            Str(enumValue, (nStartIndex + nEndIndex) / 2, nEndIndex))));
+    }
+};
+// template <typename EnumType, EnumType... enumArgs>
+// constexpr decltype(EnumItemArray<EnumType, enumArgs...>::array) EnumItemToStr<EnumType, enumArgs...>::array;
+
 }

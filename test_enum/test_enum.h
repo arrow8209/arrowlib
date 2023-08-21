@@ -46,7 +46,9 @@ enum class MyEnumA
 {
     MyEnumA_0 = 0,
     MyEnumA_20 = 20,
-    MyEnumA_220 = 270
+    MyEnumA_50 = 50,
+    MyEnumA_70 = 70,
+    MyEnumA_220 = 220
 };
 
 enum MyEnumB {
@@ -96,4 +98,18 @@ static void TestEnum()
 
     // 测试枚举值单区间列表 [zhuyb 2023-08-21 11:00:
     constexpr auto tmp5 = Arrow2::details::EnumItemArrayInterval<MyEnumA, 0, 250>::Array();
+
+    //  [zhuyb 2023-08-21 21:17:22]
+    constexpr auto tmp6 = Arrow2::EnumItemArray<MyEnumA, MyEnumA::MyEnumA_0>::array;
+    constexpr auto tmp7 = Arrow2::EnumItemArray<MyEnumA, MyEnumA::MyEnumA_0, MyEnumA::MyEnumA_20,MyEnumA::MyEnumA_50, MyEnumA::MyEnumA_70>::Array();
+    using MyEnumAStr = Arrow2::EnumItemToStr<MyEnumA, MyEnumA::MyEnumA_0, MyEnumA::MyEnumA_20,MyEnumA::MyEnumA_50, MyEnumA::MyEnumA_70>;
+    // constexpr auto tmp8 = MyEnumAStr::Str(MyEnumA::MyEnumA_0);
+
+    for(int i = -10; i < 100; i++)
+    {
+        MyEnumA tmp =static_cast<MyEnumA>(i);
+        constexpr auto pStr = MyEnumAStr::Str(tmp);
+        std::cout << i << ":" << pStr << std::endl;
+    }
+
 }
