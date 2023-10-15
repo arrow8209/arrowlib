@@ -14,6 +14,10 @@
 #include "../test_enum/test_enum.h"
 #include "../test_enum/test1/map_view.h"
 
+#include "test_lock_free/test_args.h"
+#include "test_lock_free/test_lock_free1.h"
+#include "test_lock_free/test_task2.h"
+
 int main(int argc, char* argv[])
 {
     // TestStaticStr();
@@ -23,8 +27,11 @@ int main(int argc, char* argv[])
     // TestFileName();
     // TestFunName();
     // RunTestTask();
-    TestEnum();
-
+    // TestEnum();
+    
+    // MainTestArgs();
+    // TestLockFree1();
+    TestTask();
     // TestMapView();
     return 1;
 }
