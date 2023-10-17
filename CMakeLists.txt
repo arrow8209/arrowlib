@@ -10,6 +10,13 @@ INCLUDE(cmake-env/version.cmake)
 
 INCLUDE(cmake-env/complie.cmake)
 
+#是否使用SDK提供日志，如果使用需要在项目中链接 log4cplus库
+option(USE_SDK_LOG4CPLUS "use sdk log4cplus" ON)
+IF(USE_SDK_LOG4CPLUS)
+    add_definitions(-DUSE_SDKLOG=1)
+ENDIF()
+
+
 IF(${COMPILE_PLATFROM} STREQUAL "x64")
 	INCLUDE(cmake-env/x64-env.cmake)
     SET(PlatFromName x64)
@@ -26,6 +33,6 @@ ENDIF()
 #插件编译(主要都是用来测试的插件)
 ADD_SUBDIRECTORY(testmain)
 
-ADD_SUBDIRECTORY(testlib1)
+# ADD_SUBDIRECTORY(testlib1)
 
 # ADD_SUBDIRECTORY(testlib2)
