@@ -49,7 +49,7 @@ struct ArrayView<T, size, Arrow::IntegerSequence<args...>>
                                         b.data, typename Arrow::MakeIntegerSequence<size1>::type{});
     }
 
-    constexpr ArrayView<T, size> operator+(const ArrayView<T, 0>& b) const
+    constexpr ArrayView<T, size> operator+(const ArrayView<T, 0>& b)
     {
         return *this;
     }

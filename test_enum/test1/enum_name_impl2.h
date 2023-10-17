@@ -311,8 +311,9 @@ struct EnumItemArray<EnumType, enumStart>
     constexpr static decltype(Array()) array = Array();
     constexpr static size_t length = array.length;
 };
-template <typename EnumType, EnumType enumStart>
-constexpr decltype(EnumItemArray<EnumType, enumStart>::Array()) EnumItemArray<EnumType, enumStart>::array;
+// template <typename EnumType, EnumType enumStart>
+// constexpr decltype(EnumItemArray<EnumType, enumStart>::Array()) EnumItemArray<EnumType, enumStart>::array;
+
 
 // 二个参数 [zhuyb 2023-08-21 21:06:35]
 template <typename EnumType, EnumType enumStart, EnumType enumEnd>
@@ -329,8 +330,8 @@ struct EnumItemArray<EnumType, enumStart, enumEnd>
     constexpr static size_t length = array.length;
 
 };
-template <typename EnumType, EnumType enumStart, EnumType enumEnd>
-constexpr decltype(EnumItemArray<EnumType, enumStart, enumEnd>::Array()) EnumItemArray<EnumType, enumStart, enumEnd>::array;
+// template <typename EnumType, EnumType enumStart, EnumType enumEnd>
+// constexpr decltype(EnumItemArray<EnumType, enumStart, enumEnd>::Array()) EnumItemArray<EnumType, enumStart, enumEnd>::array;
 
 template <typename EnumType, EnumType enumStart1, EnumType enumEnd1, EnumType enumStart2, EnumType... enumArgs>
 struct EnumItemArray<EnumType, enumStart1, enumEnd1, enumStart2, enumArgs...>
@@ -350,8 +351,8 @@ struct EnumItemArray<EnumType, enumStart1, enumEnd1, enumStart2, enumArgs...>
     constexpr static size_t length = array.length;
 
 };
-template <typename EnumType, EnumType enumStart1, EnumType enumEnd1, EnumType enumStart2, EnumType... enumArgs>
-constexpr decltype(EnumItemArray<EnumType, enumStart1, enumEnd1, enumStart2, enumArgs...>::Array()) EnumItemArray<EnumType, enumStart1, enumEnd1, enumStart2, enumArgs...>::array;
+// template <typename EnumType, EnumType enumStart1, EnumType enumEnd1, EnumType enumStart2, EnumType... enumArgs>
+// constexpr decltype(EnumItemArray<EnumType, enumStart1, enumEnd1, enumStart2, enumArgs...>::Array()) EnumItemArray<EnumType, enumStart1, enumEnd1, enumStart2, enumArgs...>::array;
 
 template <typename EnumType, EnumType... enumArgs>
 struct EnumItemToStr
@@ -371,5 +372,6 @@ struct EnumItemToStr
 };
 template <typename EnumType, EnumType... enumArgs>
 constexpr decltype(EnumItemArray<EnumType, enumArgs...>::array) EnumItemToStr<EnumType, enumArgs...>::array;
+
 
 }

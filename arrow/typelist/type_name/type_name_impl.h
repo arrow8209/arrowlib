@@ -37,13 +37,11 @@ template <typename T>
 struct TypeName<T, -1>
 {
 
-private:
     constexpr static int Length()
     {
         return StaticStr::Find<0>(__PRETTY_FUNCTION__, details::typeNameEnd) - StaticStr::Find<1>(__PRETTY_FUNCTION__, details::typeNameStart) - StaticStr::StrLen(details::typeNameStart);
     }
 
-public:
     static void Trace()
     {
         std::cout << __PRETTY_FUNCTION__ << std::endl;

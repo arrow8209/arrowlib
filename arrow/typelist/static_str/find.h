@@ -17,17 +17,34 @@ namespace details
 struct FindStrImplAssist
 {
 private:
-    template<size_t N, int ...args>
-    static constexpr bool Equal(const char* str1, const char (&str2)[N], Arrow::IntegerSequence<args...>)
+    // template<size_t N, int ...args>
+    // static constexpr bool Equal(const char* str1, const char (&str2)[N], Arrow::IntegerSequence<args...>)
+    // {
+    //     return ((at<args>(str1) == at<args>(str2)) && ... && true);
+    // }
+
+    template<size_t N>
+    static constexpr bool EqualImpl(const char* str1, const char (&str2)[N])
     {
-        return ((at<args>(str1) == at<args>(str2)) && ... && true);
+        return true;
     }
 
+    template <size_t N, int first, int... args>
+    static constexpr bool EqualImpl(const char* str1, const char (&str2)[N])
+    {
+        return (at<first>(str1) == at<first>(str2)) ? EqualImpl<N, args...>(str1, str2) : false;
+    }
+
+    template<size_t N, int ...args>
+    static constexpr bool EqualImpl(const char* str1, const char (&str2)[N], Arrow::IntegerSequence<args...>)
+    {
+        return EqualImpl<N, args...>(str1, str2);
+    }
 public:
     template<size_t N>
     static constexpr bool Equal(const char* str1, const char (&str2)[N])
     {
-        return StrLenImpl::Impl(str1, 0) < N - 1 ? false : Equal(str1, str2, typename Arrow::MakeIntegerSequence<N - 1>::type{});
+        return StrLenImpl::Impl(str1, 0) < N - 1 ? false : EqualImpl(str1, str2, typename Arrow::MakeIntegerSequence<N - 1>::type{});
     }
 };
 
@@ -98,6 +115,7 @@ struct FindImpl<0>
 // 查找第 times 次出现的位置 0:查找最后一次出现的位置  1:查找第一次出现的位置 N:查找第N次出现的位置(如果没有就返回最后一次出现的位置)[zhuyb 2023-06-21 22:31:48]
 constexpr static size_t FindTypeFirst = 1;
 constexpr static size_t FindTypeLast = 0;
+constexpr static size_t NoPos = static_cast<size_t>(-1);
 template<size_t times = 1>
 constexpr size_t Find(const char* sz, const char ch, int startPos = 0)
 {

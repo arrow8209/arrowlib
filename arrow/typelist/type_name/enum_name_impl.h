@@ -19,74 +19,104 @@ constexpr char enumNameEnd[] = "]";
 #else
 #endif
 
+// 判断枚举是 class enum 还是 enum
+template <typename EnumType, typename = typename std::enable_if<std::is_enum<EnumType >::value>::type>
+struct IsScopedEnum : std::false_type
+{
+};
+
+template <typename EnumType>
+struct IsScopedEnum<EnumType , typename std::enable_if<!std::is_convertible<EnumType , int>::value>::type> : std::true_type
+{
+};
+
 }
 
-template<typename T, T t, int length = -1>
+/////////////////////////////////////////////////////////////
+template<typename T, T t>
 struct EnumItemName
 {
-    static void Trace()
-    {
-        std::cout << __PRETTY_FUNCTION__ << std::endl;
-    }
-
-    constexpr static StaticStr::StringView<length> Impl()
-    {
-        return StaticStr::StringView<length>(__PRETTY_FUNCTION__ + StaticStr::Find<1>(__PRETTY_FUNCTION__, details::enumNameStart) + StaticStr::StrLen(details::enumNameStart));
-    }
-};
-
-template<typename T, T t>
-struct EnumItemName<T, t, -1>
-{
-    static void Trace()
-    {
-        std::cout << __PRETTY_FUNCTION__ << std::endl;
-        EnumItemName<T, t, 0>::Trace();
-    }
-
+private:
+    /**
+     * @description: 获取枚举英文名长度仅枚举部分
+     * @return {*}
+     */
     constexpr static int Length()
     {
-        return StaticStr::Find<0>(__PRETTY_FUNCTION__, details::enumNameEnd) - StaticStr::Find<1>(__PRETTY_FUNCTION__, details::enumNameStart)  - StaticStr::StrLen(details::enumNameStart);
+        return StaticStr::Find<0>(__PRETTY_FUNCTION__, details::enumNameEnd) -
+               StaticStr::Find<1>(__PRETTY_FUNCTION__, details::enumNameStart) -
+               StaticStr::StrLen(details::enumNameStart) - 
+               PrefixLength();
     }
-    
+
     /**
-     * @description: 获取枚举值对应字符串
+     * @description: 获取枚举前缀长度
+     * @return {*}
+     */
+    constexpr static int PrefixLength()
+    {
+        return StaticStr::Find<0>(__PRETTY_FUNCTION__, "::") > StaticStr::Find<1>(__PRETTY_FUNCTION__, details::enumNameStart)
+                   ? StaticStr::Find<0>(__PRETTY_FUNCTION__, "::") -
+                         StaticStr::Find<1>(__PRETTY_FUNCTION__, details::enumNameStart) -
+                         StaticStr::StrLen(details::enumNameStart) + 2
+                   : 0;
+    }
+
+    /**
+     * @description: 获取枚举短名
+     * @return {*}
+     */
+    constexpr static StaticStr::StringView<Length()> ImplShorName()
+    {
+        return StaticStr::StringView<Length()>(__PRETTY_FUNCTION__ +
+                                             StaticStr::Find<1>(__PRETTY_FUNCTION__, details::enumNameStart) +
+                                             StaticStr::StrLen(details::enumNameStart) + PrefixLength());
+    }
+
+    /**
+     * @description: 获取枚举完整名称
      * @return {*}
      */    
-    constexpr static auto Impl() -> decltype(EnumItemName<T, t, EnumItemName<T, t>::Length()>::Impl())
+    constexpr static auto ImplLongName() -> decltype(TypeName<T>::Impl() + StaticStr::Str("::") + EnumItemName<T, t>::ImplShorName())
     {
-        return EnumItemName<T, t, EnumItemName<T, t>::Length()>::Impl();
+        return TypeName<T>::Impl() + StaticStr::Str("::") + EnumItemName<T, t>::ImplShorName();
     }
 
-    constexpr static auto Impl1() -> decltype(TypeName<T>::Impl() + StaticStr::Str("::") + EnumItemName<T, t>::Impl())
+public:
+    // 调试 [zhuyb 2023-10-17 16:17:32]
+    static StaticStr::StringView<Length()> Trace2()
     {
-        return TypeName<T>::Impl() + StaticStr::Str("::") + EnumItemName<T, t>::Impl();
+        return StaticStr::StringView<Length()>();
+    }
+    static int Trace1()
+    {
+        std::cout << __PRETTY_FUNCTION__ << std::endl;
+        std::cout << Length() << ":" << PrefixLength() << std::endl;
+        Trace2();
+        return 0;
     }
 
-    constexpr static const char* Name()
+    constexpr static const char* ShortName()
     {
-        return value.data;
+        return shortName.data;
     }
 
-    constexpr static const char* FullName()
+    constexpr static const char* LongName()
     {
-        return long_value.data;
+        return longNalue.data;
     }
 
-    static constexpr decltype(EnumItemName<T, t>::Impl()) value = EnumItemName<T, t>::Impl();
-    static constexpr decltype(EnumItemName<T, t>::Impl1()) long_value = EnumItemName<T, t>::Impl1();
-
+private:
+    static constexpr decltype(EnumItemName<T, t>::ImplShorName()) shortName = EnumItemName<T, t>::ImplShorName();
+    static constexpr decltype(EnumItemName<T, t>::ImplLongName()) longNalue = EnumItemName<T, t>::ImplLongName();
 };
-template<typename T, T t>
-constexpr decltype(EnumItemName<T, t>::Impl()) EnumItemName<T, t>::value;
-template<typename T, T t>
-constexpr decltype(EnumItemName<T, t>::Impl1()) EnumItemName<T, t>::long_value;
-
-/////////////////////////////////////////////////////////////
+template <typename T, T t>
+constexpr decltype(EnumItemName<T, t>::ImplShorName()) EnumItemName<T, t>::shortName;
+template <typename T, T t>
+constexpr decltype(EnumItemName<T, t>::ImplLongName()) EnumItemName<T, t>::longNalue;
 
 
 namespace details {
-
 
 template<typename EnumType>
 struct EnumListData
@@ -97,7 +127,10 @@ struct EnumListData
 template<typename EnumType>
 typename EnumListData<EnumType>::type EnumListData<EnumType>::value;
 
-template <typename EnumType, EnumType _emFirst, EnumType _emLast, EnumType... enumTypes>
+template <typename EnumType, 
+            typename std::underlying_type<EnumType>::type _emFirst,
+            typename std::underlying_type<EnumType>::type _emLast,
+            typename std::underlying_type<EnumType>::type... enumTypes>
 struct EnumListToStrImpl
 {
     using value = EnumListData<EnumType>;
@@ -110,7 +143,9 @@ struct EnumListToStrImpl
     }
 };
 
-template <typename EnumType, EnumType _emFirst, EnumType _emLast>
+template <typename EnumType,
+          typename std::underlying_type<EnumType>::type _emFirst,
+          typename std::underlying_type<EnumType>::type _emLast>
 struct EnumListToStrImpl<EnumType, _emFirst, _emLast>
 {
     using value = EnumListData<EnumType>;
@@ -118,20 +153,20 @@ struct EnumListToStrImpl<EnumType, _emFirst, _emLast>
     static bool Init()
     {
         EnumListToStrImpl<EnumType, _emFirst, _emFirst>::Init();
-        EnumListToStrImpl<EnumType, static_cast<EnumType>(_emFirst + 1), _emLast>::Init();
+        EnumListToStrImpl<EnumType, _emFirst + 1, _emLast>::Init();
         return true;
     }
 };
 
-template <typename EnumType, EnumType _emEnd>
+template <typename EnumType, typename std::underlying_type<EnumType>::type _emEnd>
 struct EnumListToStrImpl<EnumType, _emEnd, _emEnd>
 {
-    using item = EnumItemName<EnumType, _emEnd>;
+    using item = EnumItemName<EnumType, static_cast<EnumType>(_emEnd)>;
     using value = EnumListData<EnumType>;
 
     static bool Init()
     {
-        value::value[_emEnd] = item::Name();
+        value::value[static_cast<EnumType>(_emEnd)] = item::ShorName();
         return true;
     }
 };
@@ -141,25 +176,20 @@ template <typename EnumType, EnumType... enumArgs>
 struct EnumListToStr
 {
     static_assert(sizeof...(enumArgs) % 2 == 0 , "枚举参数的个数必须为偶数个，首尾成对出现");
-    using type = details::EnumListToStrImpl<EnumType, enumArgs...>;
+    using enumValueType = typename std::underlying_type<EnumType>::type;
+    using type = details::EnumListToStrImpl<EnumType, static_cast<enumValueType>(enumArgs)...>;
     using value = details::EnumListData<EnumType>;
 
-    // static bool gInit;
+
     static const char* ItemStr(EnumType enumValue)
     {
-        // static bool bInit = type::Init();
+        static bool bInit = type::Init();
         auto it = value::value.find(enumValue);
         if(it == value::value.end())
         {
-            return "";
+            return "(unknow enum)";
         }
         return it->second;
     }
 };
-// template <typename EnumType, EnumType... enumArgs>
-// bool EnumListToStr<EnumType, enumArgs...>::gInit = EnumListToStr<EnumType, enumArgs...>::type::Init();
-
-
-
-
 }

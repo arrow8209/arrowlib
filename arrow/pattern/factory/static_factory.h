@@ -3,6 +3,7 @@
  * @Author: arrow arrow8209@foxmail.com
  * @Date: 2022-06-30 13:35:33
  * @Description: 编译期抽象工厂 在编译器创建好工厂和 CreatorObj
+ * 还需要优化，因为在定义的时候就已经把实现的头文件包含进去了
  */
 #pragma once
 #include <map>

@@ -106,7 +106,6 @@ static inline std::string get_app_path()
 #endif
 }
 
-
 static uint64_t GetThreadID(const std::thread& th)
 {
     std::ostringstream oss;
@@ -348,6 +347,15 @@ static void SetCurrentThreadName(const std::string& name) {
     #endif
 }
 
+static std::string GetFileName(const std::string& filePath)
+{
+    size_t pos = filePath.find_last_of("/\\");
+    if (pos == std::string::npos)
+    {
+        return "";
+    }
+    return filePath.substr(pos + 1, filePath.size() - pos - 1);
+}
 
 } // namespace Std
 }

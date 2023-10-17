@@ -49,6 +49,13 @@ public:
         return true;
     }
 
+    virtual bool UnRegister()
+    {
+        std::lock_guard<std::mutex> guard(m_Mutex);
+        m_vecLPObserver.clear();
+        return true;
+    }
+
     virtual _Ret Notify(_Args... args)
     {
         m_Mutex.lock();

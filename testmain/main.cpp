@@ -4,7 +4,7 @@
  * @Date: 2022-06-30 09:31:52
  * @Description:
  */
-
+#include "arrow/arrow.h"
 #include "demo/test_static_str.h"
 #include "demo/test_type_name.h"
 #include "demo/test_file_name.h"
@@ -17,12 +17,13 @@
 #include "test_lock_free/test_args.h"
 #include "test_lock_free/test_lock_free1.h"
 #include "test_lock_free/test_task2.h"
+#include "test_log/test_log.h"
 
 int main(int argc, char* argv[])
 {
     // TestStaticStr();
     // TestTypeName();
-    // TestEnumName();
+    TestEnumName();
     // TestStrDjb2();
     // TestFileName();
     // TestFunName();
@@ -31,7 +32,8 @@ int main(int argc, char* argv[])
     
     // MainTestArgs();
     // TestLockFree1();
-    TestTask();
+    // TestTask();
     // TestMapView();
+    // TestLogOut();
     return 1;
 }

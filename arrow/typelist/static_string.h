@@ -58,7 +58,7 @@
 #endif
 
 #define __ARROW_FILE_NAME_VALUE__ (GET_FILE_NAME(__FILE__).data)
-#define __ARROW_FILE_NAME_TYPE__ STATIC_STRING(__ARROW_FILE_NAME_VALUE__)
+#define __ARROW_FILE_NAME_TYPE__ Arrow::Splite<Arrow::StaticStr::FindLast(__FILE__, '/') + 1, STATIC_STRING(__FILE__)>::Tail
 
 #define __ARROW_FUN_NAME_VALUE__ Arrow::StaticStr::Str(__func__)
 #define __ARROW_FUN_NAME_TYPE__ STATIC_STRING(__func__)

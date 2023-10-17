@@ -12,8 +12,8 @@ class Singleton
 {
    
 public:
-    typedef _TInstance TInstance;
-    typedef std::unique_ptr<TInstance> Unique_Ptr_Instance;
+    using TInstance = _TInstance;
+    using Unique_Ptr_Instance = std::unique_ptr<TInstance>;
 
 private:
     Singleton() = default;
@@ -23,28 +23,29 @@ private:
     virtual ~Singleton() = default;
 public:
 
-    
     static Unique_Ptr_Instance& Instance()
     {
-        static bool bCreate = false;
-        static std::mutex mutext;
-        if (bCreate == false)
+        if (s_UniquePtrInstance.get() == nullptr)
         {
-            mutext.lock();
-            if (s_UniquePtrInstance.get() == NULL)
+            s_Mutex.lock();
+            if (s_UniquePtrInstance.get() == nullptr)
             {
                 s_UniquePtrInstance.reset(new TInstance());
             }
-            bCreate = true;
-            mutext.unlock();
+            s_Mutex.unlock();
         }
         return s_UniquePtrInstance;
     }
 protected:
     static Unique_Ptr_Instance s_UniquePtrInstance;
+    static std::mutex s_Mutex;
 };
 
-template<typename TYPE> typename Singleton<TYPE>::Unique_Ptr_Instance Singleton<TYPE>::s_UniquePtrInstance;
+template <typename TYPE>
+typename Singleton<TYPE>::Unique_Ptr_Instance Singleton<TYPE>::s_UniquePtrInstance;
+
+template <typename TYPE>
+std::mutex Singleton<TYPE>::s_Mutex;
 
 //Demo
 //typedef Singleton<UserClass> App_UserClass;
