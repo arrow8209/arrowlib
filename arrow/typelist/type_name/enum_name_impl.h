@@ -166,7 +166,7 @@ struct EnumListToStrImpl<EnumType, _emEnd, _emEnd>
 
     static bool Init()
     {
-        value::value[static_cast<EnumType>(_emEnd)] = item::ShorName();
+        value::value[static_cast<EnumType>(_emEnd)] = item::ShortName();
         return true;
     }
 };

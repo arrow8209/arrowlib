@@ -92,7 +92,8 @@
             "cinttypes": "cpp",
             "set": "cpp",
             "queue": "cpp",
-            "__memory": "cpp"
+            "__memory": "cpp",
+            "any": "cpp"
         }
     }
 }

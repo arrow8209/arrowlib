@@ -22,11 +22,15 @@
 #include <locale>  // wstring_convert
 #include <limits>
 #include <atomic>
+#include <sstream>
+#include <fstream>
+#include <string>
 
 #ifdef _WIN32
 #elif __APPLE__
 #elif __linux__
 #include <malloc.h>
+#include <pthread.h>
 #endif
 
 // #ifdef _WIN32
@@ -112,6 +116,7 @@ static uint64_t GetThreadID(const std::thread& th)
     oss << th.get_id();
     return std::stoull(oss.str());
 }
+
 static uint64_t GetThreadID()
 {
     std::ostringstream oss;
@@ -356,6 +361,26 @@ static std::string GetFileName(const std::string& filePath)
     }
     return filePath.substr(pos + 1, filePath.size() - pos - 1);
 }
+
+#ifdef __linux__
+static std::string GetSharedObjectPath()
+{
+    std::ifstream maps("/proc/self/maps");
+    std::string line;
+    while (std::getline(maps, line))
+    {
+        if (line.find("[.text]") != std::string::npos)
+        {
+            std::istringstream iss(line);
+            std::string path;
+            while (iss >> path)
+                ; // skip to the last column
+            return path;
+        }
+    }
+    return "./";
+}
+#endif
 
 } // namespace Std
 }

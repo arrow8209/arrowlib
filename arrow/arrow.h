@@ -10,6 +10,7 @@
 #include "other/std_assist.h"
 #include "other/static_const.h"
 #include "other/convert.h"
+#include "other/set_tuple.h"
 
 // pattern模块 [zhuyb 2022-12-15 10:13:29]
 #include "pattern/pattern.h"

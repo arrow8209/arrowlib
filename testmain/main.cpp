@@ -5,25 +5,17 @@
  * @Description:
  */
 #include "arrow/arrow.h"
-#include "demo/test_static_str.h"
-#include "demo/test_type_name.h"
-#include "demo/test_file_name.h"
-#include "demo/test_func_name.h"
-#include "demo/test_task.h"
 
-#include "../test_enum/test_enum.h"
-#include "../test_enum/test1/map_view.h"
-
-#include "test_lock_free/test_args.h"
-#include "test_lock_free/test_lock_free1.h"
-#include "test_lock_free/test_task2.h"
-#include "test_log/test_log.h"
+#include "demo/task/demo_task2.h"
+#include "demo/task/test_task_performance.h"
 
 int main(int argc, char* argv[])
 {
+    // DemoTask2();
+    TestTaskPerformance();
     // TestStaticStr();
     // TestTypeName();
-    TestEnumName();
+    // TestEnumName();
     // TestStrDjb2();
     // TestFileName();
     // TestFunName();
@@ -35,5 +27,7 @@ int main(int argc, char* argv[])
     // TestTask();
     // TestMapView();
     // TestLogOut();
+    // TestSetTupe();
+    // TestTask1();
     return 1;
 }
