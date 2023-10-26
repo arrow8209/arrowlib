@@ -7,12 +7,16 @@
 #include "arrow/arrow.h"
 
 #include "demo/task/demo_task2.h"
+#include "demo/task/test_task_3.h"
 #include "demo/task/test_task_performance.h"
+#include "demo/task/test_lock_free_queue.h"
 
 int main(int argc, char* argv[])
 {
     // DemoTask2();
     TestTaskPerformance();
+    // TestTak3();
+    // TestLockFree();
     // TestStaticStr();
     // TestTypeName();
     // TestEnumName();

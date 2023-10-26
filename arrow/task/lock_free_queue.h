@@ -12,7 +12,7 @@
 #include <future>
 #include <vector>
 #include <atomic>
-#include "arrow/other/std_assist.h"
+#include "../other/std_assist.h"
 
 namespace Arrow
 {
@@ -71,21 +71,27 @@ public:
         do
         {
             pOldTail = m_pTail.load();
-        } while (!pOldTail->pNext.compare_exchange_weak(pNullNode, pNewNode) != true);
+            pNullNode = nullptr;
+        } while (pOldTail->pNext.compare_exchange_weak(pNullNode, pNewNode) != true);
 
-        m_pTail.compare_exchange_weak(pOldTail, pNewNode);
+        Node* pTmpTail = pOldTail;
+        do
+        {
+            pOldTail = pTmpTail;
+        }while(m_pTail.compare_exchange_weak(pOldTail, pNewNode) != true);
+        
         m_u32Count++;
-
         return true;
     }
 
     bool Pop(Args&... args)
     {
-        Node* pDummyHead = m_pHead.load();
+        Node* pDummyHead = nullptr;
         Node* pReadHead = nullptr;
         Data* pRetValue = nullptr;
         do
         {
+            pDummyHead = m_pHead.load();
             // 第一个节点是哑结点。真正的第一个是head->next [zhuyb 2023-10-15 15:54:55]
             pReadHead = pDummyHead->pNext.load();
             if (pReadHead == nullptr)

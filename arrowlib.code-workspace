@@ -93,7 +93,8 @@
             "set": "cpp",
             "queue": "cpp",
             "__memory": "cpp",
-            "any": "cpp"
+            "any": "cpp",
+            "shared_mutex": "cpp"
         }
     }
 }

@@ -274,10 +274,13 @@ private:
     void ClearTask()
     {
         TaskFun* pFun = nullptr;
-        while(m_QueueTask.Pop(pFun) == true)
+        while(m_QueueTask.Empty() == false)
         {
-            (*pFun)(false);
-            delete pFun;
+            if(m_QueueTask.Pop(pFun) == true)
+            {
+                (*pFun)(false);
+                delete pFun;
+            }
         }
     }
 

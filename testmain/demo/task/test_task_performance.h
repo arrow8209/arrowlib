@@ -87,10 +87,8 @@ public:
             AddTask(&CTestTask2::Task1, &CTestTask2::Clear1, i);
         }
         m_tpInput2 = std::chrono::steady_clock::now();
-        // if(m_bIsRun.load() == true)
-        // {
         std::this_thread::sleep_for(std::chrono::milliseconds(200));
-        // }
+
     }
 
     void Task1(int index)
@@ -141,7 +139,13 @@ void TestTaskPerformance()
     for (int i = 0; i < 10; i++)
     {
         CTestTask1 task;
-        // CTestTask2 task;
+        task.Activate();
+        task.Test();
+    }
+
+    for (int i = 0; i < 10; i++)
+    {
+        CTestTask2 task;
         task.Activate();
         task.Test();
     }
