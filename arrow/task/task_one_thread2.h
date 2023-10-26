@@ -211,7 +211,7 @@ protected:
     virtual void BeforeThreadRun(){}
 
     // 线程退出循环后执行响应的回收操作 [zhuyb 2022-07-05 09:01:25]
-    virtual void AfterThreadEnd(){}
+    virtual void AfterThreadStop(){}
 
 private:
     void WaitBeforeThreadRun()
@@ -249,7 +249,7 @@ private:
 
         ClearTask();
         ClearTimer();
-        AfterThreadEnd();
+        AfterThreadStop();
         printf("%s Task Thread End\n", m_strThreadName.c_str());
     }
 
