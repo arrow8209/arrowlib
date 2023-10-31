@@ -5,7 +5,7 @@
 
 // 辅助模块 [zhuyb 2022-12-15 10:13:23]
 #include "other/load_lib.h"
-#include "other/obj_pool_simple.h"
+#include "other/obj_pool/obj_pool.h"
 #include "other/out_run_time.h"
 #include "other/std_assist.h"
 #include "other/static_const.h"
