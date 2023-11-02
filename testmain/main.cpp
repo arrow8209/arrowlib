@@ -8,14 +8,19 @@
 
 #include "demo/obj_pool/test_obj_pool1.h"
 
+#include "demo/observer/test_observer1.h"
+#include "demo/observer/test_observer2.h"
+
 #include "demo/task/demo_task2.h"
 #include "demo/task/test_task_performance.h"
 #include "demo/task/test_lock_free_queue.h"
 
 int main(int argc, char* argv[])
 {
-    TestObjPool1();
-    // DemoTask2();
+    // TestObserver1();
+    // TestObserver2();
+    // TestObjPool1();
+    DemoTask2();
     // TestTaskPerformance();
     // TestTak3();
     // TestLockFree();

@@ -46,5 +46,5 @@ void CDemoTask2::ClearTask(std::string strTaskID)
 
 void CDemoTask2::Timer()
 {
-    std::cout << "Timer:" << std::endl;
+    std::cout << "Timer:" << std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count() << std::endl;
 }

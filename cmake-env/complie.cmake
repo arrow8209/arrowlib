@@ -25,6 +25,7 @@ set(GccCompailParam "${GccCompailParam} -Wno-uninitialized")   # -Wno-uninitiali
 set(GccCompailParam "${GccCompailParam} -fvisibility=hidden")   # -fvisibility=hidden 默认隐藏所有接口
 set(GccCompailParam "${GccCompailParam} -fstack-protector-all") # -fstack-protector-all 启用堆栈保护机制
 set(GccCompailParam "${GccCompailParam} -fconstexpr-depth=2048") # -fconstexpr-depth 设置模板迭代深度
+set(GccCompailParam "${GccCompailParam} -Wno-pmf-conversions") #取消对象函数指针转换警告
 
 #设置编译参数（基本不改）
 set(CMAKE_CXX_STANDARD 14)

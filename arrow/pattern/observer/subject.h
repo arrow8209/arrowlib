@@ -1,9 +1,14 @@
+/*
+ * @FilePath: /arrow/pattern/observer/subject.h
+ * @Author: arrow arrow8209@foxmail.com
+ * @Date: 2022-12-07 10:08:16
+ * @Description: 简单观察者模式
+ */
 #pragma once
 #include <vector>
 #include <thread>
 #include <mutex>
 #include <algorithm>
-#include "observer.h"
 
 namespace Arrow
 {
@@ -12,10 +17,24 @@ namespace Pattern
 {
 
 template <typename _Ret, typename ..._Args>
+class Observer
+{
+public:
+    Observer() {}
+
+    virtual ~Observer() {}
+
+public:
+    virtual _Ret Response(_Args... _args) = 0;
+};
+
+template <typename _Ret, typename ..._Args>
 class Subject
 {
 public:
     typedef Observer<_Ret, _Args...> IObserver;
+
+protected:
     typedef std::vector<IObserver*> Vec_PtrObserver;
 public:
     Subject(){}

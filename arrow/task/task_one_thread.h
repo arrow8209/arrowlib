@@ -33,7 +33,7 @@ protected:
     typedef std::tuple<RunFunAddress, ClearCacheFunAddress> TaskFun;    // 单个任务的执行信息 [zhuyb 2022-07-05 09:00:12]
     typedef std::list<TaskFun*> List_Task;   // 缓冲区，存储所有的任务 [zhuyb 2022-07-05 09:00:43]
 
-    typedef std::chrono::time_point<std::chrono::system_clock, std::chrono::milliseconds> time_point_milliseconds;
+    typedef std::chrono::time_point<std::chrono::steady_clock, std::chrono::milliseconds> time_point_milliseconds;
     // 定时器数据（定时器ID，触发间隔，1次触发，多次触发, 下次触发绝对时间） [zhuyb 2023-03-08 15:32:28]
     typedef std::tuple<
         int,                       // 定时器ID [zhuyb 2023-03-09 09:12:04]
@@ -203,7 +203,7 @@ protected:
     {
         std::chrono::milliseconds millInterval(u32Interval);
         time_point_milliseconds tNext =
-            std::chrono::time_point_cast<time_point_milliseconds::duration>(std::chrono::system_clock::now());
+            std::chrono::time_point_cast<time_point_milliseconds::duration>(std::chrono::steady_clock::now());
         TimerData timerData(++m_u32TimeID,
                             millInterval,
                             bOnce,
@@ -233,7 +233,7 @@ protected:
         // }
         // std::chrono::milliseconds millInterval(u32Interval);
         // time_point_milliseconds tNext =
-        //     std::chrono::time_point_cast<time_point_milliseconds::duration>(std::chrono::system_clock::now());
+        //     std::chrono::time_point_cast<time_point_milliseconds::duration>(std::chrono::steady_clock::now());
         // TimerData timerData(++m_u32TimeID,
         //                     millInterval,
         //                     bOnce,
@@ -366,7 +366,7 @@ private:
         m_mutextVecTimer.unlock();
 
         time_point_milliseconds tNow =
-            std::chrono::time_point_cast<time_point_milliseconds::duration>(std::chrono::system_clock::now());
+            std::chrono::time_point_cast<time_point_milliseconds::duration>(std::chrono::steady_clock::now());
         std::vector<VecTimer::iterator> vecEraseTimer;
         for(auto it = vecTmpTimer.begin(); it != vecTmpTimer.end(); it++)
         {

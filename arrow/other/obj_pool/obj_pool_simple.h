@@ -1,5 +1,5 @@
 /*
- * @FilePath: /ai_server/ShareCode/arrow/other/obj_pool_simple.h
+ * @FilePath: /arrow/other/obj_pool/obj_pool_simple.h
  * @Author: arrow arrow8209@foxmail.com
  * @Date: 2022-12-07 10:08:16
  * @Description: 简单对象池。注意使用对象池的对象必须实现Release 接口。
@@ -43,12 +43,10 @@ struct checkClassReleaseNotParam
 };
 }
 
-
-
 template<typename TObj, int livetime = _em_ObjLive120>
 class TObjSimplePool
 {
-    typedef std::tuple<TObj*, std::chrono::system_clock::time_point> ObjTupleInfo;
+    typedef std::tuple<TObj*, std::chrono::steady_clock::time_point> ObjTupleInfo;
     typedef std::list<ObjTupleInfo> Queue_ObjInfo;
     typedef std::map<TObj*, ObjTupleInfo> Map_ObjInfo;
 public:
@@ -84,7 +82,7 @@ public:
         }
 
         ++m_n32PoolCount;
-        ObjTupleInfo objInfo(pObj, std::chrono::system_clock::now());
+        ObjTupleInfo objInfo(pObj, std::chrono::steady_clock::now());
         m_ActiveObj[pObj] = objInfo;
         
         return pObj;
@@ -103,7 +101,7 @@ public:
             return;
         }
 
-        std::get<1>(it->second) = std::chrono::system_clock::now();
+        std::get<1>(it->second) = std::chrono::steady_clock::now();
         // pObj->Release();
         CallTObjRelease(pObj);
         m_FreeObj.push_front(it->second);
@@ -174,7 +172,7 @@ protected:
         }
         
 
-        std::chrono::system_clock::time_point tmNow = std::chrono::system_clock::now();
+        std::chrono::steady_clock::time_point tmNow = std::chrono::steady_clock::now();
         auto spacetime = std::chrono::duration_cast<std::chrono::seconds>(tmNow - m_LastCheckObjTimePoint);
         if (spacetime.count() < livetime)
         {
@@ -204,7 +202,7 @@ protected:
     std::mutex m_Mutex;
     Queue_ObjInfo m_FreeObj;
     Map_ObjInfo m_ActiveObj;
-    std::chrono::system_clock::time_point m_LastCheckObjTimePoint;
+    std::chrono::steady_clock::time_point m_LastCheckObjTimePoint;
 
     std::atomic_int32_t m_n32PoolCount{0};
 };

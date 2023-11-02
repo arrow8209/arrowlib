@@ -31,4 +31,7 @@ struct MakeIntegerSequenceImpl<0, seq...>
 template<size_t count>
 using MakeIntegerSequence = typename details::MakeIntegerSequenceImpl<count>;
 
+template<size_t count>
+using MakeIntegerSequence_t = typename details::MakeIntegerSequenceImpl<count>::type;
+
 }

@@ -2,7 +2,7 @@
 #include "singleton/singleton.h"
 #include "singleton/singleton_unmanager.h"
 
-#include "observer/observer.h"
+#include "observer/subject2.h"
 #include "observer/subject.h"
 
 #include "factory/factory.h"
