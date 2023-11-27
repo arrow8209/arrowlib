@@ -47,7 +47,7 @@ enum class EmErrorCode2
 //         ErrorDevInterfaceUnknowFail, ErrorDevInterfaceEnd> EmErrorCodeStr;
 }
 
-static void TestTypeName()
+static void TestTypeName1()
 {
     using typeName1=Arrow::TypeName<std::map<int, std::string>>;
     typeName1::Trace();
@@ -57,36 +57,37 @@ static void TestTypeName()
     std::cout << Arrow::GetTypeName(tmp) <<std::endl;
 }
 
-static void TestEnumName()
+static void TestTypeName2()
 {
+    std::cout << __GNUC__ << ":" << __GNUC_MINOR__ << std::endl;
     using enumName1 = Arrow::EnumItemName<AiServer::EmErrorCode1, AiServer::EmErrorCode1::E12345678>;
-    // enumName1::Trace1();
+    enumName1::Trace1();
     // std::cout << enumName1::ImplName().data << std::endl;
     // std::cout << enumName1::ImplFullName().data << std::endl;
     std::cout << enumName1::ShortName() << std::endl;
     std::cout << enumName1::LongName() << std::endl;
 
-    using enumName2 = Arrow::EnumItemName<AiServer::EmErrorCode2, AiServer::EmErrorCode2::E12345679>;
+    // using enumName2 = Arrow::EnumItemName<AiServer::EmErrorCode2, AiServer::EmErrorCode2::E12345679>;
     // enumName2::Trace();
     // std::cout << enumName2::ImplName().data << std::endl;
     // std::cout << enumName2::ImplFullName().data << std::endl;
-    std::cout << enumName2::ShortName() << std::endl;
-    std::cout << enumName2::LongName() << std::endl;
+    // std::cout << enumName2::ShortName() << std::endl;
+    // std::cout << enumName2::LongName() << std::endl;
 
 
-    using enumName3 = Arrow::EnumItemName<TestEnum1, TestEnum1::Em1Item1>;
+    // using enumName3 = Arrow::EnumItemName<TestEnum1, TestEnum1::Em1Item1>;
     // enumName3::Trace();
     // std::cout << enumName3::ImplName().data << std::endl;
     // std::cout << enumName3::ImplFullName().data << std::endl;
-    std::cout << enumName3::ShortName() << std::endl;
-    std::cout << enumName3::LongName() << std::endl;
+    // std::cout << enumName3::ShortName() << std::endl;
+    // std::cout << enumName3::LongName() << std::endl;
 
-    using enumName4 = Arrow::EnumItemName<TestEnum2, Em2Item1>;
+    // using enumName4 = Arrow::EnumItemName<TestEnum2, Em2Item1>;
     // enumName4::Trace();
     // std::cout << enumName3::ImplName().data << std::endl;
     // std::cout << enumName3::ImplFullName().data << std::endl;
-    std::cout << enumName4::ShortName() << std::endl;
-    std::cout << enumName4::LongName() << std::endl;
+    // std::cout << enumName4::ShortName() << std::endl;
+    // std::cout << enumName4::LongName() << std::endl;
 
     // using enumName2 = Arrow::EnumItemName<AiServer::EmErrorCode2, AiServer::EmErrorCode2::E12345679>;
     // enumName2::Trace();

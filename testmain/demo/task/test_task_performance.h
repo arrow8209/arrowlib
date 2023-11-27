@@ -3,6 +3,7 @@
 #include <chrono>
 #include <atomic>
 #include <iomanip>
+#include <inttypes.h>
 #include "arrow/arrow.h"
 
 #define RUNTIMES 1000000
@@ -17,7 +18,7 @@ public :
 
         float fInAvgTime = 1.0 * m_u64InputTime.load() / m_u64Count;
         float fOutAvgTime = 1.0 * std::chrono::duration_cast<std::chrono::nanoseconds>(m_tpRun2 - m_tpRun1).count() / m_u64Count;
-        printf("CTestTask1 count:%lu InAvgTime:%0.2fns OutAvgTime:%0.2fns\n", m_u64Count, fInAvgTime, fOutAvgTime);
+        printf("CTestTask1 count:%" PRIu64 " InAvgTime:%0.2fns OutAvgTime:%0.2fns\n", m_u64Count, fInAvgTime, fOutAvgTime);
     }
 
 public:
@@ -78,7 +79,7 @@ public :
 
         float fInAvgTime = 1.0 * m_u64InputTime.load() / m_u64Count;
         float fOutAvgTime = 1.0 * std::chrono::duration_cast<std::chrono::nanoseconds>(m_tpRun2 - m_tpRun1).count() / m_u64Count;
-        printf("CTestTask2 count:%lu InAvgTime:%0.2fns OutAvgTime:%0.2fns\n", m_u64Count, fInAvgTime, fOutAvgTime);
+        printf("CTestTask2 count:%" PRIu64 " InAvgTime:%0.2fns OutAvgTime:%0.2fns\n", m_u64Count, fInAvgTime, fOutAvgTime);
     }
 
 public:
@@ -139,7 +140,7 @@ public :
 
         float fInAvgTime = 1.0 * m_u64InputTime.load() / m_u64Count;
         float fOutAvgTime = 1.0 * std::chrono::duration_cast<std::chrono::nanoseconds>(m_tpRun2 - m_tpRun1).count() / m_u64Count;
-        printf("CTestTask3 count:%lu InAvgTime:%0.2fns OutAvgTime:%0.2fns\n", m_u64Count, fInAvgTime, fOutAvgTime);
+        printf("CTestTask3 count:%" PRIu64 "InAvgTime:%0.2fns OutAvgTime:%0.2fns\n", m_u64Count, fInAvgTime, fOutAvgTime);
     }
 
 public:

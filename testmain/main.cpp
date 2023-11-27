@@ -5,6 +5,7 @@
  * @Description:
  */
 #include "arrow/arrow.h"
+#include "arrow/log.h"
 
 #include "demo/obj_pool/test_obj_pool1.h"
 
@@ -15,18 +16,31 @@
 #include "demo/task/test_task_performance.h"
 #include "demo/task/test_lock_free_queue.h"
 
+#include "demo/test_enum_name.h"
+#include "demo/test_type_name.h"
+
+#include "demo/factory/static_factory_demo.h"
+
+#include "demo/state_demo/state_demo.h"
+
 int main(int argc, char* argv[])
 {
+    ArrowLog::init(nullptr);
+    ARROW_LOG_TRACE("TRACE");
+    ARROW_LOG_DEBUG("DEBUG");
+    ARROW_LOG_INFO("INFO");
+    ARROW_LOG_WARN("WARN");
+    ARROW_LOG_ERROR("ERROR");
     // TestObserver1();
     // TestObserver2();
     // TestObjPool1();
-    DemoTask2();
+    // DemoTask2();
     // TestTaskPerformance();
     // TestTak3();
     // TestLockFree();
     // TestStaticStr();
-    // TestTypeName();
-    // TestEnumName();
+    // TestTypeName1();
+    // TestTypeName2();
     // TestStrDjb2();
     // TestFileName();
     // TestFunName();
@@ -40,5 +54,11 @@ int main(int argc, char* argv[])
     // TestLogOut();
     // TestSetTupe();
     // TestTask1();
+
+    // TestEnumName();
+
+    // FactoryDemo();
+
+    // StateDemo();
     return 1;
 }

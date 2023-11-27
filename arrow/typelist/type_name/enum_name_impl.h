@@ -12,7 +12,7 @@ namespace details
 
 #ifdef __clang__
 constexpr char enumNameStart[] = "t = ";
-constexpr char enumNameEnd[] = ", length =";
+constexpr char enumNameEnd[] = "]";
 #elif __GNUC__
 constexpr char enumNameStart[] = "t = ";
 constexpr char enumNameEnd[] = "]";
@@ -84,6 +84,12 @@ private:
 
 public:
     // 调试 [zhuyb 2023-10-17 16:17:32]
+    static int Trace3()
+    {
+        std::cout << __PRETTY_FUNCTION__ << std::endl;
+        return 0;
+    }
+
     static StaticStr::StringView<Length()> Trace2()
     {
         return StaticStr::StringView<Length()>();

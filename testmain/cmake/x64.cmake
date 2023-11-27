@@ -1,4 +1,7 @@
-MESSAGE(STATUS  "	${PROJECT_NAME} tagert: x86_64")
+cmake_minimum_required(VERSION 3.5)
+
+MESSAGE(STATUS  "${PROJECT_NAME}:${CMAKE_HOST_SYSTEM_NAME}_x86_64")
+
 #工程添加多个特定的头文件搜索路径（按需修改）
 INCLUDE_DIRECTORIES(${ALL_INCLUDE_DIRS})
 

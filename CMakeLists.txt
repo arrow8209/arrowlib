@@ -1,10 +1,9 @@
-cmake_minimum_required(VERSION 3.0)
+cmake_minimum_required(VERSION 3.5)
 
 PROJECT(testmain)
 
-#设置编译参数和环境
-SET(COMPILE_PLATFROM "x64")
-# SET(COMPILE_PLATFROM "mac")
+MESSAGE("**********************************************************8")
+MESSAGE(STATUS "目标系统:${CMAKE_HOST_SYSTEM_NAME}")
 
 INCLUDE(cmake-env/version.cmake)
 
@@ -14,21 +13,25 @@ INCLUDE(cmake-env/complie.cmake)
 option(USE_SDK_LOG4CPLUS "use sdk log4cplus" ON)
 IF(USE_SDK_LOG4CPLUS)
     add_definitions(-DUSE_SDKLOG=1)
+    MESSAGE(STATUS "使用log4cplus 为日志核心")
+ELSE()
+    MESSAGE(STATUS "使用控制台输出做日志核心")
 ENDIF()
 
 
-IF(${COMPILE_PLATFROM} STREQUAL "x64")
-	INCLUDE(cmake-env/x64-env.cmake)
-    SET(PlatFromName x64)
-ELSEIF(${COMPILE_PLATFROM} STREQUAL "mac")
+if(CMAKE_HOST_SYSTEM_NAME STREQUAL "Linux")
+	INCLUDE(cmake-env/linux-x86_64-env.cmake)
+ELSEIF(CMAKE_HOST_SYSTEM_NAME STREQUAL "Darwin")
     INCLUDE(cmake-env/mac-env.cmake)
-    SET(PlatFromName mac)
-ELSE(${COMPILE_PLATFROM})
-    MESSAGE("* COMPILE_PLATFROM:  Unkonw ""${COMPILE_PLATFROM}")
-    INCLUDE(cmake-env/x64-env.cmake)
-    SET(PlatFromName x64)
+ELSEIF(CMAKE_HOST_SYSTEM_NAME STREQUAL "Windows")
+    MESSAGE(STATUS "暂时不支持Window")
+ELSE()
+    MESSAGE(STATUS "未知系统:${CMAKE_HOST_SYSTEM_NAME}")
 ENDIF()
 
+MESSAGE(STATUS "ALL_INCLUDE_DIRS:${ALL_INCLUDE_DIRS}")
+MESSAGE(STATUS "ALL_LIBRARY_DIRS:${ALL_LIBRARY_DIRS}")
+MESSAGE(STATUS "ALL_LIBRARIES:${ALL_LIBRARIES}")
 
 #插件编译(主要都是用来测试的插件)
 ADD_SUBDIRECTORY(testmain)

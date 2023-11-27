@@ -56,6 +56,15 @@ void TestObserver2()
     CSubject2 subject;
     CObserver2 observer;
 
+    auto fun1 = &CObserver2::Response1;
+    auto fun2 = &CObserver2::Response1;
+    auto fun3 = &CObserver2::Response2;
+    auto fun4 = &CObserver2::Response2;
+
+    auto ret1 = fun1 == fun2;
+    auto ret2 = fun2 == fun3;
+    auto ret3 = fun3 == fun4;
+
     subject.Register(&observer, &CObserver2::Response1);
     subject.Register(&observer, &CObserver2::Response1);
     subject.Register(&observer, &CObserver2::Response2);
