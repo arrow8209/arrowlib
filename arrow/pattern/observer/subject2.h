@@ -13,6 +13,7 @@
 #include <functional>
 #include <tuple>
 #include <map>
+#include "../../other/std_assist.h"
 #include "../../typelist/typelist.h"
 
 namespace Arrow
@@ -20,6 +21,37 @@ namespace Arrow
 
 namespace Pattern
 {
+
+namespace details
+{
+template <typename Obj, typename ObjFunPtr>
+struct ObserverAssist
+{
+public:
+    using Local = ObserverAssist<Obj, ObjFunPtr>;
+    using Increment = Arrow::Other::TIncrement<Local, uint32_t, 1>;
+    using VecObjFunPtr = std::vector<ObjFunPtr>;
+
+    static int32_t GetID(ObjFunPtr objFunPtr)
+    {
+        std::lock_guard<std::mutex> lock(gMutex);
+        auto it = std::find(gVecObjFunPtr.begin(), gVecObjFunPtr.end(),  objFunPtr);
+        if(it != gVecObjFunPtr.end())
+        {
+            return std::distance(gVecObjFunPtr.begin(), it);
+        }
+        gVecObjFunPtr.push_back(objFunPtr);
+        return gVecObjFunPtr.size() - 1;
+    }
+    static std::mutex gMutex;
+    static VecObjFunPtr gVecObjFunPtr;
+};
+template <typename Obj, typename ObjFunPtr>
+typename ObserverAssist<Obj, ObjFunPtr>::VecObjFunPtr ObserverAssist<Obj, ObjFunPtr>::gVecObjFunPtr;
+template <typename Obj, typename ObjFunPtr>
+std::mutex ObserverAssist<Obj, ObjFunPtr>::gMutex;
+
+}
 
 template <typename Ret, typename ...Args>
 class Subject2
@@ -94,7 +126,8 @@ private:
     bool RegisterClassFun(ObserverObj* pObserver, Ret (ObserverObj::*pObjserverFunPtr)(Args...), Arrow::IntegerSequence<sequence...>)
     {
         uintptr_t ptrObj = reinterpret_cast<uintptr_t>(pObserver);
-        uintptr_t ptrFun = reinterpret_cast<uintptr_t>(reinterpret_cast<void*>(pObjserverFunPtr));
+        // uintptr_t ptrFun = reinterpret_cast<uintptr_t>(reinterpret_cast<char*>(pObjserverFunPtr));
+        uintptr_t ptrFun = static_cast<uintptr_t>(details::ObserverAssist<ObserverObj, decltype(pObjserverFunPtr)>::GetID(pObjserverFunPtr));
         auto key = std::make_tuple(ptrObj, ptrFun);
 
         std::lock_guard<std::shared_timed_mutex> guard(m_Mutex);
