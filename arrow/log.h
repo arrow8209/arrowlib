@@ -1,5 +1,5 @@
 /*
- * @FilePath: /ai_server/ShareCode/arrow/log.h
+ * @FilePath: /arrowlib/arrow/log.h
  * @Author: arrow arrow8209@foxmail.com
  * @Date: 2022-12-14 15:13:25
  * @Description: 日志具体使用类，根据实际情况重写这个文件来实现特定的日志,使用这个头文件需要在编译的时候链接指定库

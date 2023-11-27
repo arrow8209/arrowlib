@@ -23,6 +23,8 @@
 
 #include "demo/state_demo/state_demo.h"
 
+#include "demo/test_file_name.h"
+
 int main(int argc, char* argv[])
 {
     ArrowLog::init(nullptr);
@@ -42,7 +44,7 @@ int main(int argc, char* argv[])
     // TestTypeName1();
     // TestTypeName2();
     // TestStrDjb2();
-    // TestFileName();
+    TestFileName();
     // TestFunName();
     // RunTestTask();
     // TestEnum();
