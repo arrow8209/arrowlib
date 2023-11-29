@@ -19,7 +19,7 @@
 #include "demo/test_enum_name.h"
 #include "demo/test_type_name.h"
 
-#include "demo/factory/static_factory_demo.h"
+#include "demo/factory/factory_demo.h"
 
 #include "demo/state_demo/state_demo.h"
 
@@ -44,7 +44,7 @@ int main(int argc, char* argv[])
     // TestTypeName1();
     // TestTypeName2();
     // TestStrDjb2();
-    TestFileName();
+    // TestFileName();
     // TestFunName();
     // RunTestTask();
     // TestEnum();
@@ -59,7 +59,7 @@ int main(int argc, char* argv[])
 
     // TestEnumName();
 
-    // FactoryDemo();
+    FactoryDemo();
 
     // StateDemo();
     return 1;

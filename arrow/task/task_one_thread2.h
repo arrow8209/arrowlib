@@ -96,15 +96,18 @@ public:
         {
             return true;
         }
-        printf("%s TaskOneThread::Stop Begin\n", m_strThreadName.c_str());
+        printf("%s TaskOneThread::Stop %d\n", m_strThreadName.c_str(), __LINE__);
 
         m_bIsRun = false;
         m_Thread.join();
+        printf("%s TaskOneThread::Stop %d\n", m_strThreadName.c_str(), __LINE__);
 
         ClearTask();
-        ClearTimer();
+        printf("%s TaskOneThread::Stop %d\n", m_strThreadName.c_str(), __LINE__);
 
-        printf("%s TaskOneThread::Stop End\n", m_strThreadName.c_str());
+        ClearTimer();
+        printf("%s TaskOneThread::Stop %d\n", m_strThreadName.c_str(), __LINE__);
+
         return true;
     }
 
@@ -223,7 +226,7 @@ private:
 
     void RunThread()
     {
-        printf("%s Task Thread Start\n", m_strThreadName.c_str());
+        printf("%s Task Thread RunThread:%d\n", m_strThreadName.c_str(), __LINE__);
         BeforeThreadRun();
         // 标记线程已启动并已经完成初始化 [zhuyb 2023-03-09 09:18:08]
         {
@@ -245,12 +248,16 @@ private:
             RunThreadTimer();
         }
 
-        printf("%s Task Thread End Start\n", m_strThreadName.c_str());
+        printf("%s Task Thread RunThread:%d\n", m_strThreadName.c_str(), __LINE__);
 
         ClearTask();
+        printf("%s Task Thread RunThread:%d\n", m_strThreadName.c_str(), __LINE__);
+
         ClearTimer();
+        printf("%s Task Thread RunThread:%d\n", m_strThreadName.c_str(), __LINE__);
+
         AfterThreadStop();
-        printf("%s Task Thread End\n", m_strThreadName.c_str());
+        printf("%s Task Thread RunThread:%d\n", m_strThreadName.c_str(), __LINE__);
     }
 
     /**
