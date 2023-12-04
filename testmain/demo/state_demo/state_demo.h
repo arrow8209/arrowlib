@@ -9,6 +9,7 @@ enum class LightState
     Off,
     On
 };
+using LightStateStr = Arrow::EnumListToStr<LightState, LightState::Off, LightState::On>;
 
 enum class LightMsg
 {
@@ -22,9 +23,10 @@ struct LightData
     int nLightOnTimerLenght = 3; // 灯开3秒自动关
 };
 
-using ListStateBase = Arrow::Pattern::StateBase<LightData, LightState, LightMsg>;
+using LightStateBase = Arrow::Pattern::StateBase<LightData, LightState, LightMsg>;
+using LightStateOutBase = Arrow::Pattern::StateOutBase<LightState>;
 
-class LightOn : public ListStateBase
+class LightOn : public LightStateBase
 {
 public:
     LightOn() {}
@@ -35,10 +37,10 @@ public:
         std::cout << "Init" << std::endl;
     }
 
-    virtual void StateStart(LightData* pData)
+    virtual void Start(LightData* pData)
     {
-        std::cout << "On::StateStart" << std::endl;
-        m_tpStateStart = std::chrono::steady_clock::now();
+        std::cout << "On::Start" << std::endl;
+        m_tpStart = std::chrono::steady_clock::now();
         m_nDownCount = 0;
     }
 
@@ -58,7 +60,7 @@ public:
     virtual LightState Timer(LightData* pData)
     {
         auto tpNow = std::chrono::steady_clock::now();
-        auto ts = std::chrono::duration_cast<std::chrono::seconds>(tpNow - m_tpStateStart).count();
+        auto ts = std::chrono::duration_cast<std::chrono::seconds>(tpNow - m_tpStart).count();
         if(ts >= pData-> nLightOnTimerLenght)
         {
             std::cout << "Timer:On->Off:" << ts << std::endl;
@@ -74,11 +76,11 @@ public:
     }
 
 private:
-    std::chrono::steady_clock::time_point m_tpStateStart;
+    std::chrono::steady_clock::time_point m_tpStart;
     int m_nDownCount = 0;
 };
 
-class LightOff : public ListStateBase
+class LightOff : public LightStateBase
 {
 public:
     LightOff() {}
@@ -89,9 +91,9 @@ public:
         std::cout << "Init" << std::endl;
     }
 
-    virtual void StateStart(LightData* pData)
+    virtual void Start(LightData* pData)
     {
-        std::cout << "Off::StateStart" << std::endl;
+        std::cout << "Off::Start" << std::endl;
         m_nDownCount = 0;
     }
 
@@ -122,10 +124,22 @@ private:
     int m_nDownCount = 0;
 };
 
+class LigthOut : public LightStateOutBase
+{
+public:
+    LigthOut() {}
+    virtual ~LigthOut() {}
+
+    virtual void StateChange(LightState oldState, LightState newState)
+    {
+        std::cout << LightStateStr::ItemStr(oldState) << ":" << LightStateStr::ItemStr(newState) << std::endl;
+    }
+};
+
 using LightStateFactory = Arrow::Pattern::StaticFactory<LightState,
-                                                        ListStateBase,
-                                                        std::integral_constant<LightState, LightState::On>, LightOn,
-                                                        std::integral_constant<LightState, LightState::Off>, LightOff>;
+                                                        LightStateBase,
+                                                        Arrow::Pattern::StaticFactoryAssist<LightState, LightState::On, LightOn>,
+                                                        Arrow::Pattern::StaticFactoryAssist<LightState, LightState::Off, LightOff>>;
 
 using LightStateContext = Arrow::Pattern::StateContext<LightData, LightState, LightMsg, LightStateFactory, 1000>;
 
@@ -133,7 +147,8 @@ void StateDemo()
 {
     LightStateContext lightStateContext;
     LightData lightData;
-    lightStateContext.Init(lightData, LightState::Off);
+    LigthOut lightOut;
+    lightStateContext.Init(lightData, LightState::Off, dynamic_cast<LightStateOutBase*>(&lightOut));
     while(true)
     {
         std::string strTmp;

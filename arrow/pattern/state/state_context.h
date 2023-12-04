@@ -23,12 +23,17 @@ namespace Pattern
  * @description: 状态基类。接口函数线程安全，无需考虑多线程
  * @StateData   状态机全局数据类型
  * @StateEnum   状态枚举
- * @MsgEnum     消息
+ * @MsgEnum     消息枚举类似
  * @return {*}
  */
-template <typename StateData, typename StateEnum, typename MsgEnum>
+template <typename _StateData, typename _StateEnum, typename _MsgEnum, typename ...Args>
 class StateBase
 {
+public:
+    using Data = _StateData;
+    using StateEnum = _StateEnum;
+    using Msg = _MsgEnum;
+
 protected:
     StateBase() {}
 
@@ -37,32 +42,32 @@ public:
 
     /**
      * @description: 初始化 创建状态的时候调用一次
-     * @param {StateData&} data
+     * @param {Data&} data
      * @return {*}
      */
-    virtual void Init(const StateData& data) = 0;
+    virtual void Init(const Data& data) = 0;
 
     /**
      * @description: 当从其他状态迁移到当前状态调用
-     * @param {StateData*} pData
+     * @param {Data*} pData
      * @return {*}
      */
-    virtual void StateStart(StateData* pData) = 0;
+    virtual void Start(Data* pData) = 0;
 
     /**
      * @description: 处理消息
-     * @param {StateData*} pData
+     * @param {Data*} pData
      * @param {MsgEnum} msg
      * @return {*}
      */
-    virtual StateEnum HandleMsg(StateData* pData, MsgEnum msg) = 0;
+    virtual StateEnum HandleMsg(Data* pData, Msg msg, Args... args) = 0;
 
     /**
      * @description: 处理定时消息
-     * @param {StateData*} pData
+     * @param {Data*} pData
      * @return {*}
      */    
-    virtual StateEnum Timer(StateData* pData) = 0;
+    virtual StateEnum Timer(Data* pData) = 0;
 
 
     /**
@@ -70,6 +75,21 @@ public:
      * @return {*}
      */
     virtual StateEnum State() = 0;
+};
+
+template<typename _StateEnum>
+class StateOutBase
+{
+public:
+    using StateEnum = _StateEnum;
+
+protected:
+    StateOutBase() {}
+
+public:
+    virtual ~StateOutBase() {}
+
+    virtual void StateChange(StateEnum oldState, StateEnum newState) = 0;
 };
 
 /**
@@ -81,27 +101,29 @@ public:
  * @TimerInterval   定时器时间间隔；单位毫秒；0无需定时器
  * @return {*}
  */
-template <typename StateData, typename StateEnum, typename MsgEnum, typename StateFactory, int32_t TimerInterval>
-class StateContext{};
-
+template <typename StateData, typename StateEnum, typename MsgEnum, typename StateFactory, int32_t TimerInterval = 0, typename ...Args>
+class StateContext
+{};
 /**
  * @description: 使用偏特化写法，主要是为了约束工厂为StaticFactory
  * @return {*}
  */
-template <typename StateData, typename StateEnum, typename MsgEnum, int32_t TimerInterval, typename ...Args>
-class StateContext<StateData, StateEnum, MsgEnum, StaticFactory<Args...>,  TimerInterval>
+template <typename StateData, typename StateEnum, typename MsgEnum, int32_t TimerInterval,typename ...Args1, typename ...Args>
+class StateContext<StateData, StateEnum, MsgEnum, StaticFactory<Args1...>, TimerInterval, Args...>
 {
 protected:
-    using _StateBase = StateBase<StateData, StateEnum, MsgEnum>;
-    using StateFactory = StaticFactory<Args...>;
-    using Local = StateContext<StateData, StateEnum, MsgEnum, StateFactory, TimerInterval>;
-    using MapStateEnumToStatePtr = std::map<StateEnum, _StateBase*>;
+    using StateBaseImpl = StateBase<StateData, StateEnum, MsgEnum, Args...>;
+    using StateOutImpl = StateOutBase<StateEnum>;
+    using StateFactory = StaticFactory<Args1...>;
+    using Local = StateContext<StateData, StateEnum, MsgEnum, StateFactory, TimerInterval,  Args...>;
+    using MapStateEnumToStatePtr = std::map<StateEnum, StateBaseImpl*>;
 
 public:
     StateContext() {}
 
     virtual ~StateContext()
     {
+        m_pStateOut = nullptr;
         if(m_ThreadTimer.joinable())
         {
             m_bThreadRun = false;
@@ -119,9 +141,10 @@ public:
      * @description: 初始化
      * @param {StateData&} data 状态机共享数据
      * @param {StateEnum} initState 初始状态
+     * @param {StateOutImpl} pStateOut 状态返回接收器
      * @return {*} true：成功 false：失败（重复初始化）
      */
-    virtual bool Init(const StateData& data, StateEnum initState)
+    virtual bool Init(const StateData& data, StateEnum initState, StateOutImpl* pStateOut = nullptr)
     {
         if(m_bThreadRun == true)
         {
@@ -133,6 +156,7 @@ public:
         m_PreviousState = initState;
         m_mapStateEnumToStatePtr[initState] = StateFactory::Create(initState);
         m_mapStateEnumToStatePtr[initState]->Init(data);
+        m_pStateOut = pStateOut;
 
         m_bThreadRun = true;
         if (TimerInterval > 0)
@@ -147,12 +171,12 @@ public:
      * @param {MsgEnum} msg 
      * @return {*}
      */
-    virtual StateEnum HandleMsg(MsgEnum msg)
+    virtual StateEnum HandleMsg(MsgEnum msg, Args... args)
     {
         std::lock_guard<std::mutex> guard(m_Mutex);
 
         auto* pStateBase = GetStateBasePtr(m_CurrentState);
-        auto stateTmp =pStateBase->HandleMsg(&m_Data, msg);
+        auto stateTmp =pStateBase->HandleMsg(&m_Data, msg, args...);
         State(stateTmp);
 
         return State();
@@ -192,6 +216,11 @@ public:
         return m_PreviousState;
     }
 
+    const StateData& Data() const
+    {
+        return m_Data;
+    }
+
 protected:
     /**
      * @description: 设置当前状态
@@ -204,8 +233,12 @@ protected:
         {
             return;
         }
+        if(m_pStateOut != nullptr)
+        {
+            m_pStateOut->StateChange(m_CurrentState, newState);
+        }
         auto* pStateBase = GetStateBasePtr(newState);
-        pStateBase->StateStart(&m_Data);
+        pStateBase->Start(&m_Data);
         m_PreviousState = m_CurrentState;
         m_CurrentState = newState;
     }
@@ -215,7 +248,7 @@ protected:
      * @param {StateEnum&} state
      * @return {*}
      */
-    _StateBase* GetStateBasePtr(const StateEnum& state)
+    StateBaseImpl* GetStateBasePtr(const StateEnum& state)
     {
         auto it = m_mapStateEnumToStatePtr.find(state);
         if (it == m_mapStateEnumToStatePtr.end())
@@ -252,6 +285,8 @@ protected:
     bool m_bThreadRun = false;
     std::thread m_ThreadTimer;
     StateData m_Data;
+
+    StateOutImpl* m_pStateOut = nullptr;
 
     std::mutex m_Mutex;
     MapStateEnumToStatePtr m_mapStateEnumToStatePtr;

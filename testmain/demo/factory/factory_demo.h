@@ -90,9 +90,9 @@ public:
 
 using ObjStaticFactory = Arrow::Pattern::StaticFactory<ObjKeyEnum,
                                                        ObjBase,
-                                                       std::integral_constant<ObjKeyEnum, ObjKeyEnum::ObjKey0>, Obj0,
-                                                       std::integral_constant<ObjKeyEnum, ObjKeyEnum::ObjKey1>, Obj1,
-                                                       std::integral_constant<ObjKeyEnum, ObjKeyEnum::ObjKey2>, Obj2>;
+                                                       Arrow::Pattern::StaticFactoryAssist<ObjKeyEnum, ObjKeyEnum::ObjKey0, Obj0>,
+                                                       Arrow::Pattern::StaticFactoryAssist<ObjKeyEnum, ObjKeyEnum::ObjKey1, Obj1>,
+                                                       Arrow::Pattern::StaticFactoryAssist<ObjKeyEnum, ObjKeyEnum::ObjKey2, Obj2>>;
 
 using ObjFactory1 = Arrow::Pattern::Singleton<Arrow::Pattern::Factory<ObjKeyEnum, ObjBase>>;
 using ObjFactory2 = Arrow::Pattern::Singleton<Arrow::Pattern::Factory<ObjKeyEnum, ObjBase, int>>;

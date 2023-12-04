@@ -1,5 +1,5 @@
 /*
- * @FilePath: /arrow/other/obj_pool/obj_pool_simple.h
+ * @FilePath: /arrowlib/arrow/other/obj_pool/obj_pool_simple.h
  * @Author: arrow arrow8209@foxmail.com
  * @Date: 2022-12-07 10:08:16
  * @Description: 简单对象池。注意使用对象池的对象必须实现Release 接口。
@@ -14,7 +14,7 @@
 #include <atomic>
 #include <functional>
 #include <map>
-#include "obj_pool_simple.h"
+#include "allocator.h"
 
 namespace Arrow
 {
@@ -43,12 +43,12 @@ struct checkClassReleaseNotParam
 };
 }
 
-template<typename TObj, int livetime = _em_ObjLive120>
+template<typename TObj, int livetime = _em_ObjLive120, typename Allocator = Allocator<TObj>>
 class TObjSimplePool
 {
-    typedef std::tuple<TObj*, std::chrono::steady_clock::time_point> ObjTupleInfo;
-    typedef std::list<ObjTupleInfo> Queue_ObjInfo;
-    typedef std::map<TObj*, ObjTupleInfo> Map_ObjInfo;
+    using ObjTupleInfo = std::tuple<TObj*, std::chrono::steady_clock::time_point> ;
+    using Queue_ObjInfo = std::list<ObjTupleInfo> ;
+    using Map_ObjInfo = std::map<TObj*, ObjTupleInfo> ;
 public:
     TObjSimplePool()
     {
@@ -72,15 +72,17 @@ public:
             m_ActiveObj[pObj] = objInfo;
 
             m_FreeObj.pop_front();
+
+            m_Allocator.Construct(pObj);
             return pObj;
         }
 
-        pObj = new TObj();
+        pObj = m_Allocator.Alloc();
         if (pObj == nullptr)
         {
             return nullptr;
         }
-
+        m_Allocator.Construct(pObj);
         ++m_n32PoolCount;
         ObjTupleInfo objInfo(pObj, std::chrono::steady_clock::now());
         m_ActiveObj[pObj] = objInfo;
@@ -94,16 +96,18 @@ public:
         auto it = m_ActiveObj.find(pObj);
         if (it == m_ActiveObj.end())
         {
-            // pObj->Release();
             CallTObjRelease(pObj);
             printf("[Arrow:Other:Pool][Warn]TObjSimplePool<%s> Unkonw %p ptr\n", typeid(pObj).name(), pObj);
-            delete pObj;
+            m_Allocator.Destructor(pObj);
+            m_Allocator.Free(pObj);
             return;
         }
 
         std::get<1>(it->second) = std::chrono::steady_clock::now();
         // pObj->Release();
         CallTObjRelease(pObj);
+        m_Allocator.Destructor(pObj);
+
         m_FreeObj.push_front(it->second);
         m_ActiveObj.erase(it);
         Check();
@@ -120,9 +124,8 @@ public:
 
             try
             {
-                // std::get<0>(objInfo)->Release();
                 CallTObjRelease(std::get<0>(objInfo));
-                delete std::get<0>(objInfo);
+                m_Allocator.Free(std::get<0>(objInfo));
                 m_n32PoolCount--;
             }
             catch (const std::exception& e)
@@ -137,9 +140,9 @@ public:
             try
             {
                 pObj = it->first;
-                // pObj->Release();
                 CallTObjRelease(pObj);
-                delete pObj;
+                m_Allocator.Destructor(pObj);
+                m_Allocator.Free(pObj);
                 m_n32PoolCount--;
             }
             catch (const std::exception& e)
@@ -171,7 +174,6 @@ protected:
             return;
         }
         
-
         std::chrono::steady_clock::time_point tmNow = std::chrono::steady_clock::now();
         auto spacetime = std::chrono::duration_cast<std::chrono::seconds>(tmNow - m_LastCheckObjTimePoint);
         if (spacetime.count() < livetime)
@@ -185,7 +187,7 @@ protected:
             spacetime = std::chrono::duration_cast<std::chrono::seconds>(tmNow - std::get<1>(*it));
             if (spacetime.count() > livetime)
             {
-                delete std::get<0>(*it);
+                m_Allocator.Free(std::get<0>(*it));
                 it = m_FreeObj.erase(it);
                 --m_n32PoolCount;
             }
@@ -205,6 +207,7 @@ protected:
     std::chrono::steady_clock::time_point m_LastCheckObjTimePoint;
 
     std::atomic_int32_t m_n32PoolCount{0};
+    Allocator m_Allocator;
 };
 }
 }

@@ -13,13 +13,17 @@ namespace Arrow
 namespace Pattern
 {
 
+template <typename KeyType, KeyType key, typename Obj>
+struct StaticFactoryAssist
+{};
+
 template <typename KeyType, typename TObjBase, typename ...Args>
 class StaticFactory
 {};
 
 // 抽象工厂
 template <typename KeyType, typename TObjBase, KeyType keyValue, typename Obj, typename ...Args>
-class StaticFactory<KeyType, TObjBase, std::integral_constant<KeyType, keyValue>, Obj, Args...>
+class StaticFactory<KeyType, TObjBase, StaticFactoryAssist<KeyType, keyValue, Obj>, Args...>
 {
 protected:
     StaticFactory() = default;
@@ -40,7 +44,7 @@ public:
 };
 
 template <typename KeyType, typename TObjBase, KeyType keyValue, typename Obj>
-class StaticFactory<KeyType, TObjBase, std::integral_constant<KeyType, keyValue>, Obj>
+class StaticFactory<KeyType, TObjBase, StaticFactoryAssist<KeyType, keyValue, Obj>>
 {
 protected:
     StaticFactory() = default;

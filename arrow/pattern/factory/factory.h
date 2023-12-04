@@ -8,14 +8,13 @@
 #include <map>
 #include <functional>
 #include <tuple>
-#include "../../other/create_obj.h"
+#include "create_obj.h"
 
 namespace Arrow
 {
 
 namespace Pattern
 {
-
 
 // 抽象工厂
 template<typename KeyType, typename ObjBase, typename ...CreateParmList>
@@ -79,16 +78,6 @@ public:
 
     // 生产类型为_type的产品
     // 失败返回nullptr
-    // ObjBase* Create(const KeyType& key)
-    // {
-    //     typename Map_KeyToFunCreate::iterator it = m_mapKeyToFunCreate.find(key);
-    //     if (it != m_mapKeyToFunCreate.end() && it->second != NULL)
-    //     {
-    //         return it->second();
-    //     }
-    //     return nullptr;
-    // }
-
 
     ObjBase* Create(const KeyType& key, CreateParmList... param)
     {

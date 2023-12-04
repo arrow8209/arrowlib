@@ -36,6 +36,7 @@ int main(int argc, char* argv[])
     // TestObserver1();
     // TestObserver2();
     // TestObjPool1();
+    TestObjPool2();
     // DemoTask2();
     // TestTaskPerformance();
     // TestTak3();
@@ -59,7 +60,7 @@ int main(int argc, char* argv[])
 
     // TestEnumName();
 
-    FactoryDemo();
+    // FactoryDemo();
 
     // StateDemo();
     return 1;
