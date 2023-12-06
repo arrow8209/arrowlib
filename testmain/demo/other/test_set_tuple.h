@@ -1,7 +1,6 @@
 #pragma once
 #include <chrono>
 #include "arrow/arrow.h"
-#include "arrow/other/set_tuple.h"
 
 static void TestSetTupe()
 {

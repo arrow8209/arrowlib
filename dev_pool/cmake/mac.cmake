@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.0.0)
 
 
-MESSAGE("* ${PROJECT_NAME} tagert: mac")
+MESSAGE("* ${ProjectName} tagert: mac")
 
 ##编译环境和参数设置
 
@@ -58,19 +58,19 @@ ENDFOREACH(F)
 MESSAGE("==============Src List==============")
 
 # ADD_LIBRARY(
-# 	${PROJECT_NAME}
+# 	${ProjectName}
 #     SHARED
 # 	${SRC_LIST} 
 # )
 
 ADD_EXECUTABLE(
-    ${PROJECT_NAME}
+    ${ProjectName}
     ${SRC_LIST} 
 )
 
 
 TARGET_LINK_LIBRARIES(
-	${PROJECT_NAME}
+	${ProjectName}
     log4cplus
     dl
     pthread

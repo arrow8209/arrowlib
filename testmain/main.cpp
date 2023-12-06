@@ -60,7 +60,7 @@ int main(int argc, char* argv[])
 
     // TestEnumName();
 
-    // FactoryDemo();
+    FactoryDemo();
 
     // StateDemo();
     return 1;

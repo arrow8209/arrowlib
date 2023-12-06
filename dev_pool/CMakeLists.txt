@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.5)
 
-PROJECT (testmain)
+PROJECT(dev_pool)
 
 if(CMAKE_HOST_SYSTEM_NAME STREQUAL "Linux")
 	INCLUDE(cmake/x64.cmake)

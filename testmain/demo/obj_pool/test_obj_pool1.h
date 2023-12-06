@@ -26,6 +26,7 @@ public:
 public:
     std::string m_str{"123456"};
     std::vector<int> m_vec;
+    int m_n = 0;
 };
 
 typedef Arrow::Other::TObjSimplePool<CTestObj> CTestObjPool;
@@ -37,6 +38,7 @@ static void TestObjPool1()
     pTmp->m_vec.push_back(1);
     pTmp->m_vec.push_back(2);
     pTmp->m_vec.push_back(3);
+    pTmp->m_n = 100;
     AppTestObjPool1::Instance()->Free(pTmp);
 
     pTmp = AppTestObjPool1::Instance()->Alloc();
@@ -59,6 +61,7 @@ static void TestObjPool2()
     pTmp->m_vec.push_back(1);
     pTmp->m_vec.push_back(2);
     pTmp->m_vec.push_back(3);
+    pTmp->m_n = 100;
     pPool->Free(pTmp);
 
     pTmp = pPool->Alloc();
