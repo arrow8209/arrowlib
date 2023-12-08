@@ -13,7 +13,7 @@
 #include <functional>
 #include <tuple>
 #include <map>
-#include "../../other/std_assist.h"
+#include "../../other/increment.h"
 #include "../../typelist/typelist.h"
 
 namespace Arrow

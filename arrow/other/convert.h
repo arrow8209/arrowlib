@@ -1,3 +1,9 @@
+/*
+ * @FilePath: /arrowlib/arrow/other/convert.h
+ * @Author: arrow arrow8209@foxmail.com
+ * @Date: 2023-06-16 19:02:28
+ * @Description: string转换为其他类型
+ */
 #pragma once
 #include <string>
 
@@ -5,6 +11,10 @@ namespace Arrow
 {
 namespace Other
 {
+
+namespace details
+{
+
 template <typename T>
 struct StrConvertImpl;
 
@@ -138,16 +148,18 @@ struct StrConvertImpl<void*>
     }
 };
 
+}
+
 template<typename T>
 T StrConvert(const std::string& str, size_t* idx = 0, int base = 10)
 {
-    return StrConvertImpl<T>::Convert(str, idx, base);
+    return details::StrConvertImpl<T>::Convert(str, idx, base);
 }
 
 template<typename T>
 T StrConvert(const std::wstring& str, size_t* idx = 0, int base = 10)
 {
-    return StrConvertImpl<T>::Convert(str, idx, base);
+    return details::StrConvertImpl<T>::Convert(str, idx, base);
 }
 
 }

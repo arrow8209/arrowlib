@@ -1,17 +1,15 @@
 #include <vector>
-#include "test_chunk.h"
-#include "test_fixed_allocator.h"
-#include "test_small_obj.h"
+#include "test/test_chunk.h"
+#include "test/test_fixed_allocator.h"
+#include "test/test_small_obj.h"
+#include "test/test_performance.h"
+#include "test/test_performance2.h"
 
 int main(int argc, char* argv[])
 {
-    std::cout << sizeof(std::vector<int32_t>) << std::endl;
-    std::cout << sizeof(std::list<int32_t>) << std::endl;
-    std::cout << sizeof(std::tuple<int32_t,int32_t>) << std::endl;
-    std::cout << sizeof(std::map<int32_t,int32_t>) << std::endl;
-    std::cout << sizeof(std::string) << std::endl;
     // TestChunk();
     // TestFixedAllocator();
-    TestSmallObjAllocator();
-    return 0;
+    // TestSmallObjAllocator();
+    // TestPerformance();
+    TestPerformance2();
 }

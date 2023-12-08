@@ -19,42 +19,42 @@ namespace Other
 #define ARROW_OTHER_MAX_PAGE_SIZE 4096
 #endif
 
-#ifndef ARROW_OTHER_MAX_OBJECT_SIZE
-#define ARROW_OTHER_MAX_OBJECT_SIZE 512 
+#ifndef ARROW_OTHER_MAX_BLOCK_SIZE
+#define ARROW_OTHER_MAX_BLOCK_SIZE 512 
 #endif
 
-#ifndef ARROW_OTHER_OBJECT_ALIGN_SIZE
-#define ARROW_OTHER_OBJECT_ALIGN_SIZE 8
+#ifndef ARROW_OTHER_BLOCK_ALIGN_SIZE
+#define ARROW_OTHER_BLOCK_ALIGN_SIZE 8
 #endif
 
 /**
  * @description: 
  * @param {size_t} PageSize 内存页大小
- * @param {size_t} MaxObjectSize 对象最大size
- * @param {size_t} ObjectAlignSize 内存块对齐字节数
+ * @param {size_t} MaxBlockSize 内存块最大size
+ * @param {size_t} BlockAlignSize 内存块对齐字节数
  * @return {*}
  */
 template <std::size_t PageSize = ARROW_OTHER_MAX_PAGE_SIZE, 
-            std::size_t MaxObjectSize = ARROW_OTHER_MAX_OBJECT_SIZE, 
-            std::size_t ObjectAlignSize = ARROW_OTHER_OBJECT_ALIGN_SIZE>
-class SmallObjAllocator
+            std::size_t MaxBlockSize = ARROW_OTHER_MAX_BLOCK_SIZE, 
+            std::size_t BlockAlignSize = ARROW_OTHER_BLOCK_ALIGN_SIZE>
+class SmallMemAllocator
 {
 private:
 
     /// Copy-constructor is not implemented.
-    SmallObjAllocator(const SmallObjAllocator&);
+    SmallMemAllocator(const SmallMemAllocator&);
     /// Copy-assignment operator is not implemented.
-    SmallObjAllocator& operator=(const SmallObjAllocator&);
+    SmallMemAllocator& operator=(const SmallMemAllocator&);
 
 public:
 
-    SmallObjAllocator(void) 
+    SmallMemAllocator(void) 
     {
-        assert(0 != ObjectAlignSize);
-        const std::size_t allocCount = GetOffset(MaxObjectSize);
+        assert(0 != BlockAlignSize);
+        const std::size_t allocCount = GetOffset(MaxBlockSize);
         pool_ = new FixedAllocator[allocCount];
         for (std::size_t i = 0; i < allocCount; ++i)
-            pool_[i].Initialize((i + 1) * ObjectAlignSize, PageSize);
+            pool_[i].Initialize((i + 1) * BlockAlignSize, PageSize);
     }
 
     /** Destructor releases all blocks, all Chunks, and FixedAllocator's.
@@ -62,7 +62,7 @@ public:
      this destructor is called.  The destructor is deliberately non-virtual
      because it is protected, not public.
      */
-    ~SmallObjAllocator(void)
+    ~SmallMemAllocator(void)
     {
         if(pool_ != nullptr)
             delete [] pool_;
@@ -78,7 +78,7 @@ public:
      */
     inline static std::size_t GetOffset(std::size_t numBytes)
     {
-        return (numBytes + ObjectAlignSize - 1) / ObjectAlignSize;
+        return (numBytes + BlockAlignSize - 1) / BlockAlignSize;
     }
 
     inline static void* DefaultAllocator(std::size_t numBytes)
@@ -139,20 +139,20 @@ public:
     void* Allocate(std::size_t numBytes)
     {
         // 如果需要的直接数大于预定义的最大对象字节数使用默认没存分配 [zhuyb 2023-12-06 15:51:23]
-        if (numBytes > MaxObjectSize)
+        if (numBytes > MaxBlockSize)
             return DefaultAllocator(numBytes);
 
         assert(NULL != pool_);
         if (0 == numBytes)
             numBytes = 1;
         const std::size_t index = GetOffset(numBytes) - 1;
-        const std::size_t allocCount = GetOffset(MaxObjectSize);
+        const std::size_t allocCount = GetOffset(MaxBlockSize);
         (void)allocCount;
         assert(index < allocCount);
 
         FixedAllocator& allocator = pool_[index];
         assert(allocator.BlockSize() >= numBytes);
-        assert(allocator.BlockSize() < numBytes + ObjectAlignSize);
+        assert(allocator.BlockSize() < numBytes + BlockAlignSize);
         void* place = allocator.Allocate();
 
         if ((NULL == place) && TrimExcessMemory())
@@ -173,7 +173,7 @@ public:
     {
         if (NULL == p)
             return;
-        if (numBytes > MaxObjectSize)
+        if (numBytes > MaxBlockSize)
         {
             DefaultDeallocator(p);
             return;
@@ -182,12 +182,12 @@ public:
         if (0 == numBytes)
             numBytes = 1;
         const std::size_t index = GetOffset(numBytes) - 1;
-        const std::size_t allocCount = GetOffset(MaxObjectSize);
+        const std::size_t allocCount = GetOffset(MaxBlockSize);
         (void)allocCount;
         assert(index < allocCount);
         FixedAllocator& allocator = pool_[index];
         assert(allocator.BlockSize() >= numBytes);
-        assert(allocator.BlockSize() < numBytes + ObjectAlignSize);
+        assert(allocator.BlockSize() < numBytes + BlockAlignSize);
         const bool found = allocator.Deallocate(p, NULL);
         (void)found;
         assert(found);
@@ -206,7 +206,7 @@ public:
             return;
         assert(NULL != pool_);
         FixedAllocator* pAllocator = NULL;
-        const std::size_t allocCount = GetOffset(MaxObjectSize);
+        const std::size_t allocCount = GetOffset(MaxBlockSize);
         Chunk* chunk = NULL;
 
         for (std::size_t i = 0; i < allocCount; ++i)
@@ -240,7 +240,7 @@ public:
     bool TrimExcessMemory(void)
     {
         bool found = false;
-        const std::size_t allocCount = GetOffset(MaxObjectSize);
+        const std::size_t allocCount = GetOffset(MaxBlockSize);
         
         for (std::size_t i = 0; i < allocCount; ++i)
         {
@@ -271,17 +271,17 @@ public:
             assert(false);
             return true;
         }
-        if (0 == ObjectAlignSize)
+        if (0 == BlockAlignSize)
         {
             assert(false);
             return true;
         }
-        if (0 == MaxObjectSize)
+        if (0 == MaxBlockSize)
         {
             assert(false);
             return true;
         }
-        const std::size_t allocCount = GetOffset(MaxObjectSize);
+        const std::size_t allocCount = GetOffset(MaxBlockSize);
         for (std::size_t i = 0; i < allocCount; ++i)
         {
             if (pool_[i].IsCorrupt())
@@ -297,6 +297,6 @@ private:
 
 
 
-using AppSmallObjAllocator = Arrow::Pattern::Singleton<SmallObjAllocator<>>;
+using AppSmallMemAllocator = Arrow::Pattern::Singleton<SmallMemAllocator<>>;
 }
 }

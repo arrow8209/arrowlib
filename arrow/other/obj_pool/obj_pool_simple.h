@@ -1,5 +1,5 @@
 /*
- * @FilePath: /arrowlib/arrow/other/obj_pool/obj_pool_simple.h
+ * @FilePath: /arrow/other/obj_pool/obj_pool_simple.h
  * @Author: arrow arrow8209@foxmail.com
  * @Date: 2022-12-07 10:08:16
  * @Description: 简单对象池。注意使用对象池的对象必须实现Release 接口。

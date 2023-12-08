@@ -36,9 +36,9 @@ int main(int argc, char* argv[])
     // TestObserver1();
     // TestObserver2();
     // TestObjPool1();
-    TestObjPool2();
+    // TestObjPool2();
     // DemoTask2();
-    // TestTaskPerformance();
+    TestTaskPerformance();
     // TestTak3();
     // TestLockFree();
     // TestStaticStr();

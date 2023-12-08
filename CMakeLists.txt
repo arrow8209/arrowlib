@@ -21,6 +21,7 @@ ENDIF()
 
 if(CMAKE_HOST_SYSTEM_NAME STREQUAL "Linux")
 	INCLUDE(cmake-env/linux-x86_64-env.cmake)
+    # INCLUDE(cmake-env/aarch64.cmake)
 ELSEIF(CMAKE_HOST_SYSTEM_NAME STREQUAL "Darwin")
     INCLUDE(cmake-env/mac-env.cmake)
 ELSEIF(CMAKE_HOST_SYSTEM_NAME STREQUAL "Windows")

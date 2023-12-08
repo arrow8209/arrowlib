@@ -31,6 +31,7 @@
 #elif __linux__
 #include <malloc.h>
 #include <pthread.h>
+#include <dlfcn.h>
 #endif
 
 // #ifdef _WIN32
@@ -158,7 +159,6 @@ static uint32_t StrToUInt32Impl(const char* sz, uint32_t u32Ret = 5381)
     return u32Ret;
 }
 
-
 static uint32_t StrToUInt32(const char* sz)
 {
     return StrToUInt32Impl(sz, 5381);
@@ -235,7 +235,7 @@ inline void RemoveRepeat(std::vector<T>& val)
 //     static std::wstring_convert<std::codecvt_utf8<wchar_t>> utf8_conv;
 //     return utf8_conv.to_bytes(wide_string);
 // }
-
+// 
 // /*
 // * uft8转宽字节
 // */
@@ -305,31 +305,6 @@ static bool CA2W(wchar_t*& outStr, size_t& outLen, const char* inStr, int inLen)
 //     (*outStr)[len - 1] = '\0';
 // }
 
-template <typename T,
-          typename _ValueType = uint32_t,
-          _ValueType _minValue = std::numeric_limits<_ValueType>::min(),
-          _ValueType _maxValue = std::numeric_limits<_ValueType>::max()>
-struct TIncrement
-{
-    typedef _ValueType ValueType;
-    constexpr static ValueType minValue = _minValue;
-    constexpr static ValueType maxValue = _maxValue;
-    static std::atomic<ValueType> s_value;
-
-    static ValueType Get()
-    {
-        ValueType oldValue = s_value.fetch_add(1);
-        if(oldValue >= maxValue)
-        {
-            s_value.store(minValue);
-        }
-        return oldValue;
-    }
-
-};
-template <typename T, typename _ValueType, _ValueType _minValue, _ValueType _maxValue>
-std::atomic<_ValueType> TIncrement<T, _ValueType, _minValue, _maxValue>::s_value{_minValue};
-
 static std::string GetDirectoryPath(const std::string& filePath)
 {
     size_t pos = filePath.find_last_of("/\\");
@@ -363,23 +338,23 @@ static std::string GetFileName(const std::string& filePath)
 }
 
 #ifdef __linux__
+static std::string GetSharedObjectFullName()
+{
+    Dl_info info;
+    if (dladdr(reinterpret_cast<void*>(&GetSharedObjectFullName), &info))
+    {
+        return std::string(info.dli_fname);
+    }
+    return std::string("");
+}
 static std::string GetSharedObjectPath()
 {
-    std::ifstream maps("/proc/self/maps");
-    std::string line;
-    while (std::getline(maps, line))
-    {
-        if (line.find("[.text]") != std::string::npos)
-        {
-            std::istringstream iss(line);
-            std::string path;
-            while (iss >> path)
-                ; // skip to the last column
-            return path;
-        }
-    }
-    return "./";
+    std::string strTmp = GetSharedObjectFullName();
+    if(strTmp.empty())
+        return strTmp;
+    return GetDirectoryPath(strTmp);
 }
+
 #endif
 
 } // namespace Std

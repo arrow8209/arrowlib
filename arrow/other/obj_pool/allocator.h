@@ -29,7 +29,7 @@ public:
      * @description: 分配内存
      * @return {*}
      */
-    pointer Alloc()
+    inline pointer Alloc()
     {
         // ::operator new 调用系统new函数，只分配内存不调用构造函数 [zhuyb 2023-12-04 17:56:34]
         return static_cast<pointer>(::operator new(sizeof(T)));
@@ -40,7 +40,7 @@ public:
      * @param {pointer} ptr
      * @return {*}
      */
-    void Free(pointer ptr)
+    inline void Free(pointer ptr)
     {
         // ::operator delete 调用系统delete函数，回收内存不调用析构函数[zhuyb 2023-12-04 17:57:13]
         ::operator delete(ptr);
@@ -51,7 +51,7 @@ public:
      * @param {pointer} ptr
      * @return {*}
      */
-    void Construct(pointer ptr)
+    inline void Construct(pointer ptr)
     {
         ::new ((void*) ptr) T();
     }
@@ -61,7 +61,7 @@ public:
      * @param {pointer} ptr
      * @return {*}
      */
-    void Destructor(pointer ptr)
+    inline void Destructor(pointer ptr)
     {
         ptr->~T();
     }

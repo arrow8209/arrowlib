@@ -13,6 +13,7 @@
 #include <vector>
 #include <assert.h>
 #include "lock_free_queue.h"
+#include "../other/increment.h"
 #include "../other/delete_args.h"
 
 namespace Arrow

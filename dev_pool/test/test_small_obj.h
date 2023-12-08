@@ -1,6 +1,6 @@
 #pragma once
-#include "small_obj_allocator.h"
-#include "small_obj_base.h"
+#include "../src/small_obj_allocator.h"
+#include "../src/small_obj_base.h"
 
 class TestSmallClass1 : public Arrow2::Other::SmallObjectBase
 {
