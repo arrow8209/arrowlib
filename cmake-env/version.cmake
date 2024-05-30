@@ -1,5 +1,3 @@
-cmake_minimum_required(VERSION 3.5)
-
 #版本号文件
 find_package(Git)
 # 生成版本描述字符串 对应git 的hash
@@ -14,10 +12,26 @@ message(STATUS "git version:${GIT_VERSION}")
 execute_process(
             COMMAND ${GIT_EXECUTABLE} symbolic-ref --short -q HEAD
             WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-            OUTPUT_VARIABLE  GIT_BRANCH
+            OUTPUT_VARIABLE  GIT_BRANCH_TMP
             OUTPUT_STRIP_TRAILING_WHITESPACE
     )
-message(STATUS "git branch:" ${GIT_BRANCH})
+message(STATUS "git branch:" ${GIT_BRANCH_TMP})
+
+#获取 tag
+execute_process(
+            COMMAND ${GIT_EXECUTABLE} describe --tags --exact-match HEAD
+            WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}
+            OUTPUT_VARIABLE  GIT_TAG_TMP
+            OUTPUT_STRIP_TRAILING_WHITESPACE
+    )
+message(STATUS "git tag:" ${GIT_TAG_TMP})
+
+IF(NOT GIT_TAG_TMP)
+    SET(GIT_BRANCH ${GIT_BRANCH_TMP})
+ELSE()
+    SET(GIT_BRANCH ${GIT_TAG_TMP})
+ENDIF()
+
 
 #获取编译时间
 string(TIMESTAMP COMPILE_TIME %Y%m%d)
@@ -32,5 +46,5 @@ file(WRITE version.h
 #define GIT_VERSION \"${GIT_VERSION}\"
 #define GIT_BRANCH \"${GIT_BRANCH}\"
 #define BUILD_TIME \"${BUILD_TIME}\"
-#define VERSION \"${BUILD_TIME} ${GIT_BRANCH} ${GIT_VERSION} \" __DATE__ \" \" __TIME__"
+#define VERSION \"${BUILD_TIME} ${GIT_BRANCH} ${GIT_VERSION} \""
 )

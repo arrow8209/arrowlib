@@ -1,18 +1,19 @@
-cmake_minimum_required(VERSION 3.5)
-
-MESSAGE(STATUS  "${PROJECT_NAME}:${CMAKE_HOST_SYSTEM_NAME}_x86_64")
 
 #工程添加多个特定的头文件搜索路径（按需修改）
-INCLUDE_DIRECTORIES(${ALL_INCLUDE_DIRS})
+INCLUDE_DIRECTORIES(
+	${ALL_INCLUDE_DIRS}
+)
 
 #添加非标准的共享库搜索路径（按需修改）
-LINK_DIRECTORIES(${ALL_LIBRARY_DIRS})
+LINK_DIRECTORIES(
+	${ALL_LIBRARY_DIRS}
+)
 
 #将文件添加到工程目录中（按需修改）
 FILE(GLOB_RECURSE SRC_LIST *.cpp *.c *.h)
 
 #设置需要忽略的源文件（按需修改）
-SET(IGNORE_SRC_LIST gst-main.cpp )
+SET(IGNORE_SRC_LIST  )
 
 #从源文件列表中查找需要忽略文件（无需修改）
 SET(SRC_REMOVE_LIST)
