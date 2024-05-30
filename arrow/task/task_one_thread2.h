@@ -123,10 +123,11 @@ public:
         return m_QueueTask.Size();
         // return m_QueueTask.size();
     }
-/**
- * @description: 
- * @return {*}
- */
+
+    bool IsRun()
+    {
+        return m_bIsRun.load();
+    }
 protected:
 
     //   [zhuyb 2022-07-05 09:02:01]
