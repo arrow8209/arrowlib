@@ -1,5 +1,5 @@
 /*
- * @FilePath: /arrowlib/arrow/other/std_assist.h
+ * @FilePath: arrow/other/std_assist.h
  * @Author: arrow arrow8209@foxmail.com
  * @Date: 2022-07-08 09:54:32
  * @Description: 针对std 的一些经常用到的操作的辅助函数
