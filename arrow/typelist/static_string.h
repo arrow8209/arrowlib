@@ -1,27 +1,20 @@
 #pragma once
+#include "typelist_type.h"
 #include "typelist_fun.h"
-
-namespace Arrow
-{
-
-namespace static_string
-{
-
-template<std::size_t M, std::size_t N>
-constexpr const char get(const char (&arr)[N])
-{
-    return arr[ M < N ? M : N-1];
-}
+#include "static_str/string_view.h"
+#include "static_str/find.h"
+#include "static_str/sub.h"
+#include "static_str/djb.h"
 
 // 最长支持1024个字符 [zhuyb 2022-07-30 20:25:54]
-#define MakeCharSequence_16(m, n, str) Arrow::static_string::get<0x##m##n##0>(str), Arrow::static_string::get<0x##m##n##1>(str), \
-                                       Arrow::static_string::get<0x##m##n##2>(str), Arrow::static_string::get<0x##m##n##3>(str), \
-                                       Arrow::static_string::get<0x##m##n##4>(str), Arrow::static_string::get<0x##m##n##5>(str), \
-                                       Arrow::static_string::get<0x##m##n##6>(str), Arrow::static_string::get<0x##m##n##7>(str), \
-                                       Arrow::static_string::get<0x##m##n##8>(str), Arrow::static_string::get<0x##m##n##9>(str), \
-                                       Arrow::static_string::get<0x##m##n##a>(str), Arrow::static_string::get<0x##m##n##b>(str), \
-                                       Arrow::static_string::get<0x##m##n##c>(str), Arrow::static_string::get<0x##m##n##d>(str), \
-                                       Arrow::static_string::get<0x##m##n##e>(str), Arrow::static_string::get<0x##m##n##f>(str)
+#define MakeCharSequence_16(m, n, str) Arrow::StaticStr::get<0x##m##n##0>(str), Arrow::StaticStr::get<0x##m##n##1>(str), \
+                                       Arrow::StaticStr::get<0x##m##n##2>(str), Arrow::StaticStr::get<0x##m##n##3>(str), \
+                                       Arrow::StaticStr::get<0x##m##n##4>(str), Arrow::StaticStr::get<0x##m##n##5>(str), \
+                                       Arrow::StaticStr::get<0x##m##n##6>(str), Arrow::StaticStr::get<0x##m##n##7>(str), \
+                                       Arrow::StaticStr::get<0x##m##n##8>(str), Arrow::StaticStr::get<0x##m##n##9>(str), \
+                                       Arrow::StaticStr::get<0x##m##n##a>(str), Arrow::StaticStr::get<0x##m##n##b>(str), \
+                                       Arrow::StaticStr::get<0x##m##n##c>(str), Arrow::StaticStr::get<0x##m##n##d>(str), \
+                                       Arrow::StaticStr::get<0x##m##n##e>(str), Arrow::StaticStr::get<0x##m##n##f>(str)
 
 #define MakeCharSequence_64(m, str) MakeCharSequence_16(m, 0, str), MakeCharSequence_16(m, 1, str), \
                                     MakeCharSequence_16(m, 2, str), MakeCharSequence_16(m, 3, str), \
@@ -50,87 +43,22 @@ constexpr const char get(const char (&arr)[N])
                                    MakeCharSequence_64(3, str), \
                                    MakeCharSequence_64(4, str)
 
-#define STATIC_STRING_16(str) Arrow::tlist::splite<sizeof(str) - 1, Arrow::tvalue_typelist<char, MakeCharSequence_16(str)>>::Head
-#define STATIC_STRING_64(str) Arrow::tlist::splite<sizeof(str) - 1, Arrow::tvalue_typelist<char, MakeCharSequence_64(str)>>::Head
-#define STATIC_STRING_128(str) Arrow::tlist::splite<sizeof(str) - 1, Arrow::tvalue_typelist<char, MakeCharSequence_128(str)>>::Head
-#define STATIC_STRING_256(str) Arrow::tlist::splite<sizeof(str) - 1, Arrow::tvalue_typelist<char, MakeCharSequence_256(str)>>::Head
-#define STATIC_STRING_512(str) Arrow::tlist::splite<sizeof(str) - 1, Arrow::tvalue_typelist<char, MakeCharSequence_512(str)>>::Head
-#define STATIC_STRING_1024(str) Arrow::tlist::splite<sizeof(str) - 1, Arrow::tvalue_typelist<char, MakeCharSequence_1024(str)>>::Head
+#define STATIC_STRING_16(str) Arrow::Splite<sizeof(str) - 1, Arrow::ValueTypeList<char, MakeCharSequence_16(str)>>::Head
+#define STATIC_STRING_64(str) Arrow::Splite<sizeof(str) - 1, Arrow::ValueTypeList<char, MakeCharSequence_64(str)>>::Head
+#define STATIC_STRING_128(str) Arrow::Splite<sizeof(str) - 1, Arrow::ValueTypeList<char, MakeCharSequence_128(str)>>::Head
+#define STATIC_STRING_256(str) Arrow::Splite<sizeof(str) - 1, Arrow::ValueTypeList<char, MakeCharSequence_256(str)>>::Head
+#define STATIC_STRING_512(str) Arrow::Splite<sizeof(str) - 1, Arrow::ValueTypeList<char, MakeCharSequence_512(str)>>::Head
+#define STATIC_STRING_1024(str) Arrow::Splite<sizeof(str) - 1, Arrow::ValueTypeList<char, MakeCharSequence_1024(str)>>::Head
 #define STATIC_STRING(str) STATIC_STRING_1024(str)
-// #define STATIC_STRING(str) Arrow::tlist::splite<sizeof(str) - 1, Arrow::tvalue_typelist<char, MakeCharSequence_1024(str)>>::Head
 
-#define STATIC_FILE Arrow::static_string::getfilename<STATIC_STRING(__FILE__)>::type
-#define STATIC_FUNC STATIC_STRING(__func__)
+#ifdef WIN32
+#define GET_FILE_NAME(fullFileName) Arrow::StaticStr::SubStr<Arrow::StaticStr::FindLast(fullFileName, '\\') + 1>(fullFileName)
+#else
+#define GET_FILE_NAME(fullFileName) Arrow::StaticStr::SubStr<Arrow::StaticStr::FindLast(fullFileName, '/') + 1>(fullFileName)
+#endif
 
-namespace details
-{
-template<int index, typename StaticStr>
-struct getfilename;
+#define __ARROW_FILE_NAME_VALUE__ (GET_FILE_NAME(__FILE__).data)
+#define __ARROW_FILE_NAME_TYPE__ Arrow::Splite<Arrow::StaticStr::FindLast(__FILE__, '/') + 1, STATIC_STRING(__FILE__)>::Tail
 
-template<typename StaticStr>
-struct getfilename<-1, StaticStr>
-{
-    typedef StaticStr type;
-};
-
-template<int index, typename ...Args>
-struct getfilename<index, typelist<Args...> >
-{
-protected:
-    static_assert(index >= 0, "index 小于0(请检查代码逻辑)");
-    typedef typename tlist::splite<index + 1, typelist<Args...>> split_str;
-
-public:
-    typedef typename split_str::Tail type;
-};
-
-}
-
-template<typename StaticStr>
-struct getfilename;
-
-template<typename ... Args>
-struct getfilename<typelist<Args...>>
-{
-protected:
-    typedef typelist<Args...> static_str;
-    #ifdef WIN32
-    typedef typename tlist::find_last<tvalue_type<char, '\\'>, static_str> find_last_forward_slash;
-    #else
-    typedef typename tlist::find_last<tvalue_type<char, '/'>, static_str> find_last_forward_slash;
-    #endif 
-    
-    
-public:
-    typedef typename details::getfilename<find_last_forward_slash::value, static_str>::type type;
-};
-
-// 字符串转数字（DJB 算法） [zhuyb 2022-08-12 16:42:10]
-template<typename StaticStr>
-struct SSToDJB;
-
-template<char ch>
-struct SSToDJB<typelist<tvalue_type<char, ch>>>
-{
-    static constexpr unsigned int value = (5381 << 5) + 5381 + ch;
-};
-template<char ch>
-constexpr unsigned int SSToDJB<typelist<tvalue_type<char, ch>>>::value;
-
-
-template<char ch, typename ...Args>
-struct SSToDJB<typelist<tvalue_type<char, ch>, Args...>>
-{
-protected:
-    typedef SSToDJB<typelist<Args...>> tmp_SSToDJB;
-
-public:
-    static constexpr unsigned int value = (tmp_SSToDJB::value << 5) + tmp_SSToDJB::value + ch;
-};
-template<char ch, typename ...Args>
-constexpr unsigned int SSToDJB<typelist<tvalue_type<char, ch>, Args...>>::value;
-
-
-
-}
-}
+#define __ARROW_FUN_NAME_VALUE__ Arrow::StaticStr::Str(__func__)
+#define __ARROW_FUN_NAME_TYPE__ STATIC_STRING(__func__)

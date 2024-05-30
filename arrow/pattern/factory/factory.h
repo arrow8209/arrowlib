@@ -6,6 +6,9 @@
  */
 #pragma once
 #include <map>
+#include <functional>
+#include <tuple>
+#include "create_obj.h"
 
 namespace Arrow
 {
@@ -13,27 +16,14 @@ namespace Arrow
 namespace Pattern
 {
 
-template<typename TObjBase, typename TObj>
-class CreateObj
-{
-public:
-    // 生产一个具体产品
-    static TObjBase* Create()
-    {
-        return new TObj();
-    }
-
-};
-
 // 抽象工厂
-template<typename TObjKeyType, typename TObjBase>
+template<typename KeyType, typename ObjBase, typename ...CreateParmList>
 class Factory
 {
+    using FunCreate = std::function<ObjBase*(CreateParmList...)>;
+    using Map_KeyToFunCreate = std::map<KeyType, FunCreate>;
 
-    typedef TObjBase* (*FunCreate)(); // 具体创建对象的函数
-    typedef std::map<TObjKeyType, FunCreate> Map_KeyToFunCreate;
-
-protected:
+public:
     Factory() = default;
     Factory(const Factory&) = delete;
     Factory& operator=(const Factory&) = delete;
@@ -47,24 +37,54 @@ public:
     // 对外接口
 public:
 
+    /**
+     * @description:  注册类型，使用默认的new方式创建
+     * @param {KeyType&} key
+     * @return {*}
+     */
     template<typename TObj>
-    void Register(const TObjKeyType& key)
+    bool Register(const KeyType& key)
     {
-        m_mapKeyToFunCreate[key] = CreateObj<TObjBase, TObj>::Create;
+        if(m_mapKeyToFunCreate.find(key) != m_mapKeyToFunCreate.end())
+        {
+            return false;
+        }
+        m_mapKeyToFunCreate[key] = &Arrow::Other::CreateUseNew<TObj>::Create;
+        return true;
     }
+
+    /**
+     * @description: 由用户提供创建函数地址
+     * @param {KeyType&} key
+     * @param {FunCreate} funCreate
+     * @return {*}
+     */
+    template <typename TObj>
+    bool Register(const KeyType& key, FunCreate funCreate)
+    {
+        if (m_mapKeyToFunCreate.find(key) != m_mapKeyToFunCreate.end())
+        {
+            return false;
+        }
+        m_mapKeyToFunCreate[key] = funCreate;
+        return true;
+    }
+
     // 删除所有具体工厂
-    void unregisterAll()
+    void UnregisterAll()
     {
         m_mapKeyToFunCreate.clear();
     }
+
     // 生产类型为_type的产品
-    // 失败返回0
-    TObjBase* Create(const TObjKeyType& key)
+    // 失败返回nullptr
+
+    ObjBase* Create(const KeyType& key, CreateParmList... param)
     {
         typename Map_KeyToFunCreate::iterator it = m_mapKeyToFunCreate.find(key);
         if (it != m_mapKeyToFunCreate.end() && it->second != NULL)
         {
-            return it->second();
+            return it->second(param...);
         }
         return nullptr;
     }

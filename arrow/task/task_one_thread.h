@@ -12,7 +12,8 @@
 #include <future>
 #include <vector>
 #include "../other/delete_args.h"
-#include "arrow/other/std_assist.h"
+#include "../other/std_assist.h"
+
 
 namespace Arrow
 {
@@ -20,16 +21,19 @@ namespace Arrow
 namespace Pattern
 {
 
-// 此类近似于框架类，接口函数都比较特殊，所以不提供访问接口，只有子类能对其进行访问 [zhuyb 2022-07-05 08:57:47]
-class TaskOneThread
+// 此类近似于框架类，接口函数都比较特殊，所以不提供访问接口，只有子类能对其进行访问 TimerPrecision:定时器精度 单位毫秒 [zhuyb 2022-07-05 08:57:47]
+template<uint32_t TimerPrecision>
+class TaskOneThread_TimerPrecision
 {
 protected:
+    typedef TaskOneThread_TimerPrecision<TimerPrecision> Local;
+
     typedef std::function<void()> RunFunAddress;            // 任务执行函数定义 [zhuyb 2022-07-05 08:59:14]
     typedef std::function<void()> ClearCacheFunAddress;     // 内存回收函数定义 当线程结束，并且缓冲区还存在数据的时候就由此函数进行内存回收 [zhuyb 2022-07-05 08:59:32]
     typedef std::tuple<RunFunAddress, ClearCacheFunAddress> TaskFun;    // 单个任务的执行信息 [zhuyb 2022-07-05 09:00:12]
-    typedef std::list<TaskFun> List_Task;   // 缓冲区，存储所有的任务 [zhuyb 2022-07-05 09:00:43]
+    typedef std::list<TaskFun*> List_Task;   // 缓冲区，存储所有的任务 [zhuyb 2022-07-05 09:00:43]
 
-    typedef std::chrono::time_point<std::chrono::system_clock, std::chrono::milliseconds> time_point_milliseconds;
+    typedef std::chrono::time_point<std::chrono::steady_clock, std::chrono::milliseconds> time_point_milliseconds;
     // 定时器数据（定时器ID，触发间隔，1次触发，多次触发, 下次触发绝对时间） [zhuyb 2023-03-08 15:32:28]
     typedef std::tuple<
         int,                       // 定时器ID [zhuyb 2023-03-09 09:12:04]
@@ -50,16 +54,21 @@ protected:
     // 记录所有定时器 [zhuyb 2023-03-09 09:14:47]
     typedef std::vector<TimerData> VecTimer;
 protected:
-    TaskOneThread():m_bIsRun(false)
+    TaskOneThread_TimerPrecision():m_bIsRun(false)
     {
         
     }
-    virtual ~TaskOneThread()
+    virtual ~TaskOneThread_TimerPrecision()
     {
         Stop();
     }
 public:
-    // 启动线程 [zhuyb 2022-09-14 17:09:34]
+    // 
+    /**
+     * @description: 启动线程 [zhuyb 2022-09-14 17:09:34]
+     * @param {char*} szThreadName 线程名称。注意Linux线程名称限制为16个字节包括结束符号\0
+     * @return {*}
+     */
     bool Activate(const char* szThreadName = nullptr)
     {
         if (m_bIsRun == true)
@@ -69,17 +78,18 @@ public:
         
         m_bIsRun = true;
         m_FutureBeforeThreadRun = m_PromiseBeforThreadRun.get_future();
-        m_Thread = std::thread(std::bind(&TaskOneThread::RunThread, this));
-        // if (szThreadName != nullptr)
-        // {
-        //     m_strThreadName = szThreadName;
-        //     pthread_setname_np(m_Thread.native_handle(), m_strThreadName.c_str());
-        // }
-        // else
-        // {
-        //     pthread_setname_np(m_Thread.native_handle(), m_strThreadName.c_str());
-        // }
-
+        m_Thread = std::thread(std::bind(&Local::RunThread, this));
+#ifdef __linux__
+        if (szThreadName != nullptr)
+        {
+            m_strThreadName = szThreadName;
+            pthread_setname_np(m_Thread.native_handle(), m_strThreadName.c_str());
+        }
+        else
+        {
+            pthread_setname_np(m_Thread.native_handle(), m_strThreadName.c_str());
+        }
+#endif
         // 等待线程完全启动 [zhuyb 2023-03-09 09:20:04]
         WaitBeforeThreadRun();
         return true;
@@ -115,6 +125,10 @@ public:
         return m_listTask.size();
     }
 
+    bool IsRun()
+    {
+        return m_bIsRun.load();
+    }
 protected:
 
     //   [zhuyb 2022-07-05 09:02:01]
@@ -132,12 +146,15 @@ protected:
         {
             return false;
         }
-        
-        TaskFun taskFun(std::bind(pRunFun, (T*)this, std::forward<_Args>(args)...),
-                        std::bind(pClearCacheFun, (T*)this, std::forward<_Args>(args)...));
+        // 不能使用完美转发，否则会丢数据。具体原因不清 [zhuyb 2023-07-11 19:09:44]
+        // TaskFun taskFun(std::bind(pRunFun, (T*)this, args...),
+        //                 std::bind(pClearCacheFun, (T*)this, args...));
+
+        TaskFun* pTaskFun = new TaskFun(std::bind(pRunFun, (T*)this, args...),
+                        std::bind(pClearCacheFun, (T*)this, args...));
 
         m_mutexListTask.lock();
-        m_listTask.push_back(taskFun);
+        m_listTask.push_back(pTaskFun);
         m_mutexListTask.unlock();
 
         return true;
@@ -147,7 +164,8 @@ protected:
     template<typename T, typename TRunFun, typename ..._Args>
     bool AddTaskClearCacheNull(TRunFun pRunFun, _Args... args)
     {
-        return AddTask<T>(pRunFun, &TaskOneThread::ClearCacheNull<_Args...>, std::forward<_Args>(args)...);
+        // return AddTask<T>(pRunFun, &Local::ClearCacheNull<_Args...>, std::forward<_Args>(args)...);
+        return AddTask<T>(pRunFun, &Local::ClearCacheNull<_Args...>, args...);
 
         // if (m_bIsRun == false)
         // {
@@ -155,7 +173,7 @@ protected:
         // }
 
         // TaskFun taskFun(std::bind(pRunFun, (T*)this, std::forward<_Args>(args)...),
-        //                 std::bind(&TaskOneThread::ClearCacheNull, (TaskOneThread*)this));
+        //                 std::bind(&Local::ClearCacheNull, (TaskOneThread*)this));
 
         // m_mutexListTask.lock();
         // m_listTask.push_back(taskFun);
@@ -168,7 +186,8 @@ protected:
     template<typename T, typename TRunFun, typename ..._Args>
     bool AddTaskClearCacheDelete(TRunFun pRunFun, _Args... args)
     {
-        return AddTask<T>(pRunFun, &TaskOneThread::ClearCacheDelete<_Args...>, std::forward<_Args>(args)...);
+        // return AddTask<T>(pRunFun, &Local::ClearCacheDelete<_Args...>, std::forward<_Args>(args)...);
+        return AddTask<T>(pRunFun, &Local::ClearCacheDelete<_Args...>, args...);
 
     }
 
@@ -188,13 +207,13 @@ protected:
     {
         std::chrono::milliseconds millInterval(u32Interval);
         time_point_milliseconds tNext =
-            std::chrono::time_point_cast<time_point_milliseconds::duration>(std::chrono::system_clock::now());
+            std::chrono::time_point_cast<time_point_milliseconds::duration>(std::chrono::steady_clock::now());
         TimerData timerData(++m_u32TimeID,
                             millInterval,
                             bOnce,
                             tNext,
-                            std::bind(pRunFun, (T*)this, std::forward<_Args>(args)...),
-                            std::bind(pClearCacheFun, (T*)this, std::forward<_Args>(args)...));
+                            std::bind(pRunFun, (T*)this, args...),  // 不能使用完美转发，否则会丢数据。具体原因不清 [zhuyb 2023-07-11 19:09:44]
+                            std::bind(pClearCacheFun, (T*)this, args...)); // 不能使用完美转发，否则会丢数据。具体原因不清 [zhuyb 2023-07-11 19:09:44]
 
         m_mutextVecTimer.lock();
         m_vecTimer.push_back(timerData);
@@ -207,8 +226,10 @@ protected:
     template<typename T, typename TRunFun, typename ..._Args>
     bool AddTimerClearCacheNull(bool bOnce, uint32_t u32Interval, TRunFun pRunFun, _Args... args)
     {
+        // return AddTimer<T>(
+        //     bOnce, u32Interval, pRunFun, &Local::ClearCacheNull<_Args...>, std::forward<_Args>(args)...);
         return AddTimer<T>(
-            bOnce, u32Interval, pRunFun, &TaskOneThread::ClearCacheNull<_Args...>, std::forward<_Args>(args)...);
+            bOnce, u32Interval, pRunFun, &Local::ClearCacheNull<_Args...>, args...);
 
         // if (m_bIsRun == false)
         // {
@@ -216,13 +237,13 @@ protected:
         // }
         // std::chrono::milliseconds millInterval(u32Interval);
         // time_point_milliseconds tNext =
-        //     std::chrono::time_point_cast<time_point_milliseconds::duration>(std::chrono::system_clock::now());
+        //     std::chrono::time_point_cast<time_point_milliseconds::duration>(std::chrono::steady_clock::now());
         // TimerData timerData(++m_u32TimeID,
         //                     millInterval,
         //                     bOnce,
         //                     tNext,
         //                     std::bind(pRunFun, (T*)this, std::forward<_Args>(args)...),
-        //                     std::bind(&TaskOneThread::ClearCacheNull, (TaskOneThread*)this));
+        //                     std::bind(&Local::ClearCacheNull, (TaskOneThread*)this));
 
         // m_mutextVecTimer.lock();
         // m_vecTimer.push_back(timerData);
@@ -235,8 +256,8 @@ protected:
     template<typename T, typename TRunFun, typename ..._Args>
     bool AddTimerClearCacheDelete(bool bOnce, uint32_t u32Interval, TRunFun pRunFun, _Args... args)
     {
-        return AddTimer<T>(bOnce, u32Interval, pRunFun, &TaskOneThread::ClearCacheDelete<_Args...>, std::forward<_Args>(args)...);
-
+        // return AddTimer<T>(bOnce, u32Interval, pRunFun, &Local::ClearCacheDelete<_Args...>, std::forward<_Args>(args)...);
+        return AddTimer<T>(bOnce, u32Interval, pRunFun, &Local::ClearCacheDelete<_Args...>, args...);
     }
 
     // 在线程进入循环前执行相关初始化操作 [zhuyb 2022-07-05 09:01:03]
@@ -268,8 +289,9 @@ private:
     void RunThread()
     {
         printf("%s Task Thread Start\n", m_strThreadName.c_str());
-
+#ifdef __APPLE__
         Arrow::Other::SetCurrentThreadName(m_strThreadName);
+#endif
         BeforeThreadRun();
         // 标记线程已启动并已经完成初始化 [zhuyb 2023-03-09 09:18:08]
         m_PromiseBeforThreadRun.set_value(true);
@@ -280,7 +302,7 @@ private:
         {
             if (m_listTask.empty() == true)
             {
-                std::this_thread::sleep_for(std::chrono::milliseconds(10));
+                std::this_thread::sleep_for(m_msTimerPrecision);
                 RunThreadTimer();
                 continue;
             }
@@ -308,11 +330,12 @@ private:
 
         // 每次只执行一个任务，是为了快速响应线程退出的信号 [zhuyb 2022-09-14 17:05:09]
         m_mutexListTask.lock();
-        TaskFun fun = m_listTask.front();
+        auto* pFun = m_listTask.front();
         m_listTask.pop_front();
         m_mutexListTask.unlock();
-        
-        std::get<0>(fun)();
+
+        std::get<0> (*pFun)();
+        delete pFun;
     }
 
     /**
@@ -326,7 +349,8 @@ private:
         m_mutexListTask.lock();
         for (it = m_listTask.begin(); it != m_listTask.end(); ++it)
         {
-            std::get<1>(*it)();
+            std::get<1>(*(*it))();
+            delete *it;
         }
         m_listTask.clear();
         m_mutexListTask.unlock();
@@ -346,7 +370,7 @@ private:
         m_mutextVecTimer.unlock();
 
         time_point_milliseconds tNow =
-            std::chrono::time_point_cast<time_point_milliseconds::duration>(std::chrono::system_clock::now());
+            std::chrono::time_point_cast<time_point_milliseconds::duration>(std::chrono::steady_clock::now());
         std::vector<VecTimer::iterator> vecEraseTimer;
         for(auto it = vecTmpTimer.begin(); it != vecTmpTimer.end(); it++)
         {
@@ -366,7 +390,7 @@ private:
             {
                 // 修改下次触发时间 [zhuyb 2023-03-09 09:55:42]
                 auto& tpNext = std::get<TimerNextTP>(*it);
-                tpNext += std::get<TimerInterval>(*it);
+                tpNext = tNow + std::get<TimerInterval>(*it);
             }
         }
 
@@ -410,7 +434,12 @@ private:
     // 使用 futrue和promise来模拟线程信号量同步 [zhuyb 2023-03-09 09:15:35]
     std::future<bool> m_FutureBeforeThreadRun;
     std::promise<bool> m_PromiseBeforThreadRun;
+
+    //  [zhuyb 2023-09-14 09:31:38]
+    std::chrono::milliseconds m_msTimerPrecision{TimerPrecision};
 };
+
+using TaskOneThread = TaskOneThread_TimerPrecision<1>;
 
 // Demo
 // class CTestTask: public TaskOneThread

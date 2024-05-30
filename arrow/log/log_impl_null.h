@@ -38,10 +38,10 @@ public:
     {
     }
 
-    template <typename... Args>
-    static void print(const char* fmt, Args... args)
-    {
-    }
+    // template <typename... Args>
+    // static void print(const char* fmt, Args... args)
+    // {
+    // }
 };
 
 } // namespace Log

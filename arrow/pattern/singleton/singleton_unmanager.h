@@ -24,14 +24,25 @@ private:
 public:
     static TInstance* Instance()
     {
-        if (s_bICreate == false)
+        // if (s_bICreate == false)
+        // {
+        //     s_MutextInstance.lock();
+        //     if (s_pInstance == nullptr)
+        //     {
+        //         s_pInstance = new TInstance();
+        //     }
+        //     s_bICreate = true;
+        //     s_MutextInstance.unlock();
+        // }
+        // return s_pInstance;
+
+        if (s_pInstance == nullptr)
         {
             s_MutextInstance.lock();
             if (s_pInstance == nullptr)
             {
                 s_pInstance = new TInstance();
             }
-            s_bICreate = true;
             s_MutextInstance.unlock();
         }
         return s_pInstance;
@@ -39,7 +50,7 @@ public:
 
     static void Release()
     {
-        if (s_bICreate == true)
+        if (s_pInstance != nullptr)
         {
             s_MutextInstance.lock();
             if (s_pInstance != nullptr)
@@ -47,7 +58,6 @@ public:
                 delete s_pInstance;
                 s_pInstance = nullptr;
             }
-            s_bICreate = false;
             s_MutextInstance.unlock();
         }
     }

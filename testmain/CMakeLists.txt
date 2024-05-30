@@ -1,15 +1,11 @@
-cmake_minimum_required(VERSION 3.0)
+cmake_minimum_required(VERSION 3.5)
 
-#设置编译参数和环境
-# SET(COMPILE_PLATFROM "linux_x64")
-# SET(COMPILE_PLATFROM "mac")
+PROJECT (testmain)
 
-SET(ProjectName arrow_lib_test)
-IF(${COMPILE_PLATFROM} STREQUAL "x64")
+if(CMAKE_HOST_SYSTEM_NAME STREQUAL "Linux")
 	INCLUDE(cmake/x64.cmake)
-ELSEIF(${COMPILE_PLATFROM} STREQUAL "mac")
+ELSEIF(CMAKE_HOST_SYSTEM_NAME STREQUAL "Darwin")
 	INCLUDE(cmake/mac.cmake)
-ELSE(${COMPILE_PLATFROM})
-    MESSAGE("* COMPILE_PLATFROM:  Unkonw ""${COMPILE_PLATFROM}")
-    INCLUDE(cmake/x64.cmake)
+ELSE()
+    MESSAGE(STATUS "Unkonw HOST SYSTEM:${CMAKE_HOST_SYSTEM_NAME}")
 ENDIF()

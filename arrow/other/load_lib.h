@@ -223,10 +223,16 @@ private:
 private:
     DynamicLibHandle OpenLib(const char* filename)
     {
+        DynamicLibHandle ret = nullptr;
 #ifdef WIN32
         return LoadLibrary(filename);
 #else
-        return dlopen(filename, RTLD_NOW);
+        ret = dlopen(filename, RTLD_NOW | RTLD_LOCAL);
+        if(ret == nullptr)
+        {
+            printf("Error: %s\n", dlerror());
+        }
+        return ret;
 #endif // WIN32
     }
 
@@ -234,6 +240,7 @@ private:
     {
         if (hin == nullptr)
         {
+            printf("his is null");
             return 0;
         }
         

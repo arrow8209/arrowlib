@@ -1,5 +1,5 @@
 #pragma once
-
+#include "log_interface.h"
 #include <log4cplus/log4cplus.h>
 #include <log4cplus/logger.h>
 #include <string.h>
@@ -14,18 +14,18 @@ namespace Log
 namespace details_log4
 {
     typedef  Arrow::static_map<
-     Arrow::static_pair<Arrow::value_type<LogNull>,Arrow::value_type<log4cplus::TRACE_LOG_LEVEL>>,
-     Arrow::static_pair<Arrow::value_type<LogTrace>,Arrow::value_type<log4cplus::TRACE_LOG_LEVEL>>,
-     Arrow::static_pair<Arrow::value_type<LogDebug>,Arrow::value_type<log4cplus::DEBUG_LOG_LEVEL>>,
-     Arrow::static_pair<Arrow::value_type<LogInfo>,Arrow::value_type<log4cplus::INFO_LOG_LEVEL>>,
-     Arrow::static_pair<Arrow::value_type<LogWarn>,Arrow::value_type<log4cplus::WARN_LOG_LEVEL>>,
-     Arrow::static_pair<Arrow::value_type<LogError>,Arrow::value_type<log4cplus::ERROR_LOG_LEVEL>>,
-     Arrow::static_pair<Arrow::value_type<LogFatal>,Arrow::value_type<log4cplus::FATAL_LOG_LEVEL>>,
-     Arrow::static_pair<Arrow::value_type<LogMax>,Arrow::value_type<log4cplus::TRACE_LOG_LEVEL>>
+     Arrow::static_pair<Arrow::IntValueType<LogNull>,Arrow::IntValueType<log4cplus::TRACE_LOG_LEVEL>>,
+     Arrow::static_pair<Arrow::IntValueType<LogTrace>,Arrow::IntValueType<log4cplus::TRACE_LOG_LEVEL>>,
+     Arrow::static_pair<Arrow::IntValueType<LogDebug>,Arrow::IntValueType<log4cplus::DEBUG_LOG_LEVEL>>,
+     Arrow::static_pair<Arrow::IntValueType<LogInfo>,Arrow::IntValueType<log4cplus::INFO_LOG_LEVEL>>,
+     Arrow::static_pair<Arrow::IntValueType<LogWarn>,Arrow::IntValueType<log4cplus::WARN_LOG_LEVEL>>,
+     Arrow::static_pair<Arrow::IntValueType<LogError>,Arrow::IntValueType<log4cplus::ERROR_LOG_LEVEL>>,
+     Arrow::static_pair<Arrow::IntValueType<LogFatal>,Arrow::IntValueType<log4cplus::FATAL_LOG_LEVEL>>,
+     Arrow::static_pair<Arrow::IntValueType<LogMax>,Arrow::IntValueType<log4cplus::TRACE_LOG_LEVEL>>
      > Log4Type;
 
     // 不使用CPU优化的日志类型 [zhuyb 2022-08-12 10:34:19]
-    typedef Arrow::value_typelist<LogNull, LogTrace, LogDebug, LogInfo, LogMax> UnLinly;
+    typedef Arrow::IntValueTypeList<LogNull, LogTrace, LogDebug, LogInfo, LogMax> UnLinly;
 }
 
 class LogImplLog4Cplus
@@ -142,8 +142,8 @@ public:
     {
         do
         {
-            // const int& log4cplus_loglevel = Arrow::smap::get<Arrow::value_type<loglevel>, details_log4::Log4Type>::Pair::value;
-            const int& log4cplus_loglevel = details_log4::Log4Type::get<Arrow::value_type<loglevel>>::value;
+            // const int& log4cplus_loglevel = Arrow::smap::get<Arrow::IntValueType<loglevel>, details_log4::Log4Type>::Pair::value;
+            const int& log4cplus_loglevel = details_log4::Log4Type::get<Arrow::IntValueType<loglevel>>::value;
             log4cplus::Logger const& _l = log4cplus::detail::macros_get_logger("");
             
             if (LOG4CPLUS_UNLIKELY(_l.isEnabledFor(log4cplus_loglevel)))
@@ -152,9 +152,9 @@ public:
                 _log4cplus_buf << t;
                 log4cplus::detail::macro_forced_log(_l,
                                                     log4cplus_loglevel, _log4cplus_buf.str(),
-                                                    tlist::tvaluelist_to_data<TFileName>::data, 
+                                                    ValueListToData<TFileName>::data, 
                                                     line,
-                                                    tlist::tvaluelist_to_data<TFunName>::data);
+                                                    ValueListToData<TFunName>::data);
             }
         } while (0);
     }
@@ -164,19 +164,19 @@ public:
     {
         do
         {
-            // const int& log4cplus_loglevel = Arrow::smap::get<Arrow::value_type<loglevel>, details_log4::Log4Type>::Pair::value;
-            const int& log4cplus_loglevel = details_log4::Log4Type::get<Arrow::value_type<loglevel>>::Pair::value;
+            // const int& log4cplus_loglevel = Arrow::smap::get<Arrow::IntValueType<loglevel>, details_log4::Log4Type>::Pair::value;
+            const int& log4cplus_loglevel = details_log4::Log4Type::get<Arrow::IntValueType<loglevel>>::value;
             log4cplus::Logger const& _l = log4cplus::detail::macros_get_logger("");
             if (LOG4CPLUS_UNLIKELY(_l.isEnabledFor(log4cplus_loglevel)))
             {
                 LOG4CPLUS_MACRO_INSTANTIATE_SNPRINTF_BUF(_snpbuf);
-                log4cplus::tchar const* _logEvent = _snpbuf.print(tlist::tvaluelist_to_data<TFmt>::data, args...);
+                log4cplus::tchar const* _logEvent = _snpbuf.print(ValueListToData<TFmt>::data, args...);
                 log4cplus::detail::macro_forced_log(_l,
                                                     log4cplus_loglevel,
                                                     _logEvent,
-                                                    tlist::tvaluelist_to_data<TFileName>::data,
+                                                    ValueListToData<TFileName>::data,
                                                     line,
-                                                    tlist::tvaluelist_to_data<TFunName>::data);
+                                                    ValueListToData<TFunName>::data);
             }
         } while (0);
     }

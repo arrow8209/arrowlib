@@ -1,15 +1,15 @@
 #pragma once
 #include "../typelist/typelist.h"
 
-#define LOG_PARAM(LogLevel) LogLevel, STATIC_FILE, typename STATIC_FUNC, __LINE__
-#define LOG_PARAM_FMT(LogLevel, fmt) LogLevel, STATIC_FILE, typename STATIC_FUNC, __LINE__, typename STATIC_STRING(fmt)
+#define LOG_PARAM(LogLevel) LogLevel, typename __ARROW_FILE_NAME_TYPE__, typename __ARROW_FUN_NAME_TYPE__, __LINE__
+#define LOG_PARAM_FMT(LogLevel, fmt) LogLevel, typename __ARROW_FILE_NAME_TYPE__, typename __ARROW_FUN_NAME_TYPE__, __LINE__, typename STATIC_STRING(fmt)
 
 namespace Arrow
 {
 
 typedef enum _emLogLevel
 {
-    LogNull,
+    LogNull = 0,
     LogTrace,
     LogDebug,
     LogInfo,
@@ -68,11 +68,11 @@ public:
         LogImpl::template Log<loglevel, TFileName, TFunName, line, TFmt, Args...>(args...);
     }
 
-    template <typename... Args>
-    static void print(const char* fmt, Args... args)
-    {
-        Log<LOG_PARAM(printLevel)>(fmt, args...);
-    }
+    // template <typename... Args>
+    // static void print(const char* fmt, Args... args)
+    // {
+    //     Log<LOG_PARAM(printLevel)>(fmt, args...);
+    // }
 };
 
 } // namespace Log

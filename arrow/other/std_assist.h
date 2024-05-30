@@ -22,11 +22,16 @@
 #include <locale>  // wstring_convert
 #include <limits>
 #include <atomic>
+#include <sstream>
+#include <fstream>
+#include <string>
 
 #ifdef _WIN32
 #elif __APPLE__
 #elif __linux__
 #include <malloc.h>
+#include <pthread.h>
+#include <dlfcn.h>
 #endif
 
 // #ifdef _WIN32
@@ -106,13 +111,13 @@ static inline std::string get_app_path()
 #endif
 }
 
-
 static uint64_t GetThreadID(const std::thread& th)
 {
     std::ostringstream oss;
     oss << th.get_id();
     return std::stoull(oss.str());
 }
+
 static uint64_t GetThreadID()
 {
     std::ostringstream oss;
@@ -153,7 +158,6 @@ static uint32_t StrToUInt32Impl(const char* sz, uint32_t u32Ret = 5381)
         u32Ret = (u32Ret << 5) + u32Ret + *pCh;
     return u32Ret;
 }
-
 
 static uint32_t StrToUInt32(const char* sz)
 {
@@ -231,7 +235,7 @@ inline void RemoveRepeat(std::vector<T>& val)
 //     static std::wstring_convert<std::codecvt_utf8<wchar_t>> utf8_conv;
 //     return utf8_conv.to_bytes(wide_string);
 // }
-
+// 
 // /*
 // * uft8转宽字节
 // */
@@ -301,31 +305,6 @@ static bool CA2W(wchar_t*& outStr, size_t& outLen, const char* inStr, int inLen)
 //     (*outStr)[len - 1] = '\0';
 // }
 
-template <typename T,
-          typename _ValueType = uint32_t,
-          _ValueType _minValue = std::numeric_limits<_ValueType>::min(),
-          _ValueType _maxValue = std::numeric_limits<_ValueType>::max()>
-struct TIncrement
-{
-    typedef _ValueType ValueType;
-    constexpr static ValueType minValue = _minValue;
-    constexpr static ValueType maxValue = _maxValue;
-    static std::atomic<ValueType> s_value;
-
-    static ValueType Get()
-    {
-        ValueType oldValue = s_value.fetch_add(1);
-        if(oldValue >= maxValue)
-        {
-            s_value.store(minValue);
-        }
-        return oldValue;
-    }
-
-};
-template <typename T, typename _ValueType, _ValueType _minValue, _ValueType _maxValue>
-std::atomic<_ValueType> TIncrement<T, _ValueType, _minValue, _maxValue>::s_value{_minValue};
-
 static std::string GetDirectoryPath(const std::string& filePath)
 {
     size_t pos = filePath.find_last_of("/\\");
@@ -348,6 +327,35 @@ static void SetCurrentThreadName(const std::string& name) {
     #endif
 }
 
+static std::string GetFileName(const std::string& filePath)
+{
+    size_t pos = filePath.find_last_of("/\\");
+    if (pos == std::string::npos)
+    {
+        return "";
+    }
+    return filePath.substr(pos + 1, filePath.size() - pos - 1);
+}
+
+#ifdef __linux__
+static std::string GetSharedObjectFullName()
+{
+    Dl_info info;
+    if (dladdr(reinterpret_cast<void*>(&GetSharedObjectFullName), &info))
+    {
+        return std::string(info.dli_fname);
+    }
+    return std::string("");
+}
+static std::string GetSharedObjectPath()
+{
+    std::string strTmp = GetSharedObjectFullName();
+    if(strTmp.empty())
+        return strTmp;
+    return GetDirectoryPath(strTmp);
+}
+
+#endif
 
 } // namespace Std
 }
