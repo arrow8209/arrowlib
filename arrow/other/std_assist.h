@@ -25,6 +25,7 @@
 #include <sstream>
 #include <fstream>
 #include <string>
+#include <cctype>
 
 #ifdef _WIN32
 #elif __APPLE__
@@ -356,6 +357,30 @@ static std::string GetSharedObjectPath()
 }
 
 #endif
+
+static bool IsBinaryFile(const std::string& filePath)
+{
+    std::ifstream file(filePath, std::ios::binary);
+    if (!file)
+    {
+        std::cerr << "Unable to open file: " << filePath << std::endl;
+        return false;
+    }
+
+    char ch;
+    while (file.get(ch))
+    {
+        if (std::iscntrl(static_cast<unsigned char>(ch)) && !std::isspace(static_cast<unsigned char>(ch)))
+        {
+            // 检测到控制字符（如0-31，127），且不是空白字符（如 \t, \n, \r）
+            file.close();
+            return true; // 认为是二进制文件
+        }
+    }
+
+    file.close();
+    return false; // 没有检测到控制字符，认为是文本文件
+}
 
 } // namespace Std
 }
