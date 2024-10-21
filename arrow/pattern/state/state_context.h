@@ -293,5 +293,6 @@ protected:
     StateEnum m_CurrentState;
     StateEnum m_PreviousState;
 };
+
 }
 }

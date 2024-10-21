@@ -93,13 +93,56 @@ protected:
 
 };
 
-//Demo
-//class UserClass: public Subject<parem1, parem2, pamre3 ... parmen>
-// {
-//      parem1 UserFun()
-//        {
-//            return Notify(parem2, pamre3 ... parmen)
-//        }
-// }
+/* Demo
+using ISubjectDemo = Arrow::Pattern::Subject<void, int>;
+using IObserverDemo = ISubjectDemo::IObserver;
+
+class CSubject : public ISubjectDemo
+{
+public:
+	CSubject()
+	{
+
+	}
+
+	virtual ~CSubject()
+	{
+    }
+
+    void Push(int i)
+    {
+        ISubjectDemo::Notify(i);
+    }
+};
+
+class CObserver : public IObserverDemo
+{
+
+public:
+    CObserver()
+    {
+    }
+
+    virtual ~CObserver()
+    {
+    }
+
+    void Response(int i)
+    {
+        std::cout << "CObserver::Reponse1::" << i << std::endl;
+    }
+
+};
+
+void TestObserver1()
+{
+    CSubject subject;
+    CObserver observer;
+
+    subject.Register(dynamic_cast<IObserverDemo*>(&observer));
+
+    subject.Push(1);
+}
+*/
 }
 }
