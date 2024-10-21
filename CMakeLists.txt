@@ -1,7 +1,5 @@
 cmake_minimum_required(VERSION 3.27)
 
-MESSAGE(STATUS "Boost_INCLUDE_DIR:${Boost_INCLUDE_DIR}")
-
 PROJECT(arrowlib)
 
 #设定编译参数
