@@ -9,28 +9,26 @@
 #include <thread>
 #include <type_traits>
 // #include "arrow/pattern/factory/factory_test.h"
-#include "arrow/pattern/observer/observer.h"
-#include "arrow/pattern/observer/subject.h"
-#include "arrow/pattern/singleton/singleton.h"
-#include "arrow/task/task_one_thread.h"
-#include "demo/typelist_demo.h"
-#include "arrow/log/log.h"
+#include "arrow/pattern/pattern.h"
+#include "arrow/task/task.h"
+// #include "demo/typelist_demo.h"
+#include "arrow/log.h"
 // #include "arrow/log/log_impl_log4cplus.h"
 // #include "arrow/other/load_lib_test.h"
-#include "test_log_in_lib.h"
+// #include "test_log_in_lib.h"
 // #include <log4cplus/log4cplus.h>
 //  typedef Arrow::Log::LogInterface<Arrow::Log::LogImplLog4Cplus> ALog;
 
-#include "demo/task_test.h"
+// #include "demo/task_test.h"
 
 // #include "test_enum_to_str.h"
-#include "test_enum_to_str2.h"
-#include "test_static_map.h"
+// #include "test_enum_to_str2.h"
+// #include "test_static_map.h"
 
 
 #include <boost/filesystem.hpp>
 
-typedef Arrow::TLog<Arrow::Log::LogImplDefault> Log;
+// typedef Arrow::TLog<Arrow::Log::LogImplDefault> Log;
 
 void CPlustThreadInit()
 {
@@ -108,7 +106,7 @@ int main(int argc, char* argv[])
 
     // using bValue = std::true_type::value;
 
-    TestPair2();
+    // TestPair2();
     // CTestTask taskTestmp;
     // taskTestmp.Activate();
     // taskTestmp.TstAddTask();

@@ -9,13 +9,14 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin/x64/)
 #添加boost库
 #按需修改
 SET(ADD_BOOST_LIBS "filesystem" "atomic")
-IF(${CMAKE_BUILD_TYPE} STREQUAL "Debug")
-    SET(BOOST_ROOT "/mnt/data/third-lib/boost/build/1.82.0/x86_64-gcc9.5.0_glibc2.27_linux4.15.18/debug")
-ELSE(${CMAKE_BUILD_TYPE})
-    SET(BOOST_ROOT "/mnt/data/third-lib/boost/build/1.82.0/x86_64-gcc9.5.0_glibc2.27_linux4.15.18/release")
-ENDIF()
+SET(BOOT_ROOT "/mnt/data/third-lib/boost/build/1.82.0/x86_64-gcc9.5.0_glibc2.27_linux4.15.18")
 
 #基本不用修改
+IF(${CMAKE_BUILD_TYPE} STREQUAL "Debug")
+    SET(BOOST_ROOT "${BOOT_ROOT}/debug")
+ELSE(${CMAKE_BUILD_TYPE})
+    SET(BOOST_ROOT "${BOOT_ROOT}/release")
+ENDIF()
 find_package(Boost 1.82.0 REQUIRED COMPONENTS ${ADD_BOOST_LIBS} HINTS "${BOOST_ROOT}/release")
 if(Boost_FOUND)
     message(STATUS "Boost success")
@@ -28,12 +29,14 @@ endif()
 
 #添加log4cplus库
 #按需修改
-IF(${CMAKE_BUILD_TYPE} STREQUAL "Debug")
-    SET(LOG4CPLUS_ROOT "/mnt/data/third-lib/log4cplus/build/2.1.0/x86_64-gcc9.5.0_glibc2.27_linux4.15.18/debug")
-ELSE(${CMAKE_BUILD_TYPE})
-    SET(LOG4CPLUS_ROOT "/mnt/data/third-lib/log4cplus/build/2.1.0/x86_64-gcc9.5.0_glibc2.27_linux4.15.18/release")
-ENDIF()
+SET(LOG4CPLUS_ROOT "/mnt/data/third-lib/log4cplus/build/2.1.0/x86_64-gcc9.5.0_glibc2.27_linux4.15.18")
+
 #无需修改
+IF(${CMAKE_BUILD_TYPE} STREQUAL "Debug")
+    SET(LOG4CPLUS_ROOT "${LOG4CPLUS_ROOT}/debug")
+ELSE(${CMAKE_BUILD_TYPE})
+    SET(LOG4CPLUS_ROOT "${LOG4CPLUS_ROOT}/release")
+ENDIF()
 SET(LOG4CPLUS_INCLUDE_DIR ${LOG4CPLUS_ROOT}/include)
 SET(LOG4CPLUS_LIBRARY_DIRS ${LOG4CPLUS_ROOT}/lib)
 SET(LOG4CPLUS_LIBRARIES log4cplus)

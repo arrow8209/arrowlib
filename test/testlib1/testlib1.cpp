@@ -2,10 +2,8 @@
 #include <stdint.h>
 // #include <log4cplus/log4cplus.h>
 #include <iostream>
-#include "arrow/log/log.h"
-#include "arrow/log/log_impl_log4cplus.h"
+#include "arrow/log.h"
 
-typedef Arrow::Log::base_log<Arrow::Log::LogImplLog4Cplus> ALog;
 
 // #include "zhjyz.h"
 // #include "application.h"
@@ -24,8 +22,8 @@ extern "C"
     {
         // return App_Zhjyz::Instance()->Init(szConfigPath);
         // printf(szConfigPath);
-        ALog::init("xdfstestlib1.log.ini");
-        ALog::Log<LOG_PARAM(Arrow::LogDebug)>("testlib1");
+        // ALog::init("xdfstestlib1.log.ini");
+        // ALog::Log<LOG_PARAM(Arrow::LogDebug)>("testlib1");
         // ARROW_LOG_DEBUG("test lib1");
         // std::cout << szConfigPath << std::endl;
         std::cout << "run init" << std::endl;

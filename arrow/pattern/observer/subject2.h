@@ -136,7 +136,14 @@ private:
         {
             return false;
         }
-        ObserverFunc fun = std::bind(pObjserverFunPtr, pObserver, std::_Placeholder<sequence+1>()...);
+#if defined(__clang__)
+    ObserverFunc fun = std::bind(pObjserverFunPtr, pObserver, std::placeholders::__ph<sequence+1>()...);
+#elif defined(__GNUC__) && !defined(__clang__)
+    ObserverFunc fun = std::bind(pObjserverFunPtr, pObserver, std::_Placeholder<sequence+1>()...);
+#endif
+
+        
+        
         m_mapObserver.insert(std::make_pair(key, fun));
         return true;
     }
