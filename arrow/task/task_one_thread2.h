@@ -13,6 +13,7 @@
 #include <vector>
 #include <assert.h>
 #include "lock_free_queue.h"
+#include "lock_queue.h"
 #include "../other/increment.h"
 #include "../other/delete_args.h"
 
@@ -31,7 +32,7 @@ protected:
     typedef TaskOneThread_TimerPrecision2<T, TimerPrecision> Local;
 
     typedef std::function<void(bool)> TaskFun; // 任务执行函数定义 bool true:执行逻辑函数 false 执行回收函数 [zhuyb 2022-07-05 08:59:14]
-    typedef LockFreeQueue<TaskFun*> MsqQueue;
+    typedef LockQueue<TaskFun*> MsqQueue;
 
     typedef Arrow::Other::TIncrement<Local, uint32_t> TimerIDIncrement;        
     typedef std::chrono::time_point<std::chrono::steady_clock, std::chrono::milliseconds> time_point_milliseconds;
@@ -84,7 +85,7 @@ public:
         {
             m_strThreadName = szThreadName;
         }
-
+        m_QueueTask.SetName(m_strThreadName.c_str());
         // 等待线程完全启动 [zhuyb 2023-03-09 09:20:04]
         WaitBeforeThreadRun();
         return true;
@@ -127,6 +128,11 @@ public:
     bool IsRun()
     {
         return m_bIsRun.load();
+    }
+
+    void PrintDebugInfo()
+    {
+        printf("%s %10d %10d %10d %10d %10d\n",m_strThreadName.c_str(), m_n32Test1, m_n32Test2, m_n32Test3, m_n32Test4, m_n32Test5);
     }
 protected:
 
@@ -408,6 +414,13 @@ private:
 
     // 休眠时间 [zhuyb 2023-09-14 09:31:38]
     std::chrono::milliseconds m_msTimerPrecision{TimerPrecision};
+
+    // test  [zhuyb 2024-08-21 10:42:57]
+    int32_t m_n32Test1 = 0;
+    int32_t m_n32Test2 = 0;
+    int32_t m_n32Test3 = 0;
+    int32_t m_n32Test4 = 0;
+    int32_t m_n32Test5 = 0;
 };
 
 template<typename T>

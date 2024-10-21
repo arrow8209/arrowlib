@@ -22,15 +22,15 @@ namespace Pattern
 
 // 无锁队列，无锁队列必须有一个哑结点。否则在处理插入第一个节点和最后一个节点的时候会出现重入问题 [zhuyb 2023-10-15 17:24:01]
 template<typename ...Args>
-class LockFreeQueue
+class LockQueue
 {
-    using Local = LockFreeQueue<Args...>;
+    using Local = LockQueue<Args...>;
     using Data = std::tuple<Args...>;
 
     struct Node
     {
         Data* pValue = nullptr;
-        std::atomic<Node*> pNext{nullptr};
+        Node* pNext{nullptr};
         Node(Data* pVal) : pValue(pVal), pNext(nullptr)
         {
         }
@@ -43,16 +43,16 @@ class LockFreeQueue
     };
 
 public:
-    LockFreeQueue()
+    LockQueue()
     {
         Node* pDummyNode = new Node(nullptr);
         m_pHead = pDummyNode;
         m_pTail = pDummyNode;
-        m_strQueueName = "LockFreeQueue";
+        m_strQueueName = "LockQueue";
     }
-    LockFreeQueue(const Local&) = delete;
+    LockQueue(const Local&) = delete;
 
-    virtual ~LockFreeQueue()
+    virtual ~LockQueue()
     {
         Node* pCurl = m_pHead;
         while(pCurl !=  nullptr)
@@ -69,64 +69,54 @@ public:
         Data* pNewValue = new Data(std::forward<Args>(args)...);
         Node* pNewNode = new Node(pNewValue);
 
-        Node* pOldTail = nullptr;
-        Node* pNullNode = nullptr;
+        std::lock_guard<std::mutex> lock(m_mutexQueue);
         m_u32Count++;
-
-        do
-        {
-            pOldTail = m_pTail.load();
-            pNullNode = nullptr;
-        } while (pOldTail->pNext.compare_exchange_weak(pNullNode, pNewNode) != true);
-
-        Node* pTmpTail = pOldTail;
-        do
-        {
-            pOldTail = pTmpTail;
-        }while(m_pTail.compare_exchange_weak(pOldTail, pNewNode) != true);
+        m_pTail->pNext = pNewNode;
+        m_pTail = pNewNode;
         
         return true;
     }
 
     bool Pop(Args&... args)
     {
-        Node* pDummyHead = nullptr;
-        Node* pReadHead = nullptr;
-        Data* pRetValue = nullptr;
-        while(true)
-        {
-            pDummyHead = m_pHead.load();
-            // 第一个节点是哑结点。真正的第一个是head->next [zhuyb 2023-10-15 15:54:55]
-            pReadHead = pDummyHead->pNext.load();
-            if (pReadHead == nullptr)
-            {
-                return false;
-            }
-            else
-            {
-                pRetValue = pReadHead->pValue;
-            }
+        if (m_pHead->pNext == nullptr)
+            return false;
+        
+        m_mutexQueue.lock();
+        Node* pTmpHead = m_pHead;
 
-            if (m_pHead.compare_exchange_weak(pDummyHead, pReadHead) == true)
-            {
-                break;
-            }
+        if (pTmpHead->pNext == nullptr)
+        {
+            m_mutexQueue.unlock();
+            return false;
         }
 
-        std::tie(args...) = *(pRetValue);
-        delete pDummyHead;
+        Data* pRetValue = m_pHead->pNext->pValue;
+        m_pHead = m_pHead->pNext;
         m_u32Count--;
+        m_mutexQueue.unlock();
+
+        std::tie(args...) = *(pRetValue);
+        delete pTmpHead;
+        
         return true;
     }
 
     uint32_t Size()
     {
+        // uint32_t u32Size = m_u32InCount - m_u32OutCount;
+        // printf("error\n");
+        // if(u32Size > 4967295 )
+        // {
+        //     printf("error\n");
+        // }
+        // return u32Size;
         return m_u32Count.load();
     }
 
     bool Empty()
     {
-        return m_pHead.load() == m_pTail.load();
+        return m_pHead == m_pTail;
     }
 
     void SetName(const char* szName)
@@ -135,12 +125,13 @@ public:
     }
 
 private:
-    std::atomic<Node*> m_pHead{nullptr};    // 链表头部 [zhuyb 2024-08-21 11:09:07]
-    std::atomic<Node*> m_pTail{nullptr};    // 链表尾部 [zhuyb 2024-08-21 11:09:24]
-    std::atomic<uint32_t> m_u32Count{0};    // 链表个数 [zhuyb 2024-08-21 11:09:30]
+    Node* m_pHead = nullptr;    // 链表头部 [zhuyb 2024-08-21 11:09:07]
+    Node* m_pTail = nullptr;    // 链表尾部 [zhuyb 2024-08-21 11:09:24]
+    std::atomic<uint32_t> m_u32Count{0};
+    // uint32_t m_u32InCount{0};    // 链表个数 [zhuyb 2024-08-21 11:09:30]
+    // uint32_t m_u32OutCount{0};    // 链表个数 [zhuyb 2024-08-21 11:09:30]
     std::string m_strQueueName;
-    // std::mutex m_mutexHead;
-    // std::mutex m_mutexTail;
+    std::mutex m_mutexQueue;
 };
 
 }
