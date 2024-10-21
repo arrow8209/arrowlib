@@ -1,5 +1,7 @@
 cmake_minimum_required(VERSION 3.27)
 
+MESSAGE(STATUS "Boost_INCLUDE_DIR:${Boost_INCLUDE_DIR}")
+
 PROJECT(arrowlib)
 
 #设定编译参数
@@ -10,19 +12,24 @@ INCLUDE(cmake-env/version.cmake)
 
 #获取目标平台
 INCLUDE(cmake-env/get_target_complate.cmake)
-get_tareget_platform(target_platform)
-message(STATUS "target_platform:${target_platform}")
 
-#设置编译环境
-SET(host_platform "code_server")
-# SET(host_platform "company")
-# SET(host_platform "max")
+#使用log4cplus库
+add_definitions(-DUSE_SDKLOG=1)
 
-INCLUDE(cmake-env/x64/x64-arrow-server.cmake)
+IF(${target_platform} STREQUAL "x64")
+    INCLUDE(cmake-env/x64-env.cmake)
+ELSEIF(${target_platform} STREQUAL "aarch64")
+	
+ELSEIF(${target_platform} STREQUAL "arm")
+    
+ELSE(${target_platform})
+    MESSAGE(STATUS "* COMPILE_PLATFROM:  Unkonw ${COMPILE_PLATFROM}")
+ENDIF()
 
 #插件编译(主要都是用来测试的插件)
-ADD_SUBDIRECTORY(testmain)
+ADD_SUBDIRECTORY(test/testmain testmain)
 
-ADD_SUBDIRECTORY(testlib1)
+ADD_SUBDIRECTORY(test/testlib1 testlib1)
 
-# ADD_SUBDIRECTORY(testlib2)
+ADD_SUBDIRECTORY(test/testlib2 testlib2)
+

@@ -1,9 +1,10 @@
+cmake_minimum_required(VERSION 3.5)
 
 # #设置输出目录
 # set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin)
 # set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin)
 # set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin)
-
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 #设置编译参数
 set(GccCompailParam "${GccCompailParam} -Wall") # -Wall 开启所有警告
 set(GccCompailParam "${GccCompailParam} -pipe") # -pipe 使用管道替代编译的临时文件（可以加快编译速度）
