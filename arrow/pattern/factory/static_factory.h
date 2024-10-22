@@ -85,13 +85,12 @@ public:
     }
 };
 
-//Demo
-// tyepdef typedef StaticFactory<int, Base,
-//                 std::integral_constant<int, 1> A,
-//                 std::integral_constant<int, 2> B,
-//                 std::integral_constant<int, 3> C,
-//                 std::integral_constant<int, 4> D>
-//     App_Factory;
-
 } 
 }
+
+/*
+using DemoFactory = StaticFactory<int,
+                                  Base,
+                                  StaticFactoryAssist<int, 1, Class1>,
+                                  StaticFactoryAssist<int, 2, Class2>>;
+*/
