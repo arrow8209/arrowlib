@@ -28,7 +28,7 @@ struct LightData
 };
 
 // 定义状态基类 [zhuyb 2024-10-22 11:06:15]
-using LightStateBase = ::Arrow::Pattern::StateBase2<LightData, LightState, LightMsg>;
+using LightStateBase = ::Arrow::Pattern::StateBaseV2<LightData, LightState, LightMsg>;
 
 class LightOn : public LightStateBase
 {
@@ -132,7 +132,7 @@ using LightStateFactory = ::Arrow::Pattern::StaticFactory<LightState,
                                                           ::Arrow::Pattern::StaticFactoryAssist<LightState, LightState::On, LightOn>,
                                                           ::Arrow::Pattern::StaticFactoryAssist<LightState, LightState::Off, LightOff>>;
 
-using LightStateContext = ::Arrow::Pattern::StateContext2<LightData, LightState, LightMsg, LightStateFactory, 1000>;
+using LightStateContext = ::Arrow::Pattern::StateContextV2<LightData, LightState, LightMsg, LightStateFactory, 1000>;
 
 void StateDemo()
 {

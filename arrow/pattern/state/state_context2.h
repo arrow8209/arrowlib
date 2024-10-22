@@ -22,7 +22,7 @@ namespace Pattern
 namespace detail
 {
 template<typename _StateData, typename _StateEnum, typename _MsgEnum, typename ...Args>
-class IContext2
+class IContextV2
 {
 public:
     using Data = _StateData;
@@ -30,10 +30,10 @@ public:
     using Msg = _MsgEnum;
 
 protected:
-    IContext2() {}
+    IContextV2() {}
 
 public:
-    virtual ~IContext2() {}
+    virtual ~IContextV2() {}
 
 public:
     virtual StateEnum HandleMsg(Msg msg, Args... args) = 0;
@@ -48,21 +48,21 @@ public:
  * @return {*}
  */
 template <typename _StateData, typename _StateEnum, typename _MsgEnum, typename... Args>
-class StateBase2
+class StateBaseV2
 {
 public:
     using Data = _StateData;
     using StateEnum = _StateEnum;
     using Msg = _MsgEnum;
-    using ContextType = detail::IContext2<Data, StateEnum, Msg, Args...>;
+    using ContextType = detail::IContextV2<Data, StateEnum, Msg, Args...>;
 
     friend ContextType;
 
 protected:
-    StateBase2() {}
+    StateBaseV2() {}
 
 public:
-    virtual ~StateBase2() {}
+    virtual ~StateBaseV2() {}
 
     void Context(ContextType* pContext, Data* pData)
     {
@@ -121,7 +121,7 @@ protected:
  * @return {*}
  */
 template <typename StateData, typename StateEnum, typename MsgEnum, typename StateFactory, int32_t TimerInterval = 0, typename ...Args>
-class StateContext2
+class StateContextV2
 {
 };
 /**
@@ -129,21 +129,21 @@ class StateContext2
  * @return {*}
  */
 template <typename StateData, typename StateEnum, typename MsgEnum, int32_t TimerInterval, typename... Args1, typename... Args>
-class StateContext2<StateData, StateEnum, MsgEnum, StaticFactory<Args1...>, TimerInterval, Args...>
-    : public detail::IContext2<StateData, StateEnum, MsgEnum, Args...>
+class StateContextV2<StateData, StateEnum, MsgEnum, StaticFactory<Args1...>, TimerInterval, Args...>
+    : public detail::IContextV2<StateData, StateEnum, MsgEnum, Args...>
 {
 protected:
     using StateFactory = StaticFactory<Args1...>;
-    using ContextType = detail::IContext2<StateData, StateEnum, MsgEnum, Args...>;
-    using Local = StateContext2<StateData, StateEnum, MsgEnum, StateFactory, TimerInterval, Args...>;
-    using Base = detail::IContext2<StateData, StateEnum, MsgEnum, Args...>;
-    using StateBaseImpl = StateBase2<StateData, StateEnum, MsgEnum, Args...>;
+    using ContextType = detail::IContextV2<StateData, StateEnum, MsgEnum, Args...>;
+    using Local = StateContextV2<StateData, StateEnum, MsgEnum, StateFactory, TimerInterval, Args...>;
+    using Base = detail::IContextV2<StateData, StateEnum, MsgEnum, Args...>;
+    using StateBaseImpl = StateBaseV2<StateData, StateEnum, MsgEnum, Args...>;
     using MapStateEnumToStatePtr = std::map<StateEnum, StateBaseImpl*>;
 
 public:
-    StateContext2() {}
+    StateContextV2() {}
 
-    virtual ~StateContext2()
+    virtual ~StateContextV2()
     {
         if(m_ThreadTimer.joinable())
         {
@@ -180,7 +180,7 @@ public:
         m_bThreadRun = true;
         if (TimerInterval > 0)
         {
-            m_ThreadTimer = std::thread(std::bind(&StateContext2::ThreadTimer, this));
+            m_ThreadTimer = std::thread(std::bind(&StateContextV2::ThreadTimer, this));
         }
         return true;
     }
