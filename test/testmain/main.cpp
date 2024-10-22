@@ -8,117 +8,20 @@
 #include <stdio.h>
 #include <thread>
 #include <type_traits>
-// #include "arrow/pattern/factory/factory_test.h"
-#include "arrow/pattern/pattern.h"
-#include "arrow/task/task.h"
-// #include "demo/typelist_demo.h"
-#include "arrow/log.h"
-// #include "arrow/log/log_impl_log4cplus.h"
-// #include "arrow/other/load_lib_test.h"
-// #include "test_log_in_lib.h"
-// #include <log4cplus/log4cplus.h>
-//  typedef Arrow::Log::LogInterface<Arrow::Log::LogImplLog4Cplus> ALog;
-
-// #include "demo/task_test.h"
-
-// #include "test_enum_to_str.h"
-// #include "test_enum_to_str2.h"
-// #include "test_static_map.h"
-
-
 #include <boost/filesystem.hpp>
 
-// typedef Arrow::TLog<Arrow::Log::LogImplDefault> Log;
+#include "arrow/pattern/pattern.h"
+#include "arrow/task/task.h"
+#include "arrow/log.h"
 
-void CPlustThreadInit()
-{
-    std::cout << "CPlustThreadInit" << std::endl;
-}
-
-template<bool value>
-using MyConditional = typename std::conditional<value, int, float>::type;
+#include "demo/state_demo/state_demo_2.h"
 
 int main(int argc, char* argv[])
 {
-        std::string strTmp2 = boost::filesystem::current_path().string();
-        std::cout <<strTmp2 << std::endl;
-    // log4cplus::initialize();
-    // std::thread cplusThreadInit = std::thread(&CPlustThreadInit);
-    // if (cplusThreadInit.joinable())
-    // {
-    //     cplusThreadInit.join();
-    // }
-    
-    // printf("\nLD_LIBRARY_PATH:\n");
-    // system("echo $LD_LIBRARY_PATH");
+    std::string strTmp2 = boost::filesystem::current_path().string();
+    std::cout << strTmp2 << std::endl;
+    ArrowLog::init(nullptr);
 
-    // Log::Log<Log_Param(Arrow::Log_Debug)>(56789);
-    
-
-    // TestLogInLib();
-
-    // log4cplus::initialize();
-    // std::thread th = std::thread(&fun); 
-    
-    // ALog::init(nullptr);
-    // ALog::Trace_Log<STATIC_FILE, STATIC_FUNC, __LINE__>("12312");
-    // ALog::Trace_Log<STATIC_FILE, STATIC_FUNC, __LINE__>("A:%s", "12312");
-    // ARROW_LOG_TRACE("12312");
-    // while(true)
-    // {
-    //     printf("asdfas\n");
-    // }
-
-    // App_Observer::Instance()->Response(1, 2);
-    // App_Observer::instance_()->Printf();
-
-    // CTestTask testtask;
-    // testtask.InitTask();
-    // testtask.StartTask();
-    // testtask.TstAddTask();
-    // int n1;
-    // std::cin >> n1;
-    // testtask.EndTask();
-
-    // App_Factory::Create(3);
-    // App_Factory::Create(1);
-    // App_Factory::Create(2);
-    // App_Factory::Create(4);
-    
-    // test_typelist_type();
-    // test_typelist_vlaue();
-    // test_static_string();
-    // test_define();
-    // Arrow::static_string::outinf("123456");
-    // test_static_string2();
-    // log4cplus::initialize();
-
-    // Test_Load_Lib();
-    // TestPair();
-
-
-    // if (th.joinable())
-    // {
-    //     th.join();
-    // }
-
-    // test_static_string2();
-
-    // using bValue = std::true_type::value;
-
-    // TestPair2();
-    // CTestTask taskTestmp;
-    // taskTestmp.Activate();
-    // taskTestmp.TstAddTask();
-
-    // int nTmp; 
-    // std::cin >>  nTmp;
-    // TestEnumToStr();
-    // TestEnum2();
-    // std::cout << __cplusplus << std::endl;
-    // TestStaticMap();
-
-    // std::cout << typeid(MyConditional<true>).name() << std::endl;
-    // std::cout << typeid(MyConditional<false>).name() << std::endl;
+    State_Demo_2_H::StateDemo();
     return 1;
 }

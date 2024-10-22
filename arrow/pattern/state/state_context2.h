@@ -19,6 +19,8 @@ namespace Arrow
 namespace Pattern
 {
 
+namespace detail
+{
 template<typename _StateData, typename _StateEnum, typename _MsgEnum, typename ...Args>
 class IContext2
 {
@@ -37,7 +39,7 @@ public:
     virtual StateEnum HandleMsg(Msg msg, Args... args) = 0;
     virtual void ChangeState(const StateEnum& newState) = 0;
 };
-
+}
 /**
  * @description: 状态基类。接口函数线程安全，无需考虑多线程
  * @StateData   状态机全局数据类型
@@ -45,14 +47,16 @@ public:
  * @MsgEnum     消息枚举类似
  * @return {*}
  */
-template <typename _StateData, typename _StateEnum, typename _MsgEnum, typename ...Args>
+template <typename _StateData, typename _StateEnum, typename _MsgEnum, typename... Args>
 class StateBase2
 {
 public:
     using Data = _StateData;
     using StateEnum = _StateEnum;
     using Msg = _MsgEnum;
-    using ContextType = IContext2<Data, StateEnum, Msg, Args...>;
+    using ContextType = detail::IContext2<Data, StateEnum, Msg, Args...>;
+
+    friend ContextType;
 
 protected:
     StateBase2() {}
@@ -60,47 +64,51 @@ protected:
 public:
     virtual ~StateBase2() {}
 
+    void Context(ContextType* pContext, Data* pData)
+    {
+        m_pContext = pContext;
+        m_pData = pData;
+    }
+
+    void ChangeState(const StateEnum& newState)
+    {
+        m_pContext->ChangeState(newState);
+    }
+
     /**
      * @description: 初始化 创建状态的时候调用一次
-     * @param {Data&} data
      * @return {*}
      */
-    virtual void Init(const Data& data) = 0;
+    virtual void Init() = 0;
 
     /**
      * @description: 当从其他状态迁移到当前状态调用
-     * @param {Data*} pData
      * @return {*}
      */
-    virtual void Start(Data* pData) = 0;
+    virtual void Start() = 0;
 
     /**
      * @description: 处理消息
-     * @param {Data*} pData
      * @param {MsgEnum} msg
      * @return {*}
      */
-    virtual StateEnum HandleMsg(Data* pData, Msg msg, Args... args) = 0;
+    virtual void HandleMsg(Msg msg, Args... args) = 0;
 
     /**
      * @description: 处理定时消息
-     * @param {Data*} pData
      * @return {*}
      */    
-    virtual StateEnum Timer(Data* pData) = 0;
-
+    virtual void Timer() = 0;
 
     /**
-     * @description: 当前状态
+     * @description: 获取当前状态
      * @return {*}
      */
     virtual StateEnum State() = 0;
 
-    /**
-     * @description: 设置Context
-     * @param {ContextType*} pContext
-     */    
-    virtual void Context(ContextType* pContext) = 0;
+protected:
+    ContextType* m_pContext = nullptr;
+    Data* m_pData = nullptr;
 };
 
 /**
@@ -115,22 +123,21 @@ public:
 template <typename StateData, typename StateEnum, typename MsgEnum, typename StateFactory, int32_t TimerInterval = 0, typename ...Args>
 class StateContext2
 {
-    public:
-        void Init(){}
 };
 /**
  * @description: 使用偏特化写法，主要是为了约束工厂为StaticFactory
  * @return {*}
  */
-template <typename StateData, typename StateEnum, typename MsgEnum, int32_t TimerInterval,typename ...Args1, typename ...Args>
-class StateContext2<StateData, StateEnum, MsgEnum, StaticFactory<Args1...>, TimerInterval, Args...> 
-    : public IContext2<StateData, StateEnum,MsgEnum, Args...>
+template <typename StateData, typename StateEnum, typename MsgEnum, int32_t TimerInterval, typename... Args1, typename... Args>
+class StateContext2<StateData, StateEnum, MsgEnum, StaticFactory<Args1...>, TimerInterval, Args...>
+    : public detail::IContext2<StateData, StateEnum, MsgEnum, Args...>
 {
 protected:
-    using StateBaseImpl = StateBase2<StateData, StateEnum, MsgEnum, Args...>;
     using StateFactory = StaticFactory<Args1...>;
-    using ContextType = IContext2<StateData, StateEnum, MsgEnum, Args...>;
-    using Local = StateContext2<StateData, StateEnum, MsgEnum, StateFactory, TimerInterval,  Args...>;
+    using ContextType = detail::IContext2<StateData, StateEnum, MsgEnum, Args...>;
+    using Local = StateContext2<StateData, StateEnum, MsgEnum, StateFactory, TimerInterval, Args...>;
+    using Base = detail::IContext2<StateData, StateEnum, MsgEnum, Args...>;
+    using StateBaseImpl = StateBase2<StateData, StateEnum, MsgEnum, Args...>;
     using MapStateEnumToStatePtr = std::map<StateEnum, StateBaseImpl*>;
 
 public:
@@ -188,7 +195,7 @@ public:
         std::lock_guard<std::recursive_mutex> guard(m_Mutex);
 
         auto* pStateBase = GetStateBasePtr(m_CurrentState);
-        pStateBase->HandleMsg(&m_Data, msg, args...);
+        pStateBase->HandleMsg(msg, args...);
 
         return State();
 
@@ -207,7 +214,8 @@ public:
             return;
         }
         auto* pStateBase = GetStateBasePtr(newState);
-        pStateBase->Start(&m_Data);
+        pStateBase->Start();
+
         m_PreviousState = m_CurrentState;
         m_CurrentState = newState;
     }
@@ -221,7 +229,7 @@ public:
         std::lock_guard<std::recursive_mutex> guard(m_Mutex);
         
         auto* pStateBase = GetStateBasePtr(m_CurrentState);
-        pStateBase->Timer(&m_Data);
+        pStateBase->Timer();
         return State();
     }
 
@@ -249,8 +257,6 @@ public:
     }
 
 protected:
-
-
     /**
      * @description: 获取状态实现
      * @param {StateEnum&} state
@@ -262,8 +268,9 @@ protected:
         if (it == m_mapStateEnumToStatePtr.end())
         {
             m_mapStateEnumToStatePtr[state] = StateFactory::Create(state);
-            m_mapStateEnumToStatePtr[state]->Init(m_Data);
-            m_mapStateEnumToStatePtr[state]->Context(dynamic_cast<ContextType*>(this));
+            m_mapStateEnumToStatePtr[state]->Context(dynamic_cast<Base*>(this), &m_Data);
+            m_mapStateEnumToStatePtr[state]->Init();
+            
             return m_mapStateEnumToStatePtr[state];
         }
         return it->second;

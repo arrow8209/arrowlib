@@ -6,6 +6,7 @@
     ],
     "settings": {
         "files.associations": {
+            "*.md": "markdown",
             "functional": "cpp",
             "thread": "cpp",
             "iosfwd": "cpp",
@@ -94,7 +95,9 @@
             "queue": "cpp",
             "__memory": "cpp",
             "any": "cpp",
-            "shared_mutex": "cpp"
+            "shared_mutex": "cpp",
+            "source_location": "cpp",
+            "valarray": "cpp"
         }
     }
 }

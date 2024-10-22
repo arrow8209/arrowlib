@@ -41,6 +41,17 @@ public:
 
         return StaticFactory<KeyType, TObjBase, Args...>::Create(t);
     }
+
+    template<typename ...CreateArgs>
+    static TObjBase* Create(const KeyType& t, CreateArgs&&... args)
+    {
+        if (t == keyValue)
+        {
+            return dynamic_cast<TObjBase*>(new Obj(args...));
+        }
+
+        return StaticFactory<KeyType, TObjBase, Args...>::Create(t, std::forward<CreateArgs>(args)...);
+    }
 };
 
 template <typename KeyType, typename TObjBase, KeyType keyValue, typename Obj>
@@ -59,6 +70,17 @@ public:
         {
             return dynamic_cast<TObjBase*>(new Obj());
         }
+        return nullptr;
+    }
+
+    template<typename ...CreateArgs>
+    static TObjBase* Create(const KeyType& t, CreateArgs&&... args)
+    {
+        if (t == keyValue)
+        {
+            return dynamic_cast<TObjBase*>(new Obj(args...));
+        }
+
         return nullptr;
     }
 };
