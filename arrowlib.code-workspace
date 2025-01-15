@@ -97,7 +97,9 @@
             "any": "cpp",
             "shared_mutex": "cpp",
             "source_location": "cpp",
-            "valarray": "cpp"
+            "valarray": "cpp",
+            "ranges": "cpp",
+            "stop_token": "cpp"
         }
     }
 }

@@ -38,8 +38,8 @@ set(CMAKE_SKIP_RPATH TRUE)
 
 #设置编译参数（基本不改）
 set(CMAKE_CXX_STANDARD 14)
-set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS} ${GccCompailParam} -O0 -g")
-set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS} ${GccCompailParam} -O0 -g" )
+set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS} ${GccCompailParam} -g")
+set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS} ${GccCompailParam} -g")
 # set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS} -fsanitize=address") #内存泄露检测
 # set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS} -fsanitize=address") #内存泄露检测
 

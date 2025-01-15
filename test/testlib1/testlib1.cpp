@@ -2,7 +2,7 @@
 #include <stdint.h>
 // #include <log4cplus/log4cplus.h>
 #include <iostream>
-#include "arrow/log.h"
+#include "arrow/arrow.h"
 
 
 // #include "zhjyz.h"
@@ -18,7 +18,7 @@ extern "C"
      * @param {char*} szConfigPath 配置文件目录
      * @return {*} 0 成功 其他 错误码
      */
-    __attribute__ ((visibility("default"))) uint32_t Init(const char* szConfigPath)
+    ARROW_API_EXPORT uint32_t Init(const char* szConfigPath)
     {
         // return App_Zhjyz::Instance()->Init(szConfigPath);
         // printf(szConfigPath);

@@ -1,7 +1,7 @@
 function(get_tareget_platform result_target_platform)
+
     message(STATUS "CMAKE_CXX_COMPILER:${CMAKE_CXX_COMPILER}")
     message(STATUS "CMAKE_C_COMPILER:${CMAKE_C_COMPILER}")
-
 
     # 针对编译器路径判读是否为aarch64编译器
     string(FIND "${CMAKE_CXX_COMPILER}" "aarch64" is_aarch64)
