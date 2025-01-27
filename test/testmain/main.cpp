@@ -31,7 +31,7 @@ int main(int argc, char* argv[])
     // TestResponsibility1();
     // int* p = (int*)malloc(sizeof(int));
     // TestLoadLib();
-    
+
     DemoTask2();
     // DemoTask1();
 
