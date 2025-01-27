@@ -23,7 +23,7 @@ void CDemoTask2::Stop()
 
 void CDemoTask2::AddTimer()
 {
-    TaskThread::AddTimerClearCacheNull(false, 500, &CDemoTask2::Timer);
+    TaskThread::AddTimerClearCacheNull(false, 1000, &CDemoTask2::Timer);
 }
 
 void CDemoTask2::PushTask(const char* szTaskID)
@@ -35,8 +35,9 @@ void CDemoTask2::PushTask(const char* szTaskID)
 
 void CDemoTask2::RunTask(std::string strTaskID)
 {
-    std::cout << "RunTaskID:" << strTaskID << std::endl;
-    std::this_thread::sleep_for(std::chrono::seconds(1));
+    m_u32RunCount++;
+    // std::cout << "RunTaskID:" << strTaskID << std::endl;
+    // std::this_thread::sleep_for(std::chrono::seconds(1));
 }
 
 void CDemoTask2::ClearTask(std::string strTaskID)
@@ -46,5 +47,6 @@ void CDemoTask2::ClearTask(std::string strTaskID)
 
 void CDemoTask2::Timer()
 {
-    std::cout << "Timer:" << std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count() << std::endl;
+    // std::cout << "Timer:" << std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count() << std::endl;
+    std::cout << "CDemoTask2 Count:" << TaskThread::TaskCount() << " RunCount:" << m_u32RunCount <<std::endl; 
 }

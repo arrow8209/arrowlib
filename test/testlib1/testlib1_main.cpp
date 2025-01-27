@@ -32,12 +32,3 @@ extern "C"
 #endif
 
 
-__attribute ((constructor)) void testlib1_init(void)
-{
-    printf("* %s\n", __func__);
-}
-
-__attribute ((destructor)) void testlib1_fini(void)
-{
-    printf("* %s\n", __func__);
-}

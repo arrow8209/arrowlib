@@ -227,7 +227,9 @@ private:
 #ifdef WIN32
         return LoadLibrary(filename);
 #else
-        ret = dlopen(filename, RTLD_NOW | RTLD_LOCAL);
+
+        // ret = dlopen(filename, RTLD_NOW | RTLD_LOCAL);
+        ret = dlopen(filename, RTLD_NOW | RTLD_NODELETE); // 主要是为了是用asan
         if(ret == nullptr)
         {
             printf("Error: %s\n", dlerror());

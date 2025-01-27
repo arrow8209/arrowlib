@@ -23,6 +23,8 @@ private:
     void ClearTask(std::string strTaskID);
 
     void Timer();
+private:
+    uint32_t m_u32RunCount = 0;
 };
 
 static void DemoTask2()
@@ -33,10 +35,23 @@ static void DemoTask2()
 
     std::string strTmp = "afsdfasdfasdf";
     testTask.AddTimer();
-    testTask.PushTask("1");
-    testTask.PushTask("2");
-    testTask.PushTask("3");
 
+    while (true)
+    // for(int i = 0; i < 1000000; i++)
+    {   
+        if(testTask.TaskCount() < 1000)
+        {
+            testTask.PushTask("1");
+            testTask.PushTask("2");
+            testTask.PushTask("3");
+        }
+        else
+        {
+            std::this_thread::sleep_for(std::chrono::microseconds(1));
+            // std::cout << "Task count: " << testTask.TaskCount() << std::endl;
+        }
+        // std::cout << testTask.TaskCount() << std::endl;
+    }
     std::this_thread::sleep_for(std::chrono::seconds(1));
     std::cin >> strTmp;
     testTask.Stop();

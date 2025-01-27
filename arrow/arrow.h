@@ -12,6 +12,7 @@
 #include "other/convert.h"
 #include "other/set_tuple.h"
 #include "other/increment.h"
+#include "other/type_count.h"
 
 // pattern模块 [zhuyb 2022-12-15 10:13:29]
 #include "pattern/pattern.h"

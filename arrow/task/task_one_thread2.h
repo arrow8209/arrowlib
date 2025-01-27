@@ -14,6 +14,7 @@
 #include <assert.h>
 #include "lock_free_queue.h"
 #include "lock_queue.h"
+#include "simplg_lock_queue.h"
 #include "../other/increment.h"
 #include "../other/delete_args.h"
 
@@ -33,6 +34,7 @@ protected:
 
     typedef std::function<void(bool)> TaskFun; // 任务执行函数定义 bool true:执行逻辑函数 false 执行回收函数 [zhuyb 2022-07-05 08:59:14]
     typedef LockQueue<TaskFun*> MsqQueue;
+    // typedef SimpleLockQueue<TaskFun*> MsqQueue;
 
     typedef Arrow::Other::TIncrement<Local, uint32_t> TimerIDIncrement;        
     typedef std::chrono::time_point<std::chrono::steady_clock, std::chrono::milliseconds> time_point_milliseconds;

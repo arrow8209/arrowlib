@@ -18,6 +18,8 @@
 #include "demo/test_enum_name.h"
 #include "demo/responsibility/responsibility_demo1.h"
 #include "demo/test_load_lib.h"
+#include "demo/task/demo_task2.h"
+#include "demo/task/demo_task1.h"
 
 int main(int argc, char* argv[])
 {
@@ -27,8 +29,11 @@ int main(int argc, char* argv[])
     // TestEnumName();
     // State_Demo_2_H::StateDemo();
     // TestResponsibility1();
-    int* p = (int*)malloc(sizeof(int));
-    TestLoadLib();
+    // int* p = (int*)malloc(sizeof(int));
+    // TestLoadLib();
     
+    DemoTask2();
+    // DemoTask1();
+
     return 1;
 }

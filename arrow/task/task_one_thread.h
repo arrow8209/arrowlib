@@ -330,7 +330,7 @@ private:
 
         // 每次只执行一个任务，是为了快速响应线程退出的信号 [zhuyb 2022-09-14 17:05:09]
         m_mutexListTask.lock();
-        auto* pFun = m_listTask.front();
+        TaskFun* pFun = m_listTask.front();
         m_listTask.pop_front();
         m_mutexListTask.unlock();
 

@@ -26,6 +26,7 @@ extern "C"
         // ALog::Log<LOG_PARAM(Arrow::LogDebug)>("testlib1");
         // ARROW_LOG_DEBUG("test lib1");
         // std::cout << szConfigPath << std::endl;
+        int32_t* pData = (int32_t*)malloc(sizeof(int32_t));
         std::cout << "run init" << std::endl;
         // log4cplus::initialize();
         return 0;
@@ -36,12 +37,13 @@ extern "C"
 #endif
 
 
-// __attribute ((constructor)) void testlib1_init(void)
-// {
-//     printf("* %s\n", __func__);
-// }
+__attribute ((constructor)) void testlib1_init(void)
+{
+    int32_t* pData = (int32_t*)malloc(sizeof(int32_t));
+    printf("* %s\n", __func__);
+}
 
-// __attribute ((destructor)) void testlib1_fini(void)
-// {
-//     printf("* %s\n", __func__);
-// }
+__attribute ((destructor)) void testlib1_fini(void)
+{
+    printf("* %s\n", __func__);
+}

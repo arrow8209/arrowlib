@@ -61,4 +61,12 @@ TARGET_LINK_OPTIONS(
 	${PROJECT_NAME}
     PRIVATE
     ${LinkOptions}
+    # -g
+    # -fsanitize=address
 )
+# target_compile_options(${PROJECT_NAME} PRIVATE
+#     -g
+#     -fsanitize=address
+#     # -fno-omit-frame-pointer
+#     # -rdynamic
+# )
