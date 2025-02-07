@@ -21,6 +21,9 @@
 #include "demo/task/demo_task2.h"
 #include "demo/task/demo_task1.h"
 
+#include "test_lock_free/test_boost_free_lock.h"
+#include "test_lock_free/test_lock_free2.h"
+
 int main(int argc, char* argv[])
 {
     std::string strTmp2 = boost::filesystem::current_path().string();
@@ -32,8 +35,13 @@ int main(int argc, char* argv[])
     // int* p = (int*)malloc(sizeof(int));
     // TestLoadLib();
 
-    DemoTask2();
+    // DemoTask2();
     // DemoTask1();
+    // TestBoostFreeLock();
+    // TestLockFree2A();
+    TestLockFree2B();
 
     return 1;
 }
+
+

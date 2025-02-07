@@ -95,7 +95,9 @@ public:
         Data* pRetValue = nullptr;
         while(true)
         {
-            pDummyHead = m_pHead.load();
+            // 这一句话存在ABA问题，单线程A执行问这一行后暂定，其他线程继续执行会出在112行出现ABA问题。也就是m_pHead==pDummyHead 但是不是同一个节点。 [zhuyb 2025-02-05 08:37:16]
+            pDummyHead = m_pHead.load(); 
+            
             // 第一个节点是哑结点。真正的第一个是head->next [zhuyb 2023-10-15 15:54:55]
             pReadHead = pDummyHead->pNext.load();
             if (pReadHead == nullptr)

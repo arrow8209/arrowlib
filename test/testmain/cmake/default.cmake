@@ -47,6 +47,7 @@ TARGET_LINK_LIBRARIES(
     ${ALL_LIBRARIES}
     boost_filesystem
     dl
+    atomic
     # testlib1
 )
 
@@ -54,9 +55,10 @@ TARGET_LINK_OPTIONS(
 	${PROJECT_NAME}
     PRIVATE
     ${LinkOptions}
-    # -g
-    # -fsanitize=address
 )
+
+TARGET_LINK_OPTIONS(${PROJECT_NAME} PRIVATE -fsanitize=address)
+target_compile_options(${PROJECT_NAME} PRIVATE -fsanitize=address)
 
 # target_compile_options(${PROJECT_NAME} PRIVATE
 #     -g
