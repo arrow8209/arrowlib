@@ -20,14 +20,13 @@ namespace Arrow
 namespace Pattern
 {
 
-
 /*
 1.代码实现 完成
-2.SPSC模式 测试通过
-3.MPSC模式 测试通过
-4.SPMC模式 未测试
-5.MPMC模式 未测试
-6.性能测试 未测试
+2.SPSC模式 x86_64:测试通过 ARM64:未测试 ARM32:未测试
+3.MPSC模式 x86_64:测试通过 ARM64:未测试 ARM32:未测试
+4.SPMC模式 x86_64:未测试 ARM64:未测试 ARM32:未测试
+5.MPMC模式 x86_64:未测试 ARM64:未测试 ARM32:未测试
+6.性能测试 x86_64:未测试 ARM64:未测试 ARM32:未测试
 */
 template <typename T>
 struct SelectTaggedPtr
