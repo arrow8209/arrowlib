@@ -17,15 +17,15 @@ add_definitions(-DUSE_SDKLOG=1)
 IF(${target_platform} STREQUAL "x64")
     INCLUDE(cmake-env/x64-env.cmake)
 ELSEIF(${target_platform} STREQUAL "aarch64")
-	
+    INCLUDE(cmake-env/aarch64-env.cmake)
 ELSEIF(${target_platform} STREQUAL "arm")
-    
+    MESSAGE(STATUS "* COMPILE_PLATFROM:  Unkonw ${COMPILE_PLATFROM}")
 ELSE(${target_platform})
     MESSAGE(STATUS "* COMPILE_PLATFROM:  Unkonw ${COMPILE_PLATFROM}")
 ENDIF()
 
-set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -g -fsanitize=address ")
-set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -g -fsanitize=address ")
+# set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -g -fsanitize=address ")
+# set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -g -fsanitize=address ")
 # set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -g -fsanitize=address ")
 # set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -g -fsanitize=address ")
 

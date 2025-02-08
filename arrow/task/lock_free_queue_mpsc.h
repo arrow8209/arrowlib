@@ -12,7 +12,6 @@
 #include <future>
 #include <vector>
 #include <atomic>
-#include "tagged_point.h"
 #include "../other/std_assist.h"
 
 namespace Arrow
@@ -31,11 +30,10 @@ namespace Pattern
 */
 
 // 无锁队列，无锁队列必须有一个哑结点。否则在处理插入第一个节点和最后一个节点的时候会出现重入问题 [zhuyb 2023-10-15 17:24:01]
-template<int32_t MaxThreadCount, int32_t MaxDeleteNodeCacheCount, typename ...Args>
-class LockFreeQueueV2
+template<typename ...Args>
+class LockFreeQueueMPSC
 {
-    constexpr static const int32_t HAZARD_POINTERS_COUNT = 2; // 每个线程函数 hazard pointer 数量
-    using Local = LockFreeQueueV2<MaxThreadCount, MaxDeleteNodeCacheCount, Args...>;
+    using Local = LockFreeQueueMPSC<Args...>;
     using Data = std::tuple<Args...>;
 
     struct Node
@@ -57,21 +55,22 @@ class LockFreeQueueV2
         }
     };
 
+public:
     using TaggedNodePtr = typename Node::TaggedNodePtr;
 
 public:
-    LockFreeQueueV2()
+    LockFreeQueueMPSC()
     {
         m_u64CreateCount++;
         Node* pDummyNode = new Node(nullptr);
         TaggedNodePtr taggedDummyNode(pDummyNode, 0);
         m_Head.store(taggedDummyNode, std::memory_order_relaxed);
         m_Tail.store(taggedDummyNode, std::memory_order_relaxed);
-        m_strQueueName = "LockFreeQueueV2";
+        m_strQueueName = "LockFreeQueueMPSC";
     }
-    LockFreeQueueV2(const Local&) = delete;
+    LockFreeQueueMPSC(const Local&) = delete;
 
-    virtual ~LockFreeQueueV2()
+    virtual ~LockFreeQueueMPSC()
     {
         // 清空队里所有节点 [zhuyb 2025-02-08 14:14:28]
         while (CallPopHelper<Args...>())
@@ -83,15 +82,8 @@ public:
         delete m_Tail.load().pNode;
         m_u64DeleteCount++;
 
-        // 删除缓存删除的节点 [zhuyb 2025-02-08 14:14:54]
-        for (auto& it : m_ListDeletedNodes)
-        {
-            delete it.pNode;
-            m_u64DeleteCount++;
-        }
-
         // 打印统计信息 [zhuyb 2025-02-08 14:14:54]
-        std::cout << __LINE__ << " " << "LockFreeQueue2 Create:Delete:Diff "
+        std::cout << __LINE__ << " " << "LockFreeQueueMPSC Create:Delete:Diff "
                   << m_u64CreateCount.load() << ":"
                   << m_u64DeleteCount.load() << ":"
                   << m_u64CreateCount.load() - m_u64DeleteCount.load() << std::endl;
@@ -99,13 +91,6 @@ public:
 
     bool Push(Args... args)
     {
-        std::atomic<TaggedNodePtr>* pHazardPointers1 = nullptr;
-        std::atomic<TaggedNodePtr>* pHazardPointers2 = nullptr;
-        if(GetHazardPointers(pHazardPointers1, pHazardPointers2) == false)
-        {
-            return false;
-        }
-
         // 创建一个新节点 [zhuyb 2024-08-21 11:09:44]
         m_u64CreateCount++;
         Data* pNewValue = new Data(std::forward<Args>(args)...);
@@ -115,10 +100,8 @@ public:
         {
             // 获取尾节点 并将尾节点加入到 HazardPointers 中 [zhuyb 2024-08-21 11:09:44]
             TaggedNodePtr tail = m_Tail.load(std::memory_order_acquire);
-            pHazardPointers1->store(tail, std::memory_order_release);
-
             // 判断尾节点是否变更，保证 HazardPointers 中爆出你的尾节点为有效的 [zhuyb 2025-02-08 14:25:11]
-            if(m_Tail.load(std::memory_order_acquire) != tail)
+            if(m_Tail.load(std::memory_order_relaxed) != tail)
             {
                 continue;
             }
@@ -134,8 +117,6 @@ public:
                     TaggedNodePtr newTail(pNewNode, tail.u32Tag + 1);
                     m_Tail.compare_exchange_strong(tail, newTail);
                     m_u32Count++;
-                    // 放弃尾节点 HazardPointers [zhuyb 2025-02-08 14:26:52]
-                    pHazardPointers1->store(TaggedNodePtr(), std::memory_order_release);
                     return true;
                 }
             }
@@ -152,27 +133,17 @@ public:
 
     bool Pop(Args&... args)
     {
-        std::atomic<TaggedNodePtr>* pHazardPointers1 = nullptr;
-        std::atomic<TaggedNodePtr>* pHazardPointers2 = nullptr;
-        if(GetHazardPointers(pHazardPointers1, pHazardPointers2) == false)
-        {
-            return false;
-        }
-
         Data* pRetValue = nullptr;
         TaggedNodePtr nodeToDelete;
         for (;;)
         {
             //初始化数据
             pRetValue = nullptr;
-            pHazardPointers1->store(TaggedNodePtr(), std::memory_order_release);
-            pHazardPointers2->store(TaggedNodePtr(), std::memory_order_release);
 
             // 获取头节点 并将头节点加入到 HazardPointers 中 [zhuyb 2024-08-21 11:09:44]
             TaggedNodePtr head = m_Head.load(std::memory_order_acquire);
-            pHazardPointers1->store(head, std::memory_order_release);
             // 判断头节点是否变更 [zhuyb 2025-02-08 15:02:20]
-            if (m_Head.load(std::memory_order_acquire) != head)
+            if (m_Head.load(std::memory_order_relaxed) != head)
             {
                 continue;
             }
@@ -199,37 +170,24 @@ public:
                 continue;
             }
 
-            // 头节点中 next 存在， 将头节点的 next 节点加入到 HazardPointers 中 [zhuyb 2025-02-08 15:06:03]
-            pHazardPointers2->store(next, std::memory_order_release);
-            if (head.pNode->next.load(std::memory_order_acquire) != next)
-            {
-                continue;
-            }
+            pRetValue = next.pNode->pValue;
 
             // 推进头节点 并记录返回值 [zhuyb 2025-02-08 15:08:22]
             TaggedNodePtr newHead(next.pNode, head.u32Tag + 1);
             if (m_Head.compare_exchange_weak(head, newHead) == true)
             {
-                pRetValue = next.pNode->pValue;
-                nodeToDelete = head;
-
+                delete head.pNode;
+                m_u64DeleteCount++;
+                m_u32Count--;
                 break;
             }
         }
-
-        // 清空 HazardPointers [zhuyb 2025-02-08 15:08:41]
-        pHazardPointers1->store(TaggedNodePtr(), std::memory_order_release);
-        pHazardPointers2->store(TaggedNodePtr(), std::memory_order_release);
 
         // 读取数据并释放节点 [zhuyb 2025-02-08 15:08:41]
         if(pRetValue != nullptr)
         {
             std::tie(args...) = *(pRetValue);
             delete pRetValue;
-
-            SafeDeleteHazardPointers(nodeToDelete);
-            m_u32Count--;
-
             return true;
         }
         return false;
@@ -289,94 +247,6 @@ public:
     }
 
 private:
-    bool GetHazardPointers(std::atomic<TaggedNodePtr>*& pHazardPointers1, std::atomic<TaggedNodePtr>*& pHazardPointers2)
-    {
-        uint64_t u64ThreadID = Arrow::Other::GetThreadID();
-
-        if(m_u32HazardPointerIndex.load() >= (int32_t)m_arrHazardPointers.size())
-        {
-            std::cout << __LINE__ << " " << "There are too many threads, exceeding the upper limit of " << m_arrHazardPointers.size() << std::endl;
-            return false;
-        }
-        std::lock_guard<std::mutex> lock(m_mutexMapHazardPointers);
-        auto it = m_mapHazardPointers.find(u64ThreadID);
-        if(it == m_mapHazardPointers.end())
-        {
-            m_mapHazardPointers[u64ThreadID] = m_u32HazardPointerIndex.load();
-            m_u32HazardPointerIndex++;
-        }
-        pHazardPointers1 = &m_arrHazardPointers[m_mapHazardPointers[u64ThreadID] * HAZARD_POINTERS_COUNT];
-        pHazardPointers2 = &m_arrHazardPointers[m_mapHazardPointers[u64ThreadID] * HAZARD_POINTERS_COUNT + 1];
-        return true;
-        
-    }
-
-    void SafeDeleteHazardPointers(const TaggedNodePtr& taggedNodePtr)
-    {
-        // 缓存需要释放的节点，减少自旋 [zhuyb 2025-02-08 15:09:27]
-        m_mutexListDeletedNodes.lock();
-        m_ListDeletedNodes.push_back(taggedNodePtr);
-        TaggedNodePtr delTaggedNodePtr = m_ListDeletedNodes.front();
-        m_ListDeletedNodes.pop_front();
-        m_mutexListDeletedNodes.unlock();
-    
-        bool bDelete = false;
-        bool bPrintInfo = false;
-        m_u64Yield1++;
-        for(;;)
-        {
-            bDelete = true;
-            for (auto it = m_arrHazardPointers.begin(); it != m_arrHazardPointers.end(); it++)
-            {
-                if (it->load(std::memory_order_acquire) == delTaggedNodePtr)
-                {
-                    bDelete = false;
-                    break;
-                }
-            }
-            if (bDelete == true)
-            {
-                delete delTaggedNodePtr.pNode;
-                m_u64DeleteCount++;
-
-                if(m_ListDeletedNodes.size() == 0)  // 缓存为空 退出循环（高效判断） [zhuyb 2025-02-08 15:09:43]
-                {
-                    break;
-                }
-
-                std::lock_guard<std::mutex> lock(m_mutexListDeletedNodes);
-                if(m_ListDeletedNodes.size() == 0)  // 缓存为空 退出循环(保护性操作) [zhuyb 2025-02-08 15:09:43]
-                {
-                    break;
-                }
-                delTaggedNodePtr = m_ListDeletedNodes.front();
-                m_ListDeletedNodes.pop_front();
-                continue;
-            }
-            else
-            {
-                std::lock_guard<std::mutex> lock(m_mutexListDeletedNodes);
-                if(m_ListDeletedNodes.size() <= MaxDeleteNodeCacheCount) // 删除失败，缓存未满，加入缓存等待下次释放 [zhuyb 2025-02-08 15:11:07]
-                {
-                    m_ListDeletedNodes.push_back(delTaggedNodePtr);
-                    break;
-                }
-
-                // 缓存满，继续自旋 [zhuyb 2025-02-08 15:11:26]
-                m_u64Yield2++;
-                bPrintInfo = true;
-                continue;
-            }
-        }
-
-        if(bPrintInfo)
-        {
-            std::cout << __LINE__ << " " << "SafeDelete:"
-                      << m_u64Yield2.load() << "/" << m_u64Yield1.load() << " = "
-                      << (100.0 * m_u64Yield2.load() / m_u64Yield1.load()) << "% "
-                      << "delete cache:" << m_ListDeletedNodes.size() << std::endl;
-        }
-    }
 
     // 辅助函数：用于在析构函数中调用 Pop
     template<typename... T>
@@ -394,19 +264,10 @@ private:
         return Pop(std::get<I>(args)...); // 调用 Pop
     }
 private:
-    std::atomic<TaggedNodePtr> m_Head;    // 链表头部 [zhuyb 2024-08-21 11:09:07]
-    std::atomic<TaggedNodePtr> m_Tail;    // 链表尾部 [zhuyb 2024-08-21 11:09:24]
+    alignas(64) std::atomic<TaggedNodePtr> m_Head;    // 链表头部 [zhuyb 2024-08-21 11:09:07]
+    alignas(64) std::atomic<TaggedNodePtr> m_Tail;    // 链表尾部 [zhuyb 2024-08-21 11:09:24]
     std::atomic<uint32_t> m_u32Count{0};    // 链表个数 [zhuyb 2024-08-21 11:09:30]
     std::string m_strQueueName;
-    
-    // Hazard Pointer 记录 Push线程用一个，Pop线程用两个，统一每个线程用2个 [zhuyb 2025-02-06 16:29:51]
-    std::array<std::atomic<TaggedNodePtr>, MaxThreadCount * HAZARD_POINTERS_COUNT> m_arrHazardPointers;
-    std::mutex m_mutexMapHazardPointers;
-    std::atomic<int32_t> m_u32HazardPointerIndex{0};
-    std::map<uint64_t, int32_t> m_mapHazardPointers;
-
-    std::mutex m_mutexListDeletedNodes;
-    std::list<TaggedNodePtr> m_ListDeletedNodes;    // 缓存需要释放的节点，减少自旋 [zhuyb 2025-02-06 16:30:29]
 
     // test [zhuyb 2025-02-06 15:34:42]
     std::atomic<uint64_t> m_u64Yield1{0};
@@ -415,12 +276,6 @@ private:
     std::atomic<uint64_t> m_u64CreateCount{0};  // 创建节点数 [zhuyb 2025-02-06 15:34:50]
     std::atomic<uint64_t> m_u64DeleteCount{0};  // 删除节点数 [zhuyb 2025-02-06 15:34:56]
 };
-
-template<typename... Args>
-using LockFreeQueue_32T_1C = LockFreeQueueV2<32, 1, Args...>;
-
-template<typename... Args>
-using LockFreeQueue_32T_5C = LockFreeQueueV2<32, 5, Args...>;
 
 }
 }

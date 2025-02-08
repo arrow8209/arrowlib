@@ -4,6 +4,7 @@
 #include "arrow/other/std_assist.h"
 #include "arrow/task/lock_free_queue.h"
 #include "arrow/task/lock_free_queue2.h"
+#include "arrow/task/lock_free_queue_mpsc.h"
 
 class CTestLockFree2
 {
@@ -67,6 +68,10 @@ public:
         uint64_t u64Index = 0;
         while(m_bRun)
         {
+            if(m_LockFreeQueue.Size() > 10000)
+            {
+                std::this_thread::sleep_for(std::chrono::milliseconds(1));
+            }
             m_tpLastPushTime = std::chrono::steady_clock::now();
             m_u64PushCount++;
             if(m_LockFreeQueue.Push(u64ThreadID, u64Index) == false)
@@ -93,23 +98,23 @@ public:
                 continue;
             }
             m_u64PopCount++;
-            // if(m_n32PushThreadCount <= 1 && m_n32PopThreadCount <= 1)
-            // {
-            //     CheckMPSC(u64ThreadID, u64Index);
-            //     CheckSPMC(u64PopThreadID, u64ThreadID, u64Index);
-            // }
-            // else if(m_n32PushThreadCount > 1 && m_n32PopThreadCount <= 1)
-            // {
-            //     CheckMPSC(u64ThreadID, u64Index);
-            // }
-            // else if(m_n32PushThreadCount <= 1 && m_n32PopThreadCount > 1)
-            // {
-            //     CheckSPMC(u64PopThreadID, u64ThreadID, u64Index);
-            // }
-            // else if(m_n32PushThreadCount > 1 && m_n32PopThreadCount > 1)
-            // {
-            //     CheckMPMC(u64PopThreadID, u64ThreadID, u64Index);
-            // }
+            if(m_n32PushThreadCount <= 1 && m_n32PopThreadCount <= 1)
+            {
+                CheckMPSC(u64ThreadID, u64Index);
+                CheckSPMC(u64PopThreadID, u64ThreadID, u64Index);
+            }
+            else if(m_n32PushThreadCount > 1 && m_n32PopThreadCount <= 1)
+            {
+                CheckMPSC(u64ThreadID, u64Index);
+            }
+            else if(m_n32PushThreadCount <= 1 && m_n32PopThreadCount > 1)
+            {
+                CheckSPMC(u64PopThreadID, u64ThreadID, u64Index);
+            }
+            else if(m_n32PushThreadCount > 1 && m_n32PopThreadCount > 1)
+            {
+                CheckMPMC(u64PopThreadID, u64ThreadID, u64Index);
+            }
         }
     }
 
@@ -144,14 +149,14 @@ public:
                 u64PopCount = m_u64PopCount.load();
                 
                 tpPrintCacheTime = tpNow;
-                // if(m_n32PushThreadCount <= 1 && m_n32PopThreadCount > 1)
-                // {
-                //     CheckSPMC_Timer();
-                // }
-                // else if(m_n32PushThreadCount > 1 && m_n32PopThreadCount > 1)
-                // {
-                //     CheckMPMC_Timer();
-                // }
+                if(m_n32PushThreadCount <= 1 && m_n32PopThreadCount > 1)
+                {
+                    CheckSPMC_Timer();
+                }
+                else if(m_n32PushThreadCount > 1 && m_n32PopThreadCount > 1)
+                {
+                    CheckMPMC_Timer();
+                }
             }
         }
     }
@@ -275,7 +280,8 @@ private:
     }
 private:
     bool m_bRun = true;
-    Arrow::Pattern::LockFreeQueueV2<32, 32, uint64_t, uint64_t> m_LockFreeQueue;
+    // Arrow::Pattern::LockFreeQueueV2<32, 32, uint64_t, uint64_t> m_LockFreeQueue;
+    Arrow::Pattern::LockFreeQueueMPSC<uint64_t, uint64_t> m_LockFreeQueue;
     // Arrow::Pattern::SimpleLockQueue<uint64_t, uint64_t> m_LockFreeQueue;
 
     std::vector<std::thread> m_vecPopThreads;
@@ -336,7 +342,7 @@ void TestLockFree2B()
 {
     std::cout << "==========================================================" << std::endl;
     CTestLockFree2 testLockFree2;
-    testLockFree2.Start(4, 4);
+    testLockFree2.Start(4, 1);
     std::string strMsg = "Hello, world!";
     std::cin >> strMsg;
     testLockFree2.Stop();
