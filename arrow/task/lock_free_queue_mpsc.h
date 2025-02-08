@@ -124,7 +124,8 @@ public:
             {
                 // 尾节点中 存在next 推进尾节点 [zhuyb 2025-02-08 14:26:12]
                 TaggedNodePtr newTail(next.pNode, tail.u32Tag + 1);
-                m_Tail.compare_exchange_strong(tail, newTail);
+                // m_Tail.compare_exchange_strong(tail, newTail);
+                m_Tail.compare_exchange_weak(tail, newTail);
             }
         }
 
@@ -160,7 +161,8 @@ public:
 
                 // 尾节点中 存在next 推进尾节点 [zhuyb 2025-02-08 15:06:03]
                 TaggedNodePtr newTail(next.pNode, head.u32Tag + 1);
-                m_Tail.compare_exchange_strong(tail, newTail);
+                // m_Tail.compare_exchange_strong(tail, newTail);
+                m_Tail.compare_exchange_weak(tail, newTail);
                 continue;
             }
 
