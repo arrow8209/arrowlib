@@ -57,8 +57,8 @@ struct SelectTaggedPtr
 template<typename ...Args>
 class LockFreeQueue2
 {
-    constexpr static const int32_t MAX_THREAD_COUNT = 32;
-    constexpr static const int32_t MAX_DELETE_NODE_CACHE_COUNT = 2;
+    constexpr static const int32_t MAX_THREAD_COUNT = 64;
+    constexpr static const int32_t MAX_DELETE_NODE_CACHE_COUNT = 1;
     using Local = LockFreeQueue2<Args...>;
     using Data = std::tuple<Args...>;
 
@@ -78,8 +78,8 @@ class LockFreeQueue2
 
         ~Node()
         {
-            if (pValue != nullptr)
-                delete pValue;
+            // if (pValue != nullptr)
+            //     delete pValue;
         }
     };
 
@@ -99,41 +99,6 @@ public:
 
     virtual ~LockFreeQueue2()
     {
-        // for(;;)
-        // {
-        //     TaggedPtr head = m_Head.load(std::memory_order_acquire);
-        //     Node* pHeadNode = head.pNode;
-
-        //     TaggedPtr tail = m_Tail.load(std::memory_order_acquire);
-        //     Node* pTailNode = tail.pNode;
-
-        //     TaggedPtr next = pHeadNode->next.load(std::memory_order_acquire);
-        //     Node* pNextNode = next.pNode;
-
-        //     if (head == tail)
-        //     {
-        //         if (pNextNode == nullptr)
-        //         {
-        //             std::cout << __LINE__ << " " << "End of queue " << std::endl;
-        //             delete pHeadNode;
-        //             m_u64DeleteCount++;
-        //             break;
-        //         }
-
-        //         TaggedPtr newTail(pNextNode, head.u32Tag + 1);
-        //         m_Tail.compare_exchange_strong(tail, newTail);
-        //     }
-        //     else
-        //     {
-        //         TaggedPtr newHead(pNextNode, head.u32Tag + 1);
-        //         if (m_Head.compare_exchange_strong(head, newHead) == true)
-        //         {
-        //             delete pHeadNode;
-        //             m_u64DeleteCount++;
-        //         }
-        //     }
-        // }
-
         while (CallPopHelper<Args...>())
         {
             
@@ -159,7 +124,12 @@ public:
 
     bool Push(Args... args)
     {
-        std::atomic<TaggedPtr>* pHazardPointers = GetHazardPointers();
+        std::atomic<TaggedPtr>* pHazardPointers = nullptr;
+        std::atomic<TaggedPtr>* pHazardPointers_next = nullptr;
+        if(GetHazardPointers(pHazardPointers, pHazardPointers_next) == false)
+        {
+            return false;
+        }
 
         // 创建一个新节点 [zhuyb 2024-08-21 11:09:44]
         m_u64CreateCount++;
@@ -168,35 +138,30 @@ public:
         
         for(;;)
         {
-            pHazardPointers->store(m_Tail, std::memory_order_release);
             TaggedPtr tail = m_Tail.load(std::memory_order_acquire);
-            Node* pTailNode = tail.pNode;         
-
-            TaggedPtr next = pTailNode->next.load(std::memory_order_acquire);
-            Node* pNextNode = next.pNode;
-
+            pHazardPointers->store(tail, std::memory_order_release);
             TaggedPtr tail2 = m_Tail.load(std::memory_order_acquire);
-            
             if(tail != tail2)
             {
                 continue;
             }
 
-            if (pNextNode == nullptr)
+            TaggedPtr next = tail.pNode->next.load(std::memory_order_acquire);
+            if (next.pNode == nullptr)
             {
                 TaggedPtr newNext(pNewNode, tail.u32Tag + 1);
-                if (pTailNode->next.compare_exchange_weak(next, newNext) == true)
+                if (tail.pNode->next.compare_exchange_weak(next, newNext) == true)
                 {
                     TaggedPtr newTail(pNewNode, tail.u32Tag + 1);
                     m_Tail.compare_exchange_strong(tail, newTail);
                     m_u32Count++;
-                    pHazardPointers->store(TaggedPtr(nullptr, 0), std::memory_order_release);
+                    pHazardPointers->store(TaggedPtr(), std::memory_order_release);
                     return true;
                 }
             }
             else
             {
-                TaggedPtr newTail(pNextNode, tail.u32Tag + 1);
+                TaggedPtr newTail(next.pNode, tail.u32Tag + 1);
                 m_Tail.compare_exchange_strong(tail, newTail);
             }
         }
@@ -206,60 +171,83 @@ public:
 
     bool Pop(Args&... args)
     {
-        std::atomic<TaggedPtr>* pHazardPointers = GetHazardPointers();
+        std::atomic<TaggedPtr>* pHazardPointers = nullptr;
+        std::atomic<TaggedPtr>* pHazardPointers_next = nullptr;
+        if(GetHazardPointers(pHazardPointers, pHazardPointers_next) == false)
+        {
+            return false;
+        }
+
         Data* pRetValue = nullptr;
+        TaggedPtr nodeToDelete;
         for (;;)
         {
-            pHazardPointers->store(m_Head, std::memory_order_release);
+            pRetValue = nullptr;
+            pHazardPointers->store(TaggedPtr(), std::memory_order_release);
+            pHazardPointers_next->store(TaggedPtr(), std::memory_order_release);
+
             TaggedPtr head = m_Head.load(std::memory_order_acquire);
-            Node* pHeadNode = head.pNode;
-
-            TaggedPtr tail = m_Tail.load(std::memory_order_acquire);
-            Node* pTailNode = tail.pNode;
-
-            TaggedPtr next = pHeadNode->next.load(std::memory_order_acquire);
-            Node* pNextNode = next.pNode;
-
-            TaggedPtr head2 = m_Head.load(std::memory_order_acquire);
-
-            if(head != head2)
+            pHazardPointers->store(head, std::memory_order_release);
+            if (m_Head.load(std::memory_order_acquire) != head)
             {
                 continue;
             }
 
-            // if(pHeadNode == pTailNode)
+            TaggedPtr next = head.pNode->next.load(std::memory_order_acquire);
+            TaggedPtr tail = m_Tail.load(std::memory_order_acquire);
+            // if(head.pNode == tail.pNode)
             if(head == tail)
             {
-                if(pNextNode == nullptr)
+                if(next.pNode == nullptr)
                 {
-                    pHazardPointers->store(TaggedPtr(nullptr, 0), std::memory_order_release);
-                    return false;
+                    break;
+                    // return false;
                 }
 
-                TaggedPtr newTail(pNextNode, head.u32Tag + 1);
+                TaggedPtr newTail(next.pNode, head.u32Tag + 1);
                 m_Tail.compare_exchange_strong(tail, newTail);
+                continue;
             }
-            else
+
+            if (next.pNode == nullptr)
             {
-                if(pNextNode == nullptr)
-                {
-                    continue;
-                }
+                continue;
+            }
 
-                pRetValue = pNextNode->pValue;
+            pHazardPointers_next->store(next, std::memory_order_release);
+            if (head.pNode->next.load(std::memory_order_acquire) != next)
+            {
+                continue;
+            }
+            // pRetValue = next.pNode->pValue;
+            TaggedPtr newHead(next.pNode, head.u32Tag + 1);
+            if (m_Head.compare_exchange_weak(head, newHead) == true)
+            {
+                pRetValue = next.pNode->pValue;
+                nodeToDelete = head;
 
-                TaggedPtr newHead(pNextNode, head.u32Tag + 1);
-                if(m_Head.compare_exchange_strong(head, newHead) == true)
-                {
-                    std::tie(args...) = *(pRetValue);
-                    // delete head.pNode;
-                    pHazardPointers->store(TaggedPtr(nullptr, 0), std::memory_order_release);
-                    SafeDeleteHazardPointers(head);
-                    m_u32Count--;
-                    return true;
-                }
+                // pHazardPointers->store(TaggedPtr(), std::memory_order_release);
+                // pHazardPointers_next->store(TaggedPtr(), std::memory_order_release);
+                // SafeDeleteHazardPointers(head);
+                // m_u32Count--;
+                break;
+                // return true;
             }
         }
+
+        pHazardPointers->store(TaggedPtr(), std::memory_order_release);
+        pHazardPointers_next->store(TaggedPtr(), std::memory_order_release);
+
+        if(pRetValue != nullptr)
+        {
+            SafeDeleteHazardPointers(nodeToDelete);
+            m_u32Count--;
+
+            std::tie(args...) = *(pRetValue);
+            delete pRetValue;
+            return true;
+        }
+        return false;
     }
 
     uint32_t Size()
@@ -316,14 +304,14 @@ public:
     }
 
 private:
-    std::atomic<TaggedPtr>* GetHazardPointers()
+    bool GetHazardPointers(std::atomic<TaggedPtr>*& pHazardPointers1, std::atomic<TaggedPtr>*& pHazardPointers2)
     {
         uint64_t u64ThreadID = Arrow::Other::GetThreadID();
 
         if(m_u32HazardPointerIndex.load() >= (int32_t)m_arrHazardPointers.size())
         {
             std::cout << __LINE__ << " " << "There are too many threads, exceeding the upper limit of " << m_arrHazardPointers.size() << std::endl;
-            return nullptr;
+            return false;
         }
         std::lock_guard<std::mutex> lock(m_mutexMapHazardPointers);
         auto it = m_mapHazardPointers.find(u64ThreadID);
@@ -332,14 +320,17 @@ private:
             m_mapHazardPointers[u64ThreadID] = m_u32HazardPointerIndex.load();
             m_u32HazardPointerIndex++;
         }
-        return &m_arrHazardPointers[m_mapHazardPointers[u64ThreadID]];
+        pHazardPointers1 = &m_arrHazardPointers[m_mapHazardPointers[u64ThreadID] * 2];
+        pHazardPointers2 = &m_arrHazardPointers[m_mapHazardPointers[u64ThreadID] * 2 + 1];
+        return true;
+        // return &m_arrHazardPointers[m_mapHazardPointers[u64ThreadID]];
     }
 
     void SafeDeleteHazardPointers(TaggedPtr& taggedPtr)
     {
         m_mutexListDeletedNodes.lock();
         m_ListDeletedNodes.push_back(taggedPtr);
-        if(m_ListDeletedNodes.size() < MAX_DELETE_NODE_CACHE_COUNT)
+        if(m_ListDeletedNodes.size() <= MAX_DELETE_NODE_CACHE_COUNT)
         {
             m_mutexListDeletedNodes.unlock();
             return;
@@ -349,6 +340,7 @@ private:
         m_mutexListDeletedNodes.unlock();
     
         bool bDelete = false;
+        bool bPrintInfo = false;
         m_u64Yield1++;
         for(;;)
         {
@@ -370,11 +362,16 @@ private:
             else
             {
                 m_u64Yield2++;
-                // std::cout << __LINE__ << " " << "There are still hazard pointers, waiting for them to be released."
-                //      << m_u64Yield2.load() << "/" << m_u64Yield1.load() << " = " 
-                //      << (100.0 * m_u64Yield2.load() / m_u64Yield1.load()) << "%" << std::endl;
+                bPrintInfo = true;
                 std::this_thread::sleep_for(std::chrono::microseconds(1));
             }
+        }
+
+        if(bPrintInfo)
+        {
+            std::cout << __LINE__ << " " << "There are still hazard pointers, waiting for them to be released."
+                      << m_u64Yield2.load() << "/" << m_u64Yield1.load() << " = "
+                      << (100.0 * m_u64Yield2.load() / m_u64Yield1.load()) << "%" << std::endl;
         }
     }
 
