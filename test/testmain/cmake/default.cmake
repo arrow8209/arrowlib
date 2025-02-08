@@ -57,8 +57,13 @@ TARGET_LINK_OPTIONS(
     ${LinkOptions}
 )
 
-TARGET_LINK_OPTIONS(${PROJECT_NAME} PRIVATE -fsanitize=address)
-target_compile_options(${PROJECT_NAME} PRIVATE -fsanitize=address)
+IF(${CMAKE_BUILD_TYPE} STREQUAL "Debug")
+    TARGET_LINK_OPTIONS(${PROJECT_NAME} PRIVATE -fsanitize=address)
+    target_compile_options(${PROJECT_NAME} PRIVATE -fsanitize=address)
+ELSE(${CMAKE_BUILD_TYPE})
+ 
+ENDIF()
+
 
 # target_compile_options(${PROJECT_NAME} PRIVATE
 #     -g

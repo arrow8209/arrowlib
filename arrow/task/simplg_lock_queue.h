@@ -61,6 +61,11 @@ public:
             return false;
         
         m_mutexQueue.lock();
+        if (m_ListQueue.size() == 0)
+        {
+            m_mutexQueue.unlock();
+            return false;
+        }
         Data* pRetValue = m_ListQueue.front();
         m_ListQueue.pop_front();
         m_mutexQueue.unlock();

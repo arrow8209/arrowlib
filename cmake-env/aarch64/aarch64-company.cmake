@@ -1,0 +1,35 @@
+
+MESSAGE(STATUS "CMAKE_CURRENT_LIST_FILE:${CMAKE_CURRENT_LIST_FILE}")
+
+#设置输出目录
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin/aarch64/)
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin/aarch64/)
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin/aarch64/)
+
+load_boost(/maxvision/lib/boost/build/1.82.0/aarch64-gcc9.5.0_glibc2.27_linux4.15.18)
+load_log4cplus(/maxvision/lib/log4cplus/build/2.1.0/aarch64-gcc9.5.0_glibc2.27_linux4.15.18)
+
+#设置头文件包含目录
+SET(
+    ALL_INCLUDE_DIRS
+    ${ALL_INCLUDE_DIRS}
+    ${CMAKE_SOURCE_DIR}
+)
+
+#设置库目录
+SET(
+    ALL_LIBRARY_DIRS
+    ${ALL_LIBRARY_DIRS}
+    ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}
+)
+
+#设置链接库
+SET(
+    ALL_LIBRARIES
+    ${ALL_LIBRARIES}
+    pthread stdc++ m c dl
+)
+
+MESSAGE(STATUS "ALL_INCLUDE_DIRS:${ALL_INCLUDE_DIRS}")
+MESSAGE(STATUS "ALL_LIBRARY_DIRS:${ALL_LIBRARY_DIRS}")
+MESSAGE(STATUS "ALL_LIBRARIES:${ALL_LIBRARIES}")
