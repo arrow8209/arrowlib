@@ -100,12 +100,6 @@ public:
         {
             // 获取尾节点 并将尾节点加入到 HazardPointers 中 [zhuyb 2024-08-21 11:09:44]
             TaggedNodePtr tail = m_Tail.load(std::memory_order_acquire);
-            // 判断尾节点是否变更，保证 HazardPointers 中爆出你的尾节点为有效的 [zhuyb 2025-02-08 14:25:11]
-            if(m_Tail.load(std::memory_order_relaxed) != tail)
-            {
-                continue;
-            }
-
             TaggedNodePtr next = tail.pNode->next.load(std::memory_order_acquire);
             if (next.pNode == nullptr)
             {
@@ -124,7 +118,6 @@ public:
             {
                 // 尾节点中 存在next 推进尾节点 [zhuyb 2025-02-08 14:26:12]
                 TaggedNodePtr newTail(next.pNode, tail.u32Tag + 1);
-                // m_Tail.compare_exchange_strong(tail, newTail);
                 m_Tail.compare_exchange_weak(tail, newTail);
             }
         }
@@ -138,51 +131,36 @@ public:
         TaggedNodePtr nodeToDelete;
         for (;;)
         {
+            m_u64RunCount++;
             //初始化数据
             pRetValue = nullptr;
 
             // 获取头节点 并将头节点加入到 HazardPointers 中 [zhuyb 2024-08-21 11:09:44]
-            TaggedNodePtr head = m_Head.load(std::memory_order_acquire);
-            // 判断头节点是否变更 [zhuyb 2025-02-08 15:02:20]
-            if (m_Head.load(std::memory_order_relaxed) != head)
-            {
-                continue;
-            }
-
+            TaggedNodePtr head = m_Head.load(std::memory_order_acquire);            
             TaggedNodePtr next = head.pNode->next.load(std::memory_order_acquire);
             TaggedNodePtr tail = m_Tail.load(std::memory_order_acquire);
-            // if(head.pNode == tail.pNode)
-            if(head == tail)    // 头尾节点相同 [zhuyb 2025-02-08 15:02:20]
+            if(head.pNode == tail.pNode)
+            // if(head == tail)
             {
-                if(next.pNode == nullptr)   // 队列为空 [zhuyb 2025-02-08 15:06:03]
-                {
-                    break;
-                }
-
-                // 尾节点中 存在next 推进尾节点 [zhuyb 2025-02-08 15:06:03]
-                TaggedNodePtr newTail(next.pNode, head.u32Tag + 1);
-                // m_Tail.compare_exchange_strong(tail, newTail);
-                m_Tail.compare_exchange_weak(tail, newTail);
-                continue;
+                break;
             }
 
             // 头节点中 next 不存在， 并且head != tail 重新获取头节点 [zhuyb 2025-02-08 15:06:03]
             if (next.pNode == nullptr)
             {
+                m_u64Spin++;
                 continue;
             }
-
+            nodeToDelete = head;
             pRetValue = next.pNode->pValue;
 
             // 推进头节点 并记录返回值 [zhuyb 2025-02-08 15:08:22]
             TaggedNodePtr newHead(next.pNode, head.u32Tag + 1);
             if (m_Head.compare_exchange_weak(head, newHead) == true)
             {
-                delete head.pNode;
-                m_u64DeleteCount++;
-                m_u32Count--;
                 break;
             }
+            m_u64Spin++;
         }
 
         // 读取数据并释放节点 [zhuyb 2025-02-08 15:08:41]
@@ -190,6 +168,11 @@ public:
         {
             std::tie(args...) = *(pRetValue);
             delete pRetValue;
+
+            delete nodeToDelete.pNode;
+            m_u64DeleteCount++;
+            m_u32Count--;
+
             return true;
         }
         return false;
@@ -271,12 +254,13 @@ private:
     std::atomic<uint32_t> m_u32Count{0};    // 链表个数 [zhuyb 2024-08-21 11:09:30]
     std::string m_strQueueName;
 
-    // test [zhuyb 2025-02-06 15:34:42]
-    std::atomic<uint64_t> m_u64Yield1{0};
-    std::atomic<uint64_t> m_u64Yield2{0};
-
     std::atomic<uint64_t> m_u64CreateCount{0};  // 创建节点数 [zhuyb 2025-02-06 15:34:50]
     std::atomic<uint64_t> m_u64DeleteCount{0};  // 删除节点数 [zhuyb 2025-02-06 15:34:56]
+
+public:
+    // test [zhuyb 2025-02-06 15:34:42]
+    std::atomic<uint64_t> m_u64Spin{0};
+    std::atomic<uint64_t> m_u64RunCount{0};
 };
 
 }
