@@ -21,16 +21,9 @@ namespace Arrow
 namespace Pattern
 {
 
-/*
-1.代码实现 完成
-2.SPSC模式 x86_64:测试通过 ARM64:未测试 ARM32:未测试
-3.MPSC模式 x86_64:测试通过 ARM64:未测试 ARM32:未测试
-4.SPMC模式 x86_64:测试通过 ARM64:未测试 ARM32:未测试
-5.MPMC模式 x86_64:测试通过 ARM64:未测试 ARM32:未测试
-6.性能测试 x86_64:未测试 ARM64:未测试 ARM32:未测试
-*/
 
 // 无锁队列，无锁队列必须有一个哑结点。否则在处理插入第一个节点和最后一个节点的时候会出现重入问题 [zhuyb 2023-10-15 17:24:01]
+// 存在性能问题，需要优化 [zhuyb 2025-02-08 14:14:28]
 template<int32_t MaxThreadCount, int32_t MaxDeleteNodeCacheCount, typename ...Args>
 class LockFreeQueueV2
 {

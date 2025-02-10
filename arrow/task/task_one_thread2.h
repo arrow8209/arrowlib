@@ -33,8 +33,8 @@ protected:
     typedef TaskOneThread_TimerPrecision2<T, TimerPrecision> Local;
 
     typedef std::function<void(bool)> TaskFun; // 任务执行函数定义 bool true:执行逻辑函数 false 执行回收函数 [zhuyb 2022-07-05 08:59:14]
-    typedef LockQueue<TaskFun*> MsqQueue;
-    // typedef SimpleLockQueue<TaskFun*> MsqQueue;
+    // typedef LockQueue<TaskFun*> MsqQueue;
+    typedef SimpleLockQueue<TaskFun*> MsqQueue;
 
     typedef Arrow::Other::TIncrement<Local, uint32_t> TimerIDIncrement;        
     typedef std::chrono::time_point<std::chrono::steady_clock, std::chrono::milliseconds> time_point_milliseconds;
