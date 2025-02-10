@@ -101,6 +101,7 @@ public:
             // 获取尾节点 并将尾节点加入到 HazardPointers 中 [zhuyb 2024-08-21 11:09:44]
             TaggedNodePtr tail = m_Tail.load(std::memory_order_acquire);
             TaggedNodePtr next = tail.pNode->next.load(std::memory_order_acquire);
+            // std::atomic_thread_fence(std::memory_order_acquire);
             if (next.pNode == nullptr)
             {
                 // 尾尾节点中添加 next 节点 [zhuyb 2025-02-08 14:26:52]
@@ -137,8 +138,9 @@ public:
 
             // 获取头节点 并将头节点加入到 HazardPointers 中 [zhuyb 2024-08-21 11:09:44]
             TaggedNodePtr head = m_Head.load(std::memory_order_acquire);            
-            TaggedNodePtr next = head.pNode->next.load(std::memory_order_acquire);
             TaggedNodePtr tail = m_Tail.load(std::memory_order_acquire);
+            TaggedNodePtr next = head.pNode->next.load(std::memory_order_acquire);
+            // std::atomic_thread_fence(std::memory_order_acquire);
             if(head.pNode == tail.pNode)
             // if(head == tail)
             {
@@ -158,6 +160,9 @@ public:
             TaggedNodePtr newHead(next.pNode, head.u32Tag + 1);
             if (m_Head.compare_exchange_weak(head, newHead) == true)
             {
+                delete nodeToDelete.pNode;
+                m_u64DeleteCount++;
+                m_u32Count--;
                 break;
             }
             m_u64Spin++;
@@ -169,9 +174,7 @@ public:
             std::tie(args...) = *(pRetValue);
             delete pRetValue;
 
-            delete nodeToDelete.pNode;
-            m_u64DeleteCount++;
-            m_u32Count--;
+
 
             return true;
         }
