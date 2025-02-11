@@ -109,13 +109,13 @@ public:
         for(;;)
         {
             // 获取尾节点 并将尾节点加入到 HazardPointers 中 [zhuyb 2024-08-21 11:09:44]
-            TaggedNodePtr tail = m_Tail.load();
-            pHazardPointers1->store(tail);
+            TaggedNodePtr tail = m_Tail.load(std::memory_order_acquire);
+            pHazardPointers1->store(tail, std::memory_order_release);
 
-            std::atomic_thread_fence(std::memory_order_seq_cst);
             // 判断尾节点是否变更，保证 HazardPointers 中爆出你的尾节点为有效的 [zhuyb 2025-02-08 14:25:11]
             if(m_Tail.load(std::memory_order_acquire) != tail)
             {
+                std::this_thread::yield();
                 continue;
             }
 
@@ -163,10 +163,9 @@ public:
             pRetValue = nullptr;
 
             // 获取头节点 并将头节点加入到 HazardPointers 中 [zhuyb 2024-08-21 11:09:44]
-            pHazardPointers1->store(m_Head.load(std::memory_order_acquire), std::memory_order_release);
+            pHazardPointers1->store(m_Head, std::memory_order_release);
             TaggedNodePtr head = pHazardPointers1->load(std::memory_order_acquire);
  
-            
             // 判断头节点是否变更 [zhuyb 2025-02-08 15:02:20]
             if (m_Head.load(std::memory_order_acquire) != head)
             {
@@ -174,41 +173,23 @@ public:
                 std::this_thread::yield();
                 continue;
             }
-            pHazardPointers2->store(head.pNode->next, std::memory_order_release);
-            // std::atomic_thread_fence(std::memory_order_seq_cst);
 
-            TaggedNodePtr next = head.pNode->next.load(std::memory_order_acquire);
             TaggedNodePtr tail = m_Tail.load(std::memory_order_acquire);
 
             // if(head.pNode == tail.pNode)
             if(head == tail)    // 头尾节点相同 [zhuyb 2025-02-08 15:02:20]
             {
                 break;
-                // if(next.pNode == nullptr)   // 队列为空 [zhuyb 2025-02-08 15:06:03]
-                // {
-                //     break;
-                // }
-
-                // // 尾节点中 存在next 推进尾节点 [zhuyb 2025-02-08 15:06:03]
-                // TaggedNodePtr newTail(next.pNode, head.u32Tag + 1);
-                // m_Tail.compare_exchange_strong(tail, newTail);
-                // continue;
             }
+   
+            TaggedNodePtr next = head.pNode->next.load(std::memory_order_acquire);
+            pHazardPointers2->store(head.pNode->next, std::memory_order_release);
 
             // 头节点中 next 不存在， 并且head != tail 重新获取头节点 [zhuyb 2025-02-08 15:06:03]
             if (next.pNode == nullptr)
             {
                 break;
-                // std::this_thread::yield();
-                // continue;
             }
-
-            // 头节点中 next 存在， 将头节点的 next 节点加入到 HazardPointers 中 [zhuyb 2025-02-08 15:06:03]
-            // pHazardPointers2->store(next, std::memory_order_release);
-            // if (head.pNode->next.load(std::memory_order_acquire) != next)
-            // {
-            //     continue;
-            // }
 
             // 推进头节点 并记录返回值 [zhuyb 2025-02-08 15:08:22]
             TaggedNodePtr newHead(next.pNode, head.u32Tag + 1);
@@ -222,8 +203,8 @@ public:
         }
 
         // 清空 HazardPointers [zhuyb 2025-02-08 15:08:41]
-        pHazardPointers1->store(TaggedNodePtr());
-        pHazardPointers2->store(TaggedNodePtr());
+        pHazardPointers1->store(TaggedNodePtr(),std::memory_order_relaxed);
+        pHazardPointers2->store(TaggedNodePtr(),std::memory_order_relaxed);
         
         // 读取数据并释放节点 [zhuyb 2025-02-08 15:08:41]
         if(pRetValue != nullptr)
@@ -231,7 +212,6 @@ public:
             std::tie(args...) = *(pRetValue);
             delete pRetValue;
 
-            std::atomic_thread_fence(std::memory_order_release);
             SafeDeleteHazardPointers(nodeToDelete);
             m_u32Count--;
 
@@ -321,106 +301,45 @@ private:
         return true;
     }
 
-    // void SafeDeleteHazardPointers(const TaggedNodePtr& taggedNodePtr)
-    // {
-    //     // 缓存需要释放的节点，减少自旋 [zhuyb 2025-02-08 15:09:27]
-    //     m_mutexListDeletedNodes.lock();
-    //     m_ListDeletedNodes.push_back(taggedNodePtr);
-    //     TaggedNodePtr delTaggedNodePtr = m_ListDeletedNodes.front();
-    //     m_ListDeletedNodes.pop_front();
-    //     m_mutexListDeletedNodes.unlock();
-    
-    //     bool bDelete = false;
-    //     bool bPrintInfo = false;
-    //     m_u64Yield1++;
-    //     for(;;)
-    //     {
-    //         bDelete = true;
-    //         for (auto it = m_arrHazardPointers.begin(); it != m_arrHazardPointers.end(); it++)
-    //         {
-    //             if (it->load(std::memory_order_acquire) == delTaggedNodePtr)
-    //             {
-    //                 bDelete = false;
-    //                 break;
-    //             }
-    //         }
-    //         if (bDelete == true)
-    //         {
-    //             delete delTaggedNodePtr.pNode;
-    //             m_u64DeleteCount++;
-
-    //             if(m_ListDeletedNodes.size() == 0)  // 缓存为空 退出循环（高效判断） [zhuyb 2025-02-08 15:09:43]
-    //             {
-    //                 break;
-    //             }
-
-    //             std::lock_guard<std::mutex> lock(m_mutexListDeletedNodes);
-    //             if(m_ListDeletedNodes.size() == 0)  // 缓存为空 退出循环(保护性操作) [zhuyb 2025-02-08 15:09:43]
-    //             {
-    //                 break;
-    //             }
-    //             delTaggedNodePtr = m_ListDeletedNodes.front();
-    //             m_ListDeletedNodes.pop_front();
-    //             continue;
-    //         }
-    //         else
-    //         {
-    //             std::lock_guard<std::mutex> lock(m_mutexListDeletedNodes);
-    //             if(m_ListDeletedNodes.size() <= MaxDeleteNodeCacheCount) // 删除失败，缓存未满，加入缓存等待下次释放 [zhuyb 2025-02-08 15:11:07]
-    //             {
-    //                 m_ListDeletedNodes.push_back(delTaggedNodePtr);
-    //                 break;
-    //             }
-
-    //             // 缓存满，继续自旋 [zhuyb 2025-02-08 15:11:26]
-    //             m_u64Yield2++;
-    //             bPrintInfo = true;
-    //             continue;
-    //         }
-    //     }
-
-    //     if(bPrintInfo)
-    //     {
-    //         std::cout << __LINE__ << " " << "SafeDelete:"
-    //                   << m_u64Yield2.load() << "/" << m_u64Yield1.load() << " = "
-    //                   << (100.0 * m_u64Yield2.load() / m_u64Yield1.load()) << "% "
-    //                   << "delete cache:" << m_ListDeletedNodes.size() << std::endl;
-    //     }
-    // }
     void SafeDeleteHazardPointers(const TaggedNodePtr& taggedNodePtr)
     {
-
         std::vector<TaggedNodePtr> vecDeletedNodes;
         std::vector<TaggedNodePtr> vecNotDeletedNodes;
-        std::vector<TaggedNodePtr> veHPNodes;
+        std::vector<TaggedNodePtr> vecHPNodes;
 
         // 缓存需要释放的节点，减少自旋 [zhuyb 2025-02-08 15:09:27]
-        if(m_ListDeletedNodes.size() >= 64)
+
+        m_mutexListDeletedNodes.lock();
+        m_ListDeletedNodes.push_back(taggedNodePtr);
+        if (m_ListDeletedNodes.size() < 128)
         {
-            m_mutexListDeletedNodes.lock();
-            m_ListDeletedNodes.push_back(taggedNodePtr);
-            vecDeletedNodes = m_ListDeletedNodes;
-            m_ListDeletedNodes.clear();
             m_mutexListDeletedNodes.unlock();
-        }
-        else
-        {
             return;
         }
+        vecDeletedNodes = m_ListDeletedNodes;
+        m_ListDeletedNodes.clear();
+        m_mutexListDeletedNodes.unlock();
 
         for (auto it = m_arrHazardPointers.begin(); it != m_arrHazardPointers.end(); it++)
         {
             TaggedNodePtr taggedNode = it->load();
-            if (taggedNode.pNode != nullptr)
+            if (taggedNode.pNode == nullptr)
             {
-                veHPNodes.push_back(taggedNode);
+                continue;
             }
+            vecHPNodes.push_back(taggedNode);
+            // auto itIsDel = std::find(vecDeletedNodes.begin(), vecDeletedNodes.end(), taggedNode);
+            // if (itIsDel != vecDeletedNodes.end())
+            // {
+            //     vecDeletedNodes.erase(itIsDel);
+            //     vecNotDeletedNodes.push_back(taggedNode);
+            // }
         }
 
-        for(auto it = veHPNodes.begin(); it != veHPNodes.end(); ++it)
+        for(auto it = vecHPNodes.begin(); it != vecHPNodes.end(); ++it)
         {
             auto itIsDel = std::find(vecDeletedNodes.begin(), vecDeletedNodes.end(), *it);
-            if(itIsDel != vecDeletedNodes.end())
+            if (itIsDel != vecDeletedNodes.end())
             {
                 vecDeletedNodes.erase(itIsDel);
                 vecNotDeletedNodes.push_back(*it);
@@ -433,12 +352,10 @@ private:
             m_u64DeleteCount++;
         }
 
-        if(veHPNodes.size() > 0)
+        if(vecNotDeletedNodes.size() > 0)
         {
-            // s_LocalDeletedCache.insert(s_LocalDeletedCache.end(), vecNotDeletedNodes.begin(), vecNotDeletedNodes.end());
-
             m_mutexListDeletedNodes.lock();
-            m_ListDeletedNodes.insert(m_ListDeletedNodes.end(), vecDeletedNodes.begin(), vecDeletedNodes.end());
+            m_ListDeletedNodes.insert(m_ListDeletedNodes.end(), vecNotDeletedNodes.begin(), vecNotDeletedNodes.end());
             m_mutexListDeletedNodes.unlock();
         }
     }
