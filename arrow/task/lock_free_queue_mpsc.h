@@ -139,7 +139,6 @@ public:
             // 获取头节点 并将头节点加入到 HazardPointers 中 [zhuyb 2024-08-21 11:09:44]
             TaggedNodePtr head = m_Head.load(std::memory_order_acquire);            
             TaggedNodePtr tail = m_Tail.load(std::memory_order_acquire);
-            TaggedNodePtr next = head.pNode->next.load(std::memory_order_acquire);
             // std::atomic_thread_fence(std::memory_order_acquire);
             if(head.pNode == tail.pNode)
             // if(head == tail)
@@ -147,6 +146,7 @@ public:
                 break;
             }
 
+            TaggedNodePtr next = head.pNode->next.load(std::memory_order_acquire);
             // 头节点中 next 不存在， 并且head != tail 重新获取头节点 [zhuyb 2025-02-08 15:06:03]
             if (next.pNode == nullptr)
             {
@@ -173,9 +173,6 @@ public:
         {
             std::tie(args...) = *(pRetValue);
             delete pRetValue;
-
-
-
             return true;
         }
         return false;

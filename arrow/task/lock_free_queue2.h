@@ -94,6 +94,7 @@ public:
 
     bool Push(Args... args)
     {
+        SafeDeleteHazardPointers();
         std::atomic<TaggedNodePtr>* pHazardPointers1 = nullptr;
         std::atomic<TaggedNodePtr>* pHazardPointers2 = nullptr;
         if(GetHazardPointers(pHazardPointers1, pHazardPointers2) == false)
@@ -163,9 +164,17 @@ public:
             pRetValue = nullptr;
 
             // 获取头节点 并将头节点加入到 HazardPointers 中 [zhuyb 2024-08-21 11:09:44]
-            pHazardPointers1->store(m_Head, std::memory_order_release);
-            TaggedNodePtr head = pHazardPointers1->load(std::memory_order_acquire);
- 
+
+            TaggedNodePtr head = m_Head.load(std::memory_order_acquire);
+            TaggedNodePtr tail = m_Tail.load(std::memory_order_acquire);
+            pHazardPointers1->store(head, std::memory_order_release);
+
+            // if(head.pNode == tail.pNode)
+            if (head == tail) // 头尾节点相同 [zhuyb 2025-02-08 15:02:20]
+            {
+                break;
+            }
+
             // 判断头节点是否变更 [zhuyb 2025-02-08 15:02:20]
             if (m_Head.load(std::memory_order_acquire) != head)
             {
@@ -174,14 +183,6 @@ public:
                 continue;
             }
 
-            TaggedNodePtr tail = m_Tail.load(std::memory_order_acquire);
-
-            // if(head.pNode == tail.pNode)
-            if(head == tail)    // 头尾节点相同 [zhuyb 2025-02-08 15:02:20]
-            {
-                break;
-            }
-   
             TaggedNodePtr next = head.pNode->next.load(std::memory_order_acquire);
             pHazardPointers2->store(head.pNode->next, std::memory_order_release);
 
@@ -212,7 +213,7 @@ public:
             std::tie(args...) = *(pRetValue);
             delete pRetValue;
 
-            SafeDeleteHazardPointers(nodeToDelete);
+            AddDeletedNode(nodeToDelete);
             m_u32Count--;
 
             return true;
@@ -301,8 +302,12 @@ private:
         return true;
     }
 
-    void SafeDeleteHazardPointers(const TaggedNodePtr& taggedNodePtr)
+    void SafeDeleteHazardPointers()
     {
+        if(m_ListDeletedNodes.size() < 64)
+        {
+            return;
+        }
         std::vector<TaggedNodePtr> vecDeletedNodes;
         std::vector<TaggedNodePtr> vecNotDeletedNodes;
         std::vector<TaggedNodePtr> vecHPNodes;
@@ -310,15 +315,14 @@ private:
         // 缓存需要释放的节点，减少自旋 [zhuyb 2025-02-08 15:09:27]
 
         m_mutexListDeletedNodes.lock();
-        m_ListDeletedNodes.push_back(taggedNodePtr);
-        if (m_ListDeletedNodes.size() < 128)
-        {
-            m_mutexListDeletedNodes.unlock();
-            return;
-        }
-        vecDeletedNodes = m_ListDeletedNodes;
+        vecDeletedNodes.insert(vecDeletedNodes.end(), m_ListDeletedNodes.begin(), m_ListDeletedNodes.end());
         m_ListDeletedNodes.clear();
         m_mutexListDeletedNodes.unlock();
+
+        if(vecDeletedNodes.size() == 0)
+        {
+            return;
+        }
 
         for (auto it = m_arrHazardPointers.begin(); it != m_arrHazardPointers.end(); it++)
         {
@@ -328,21 +332,11 @@ private:
                 continue;
             }
             vecHPNodes.push_back(taggedNode);
-            // auto itIsDel = std::find(vecDeletedNodes.begin(), vecDeletedNodes.end(), taggedNode);
-            // if (itIsDel != vecDeletedNodes.end())
-            // {
-            //     vecDeletedNodes.erase(itIsDel);
-            //     vecNotDeletedNodes.push_back(taggedNode);
-            // }
-        }
-
-        for(auto it = vecHPNodes.begin(); it != vecHPNodes.end(); ++it)
-        {
-            auto itIsDel = std::find(vecDeletedNodes.begin(), vecDeletedNodes.end(), *it);
+            auto itIsDel = std::find(vecDeletedNodes.begin(), vecDeletedNodes.end(), taggedNode);
             if (itIsDel != vecDeletedNodes.end())
             {
                 vecDeletedNodes.erase(itIsDel);
-                vecNotDeletedNodes.push_back(*it);
+                vecNotDeletedNodes.push_back(taggedNode);
             }
         }
 
@@ -360,6 +354,18 @@ private:
         }
     }
 
+    void AddDeletedNode(const TaggedNodePtr& taggedNodePtr)
+    {
+        s_LocalDeletedCache.push_back(taggedNodePtr);
+        if (s_LocalDeletedCache.size() >= 64)
+        {
+            m_mutexListDeletedNodes.lock();
+            m_ListDeletedNodes.insert(m_ListDeletedNodes.end(), s_LocalDeletedCache.begin(), s_LocalDeletedCache.end());
+            s_LocalDeletedCache.clear();
+            m_mutexListDeletedNodes.unlock();
+        }
+        
+    }
     // 辅助函数：用于在析构函数中调用 Pop
     template<typename... T>
     bool CallPopHelper()
@@ -387,10 +393,10 @@ private:
     std::atomic<int32_t> m_u32HazardPointerIndex{0};
     std::map<uint64_t, int32_t> m_mapHazardPointers;
     thread_local static std::atomic<TaggedNodePtr>* s_pHazardPointers1;
-    thread_local static std::atomic<TaggedNodePtr>* s_pHazardPointers2;
+    thread_local static std::atomic<TaggedNodePtr>* s_pHazardPointers2; 
 
     std::mutex m_mutexListDeletedNodes;
-    std::vector<TaggedNodePtr> m_ListDeletedNodes;    // 缓存需要释放的节点，减少自旋 [zhuyb 2025-02-06 16:30:29]
+    std::list<TaggedNodePtr> m_ListDeletedNodes;    // 缓存需要释放的节点，减少自旋 [zhuyb 2025-02-06 16:30:29]
     thread_local static std::vector<TaggedNodePtr> s_LocalDeletedCache;
 
     // test [zhuyb 2025-02-06 15:34:42]
