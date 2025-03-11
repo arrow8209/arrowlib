@@ -94,7 +94,7 @@ struct StrConvertImpl<long long>
     template<typename StringType>
     static long long Convert(const StringType& str, size_t* idx = 0, int base = 10)
     {
-        return std::stoul(str, idx, base);
+        return std::stoll(str, idx, base);
     }
 };
 
@@ -144,7 +144,8 @@ struct StrConvertImpl<void*>
     template<typename StringType>
     static void* Convert(const StringType& str, size_t* idx = 0, int base = 10)
     {
-        return reinterpret_cast<void*>(std::stoul(str, idx));
+        // return reinterpret_cast<void*>(std::stoul(str, idx));
+        return reinterpret_cast<void*>(static_cast<std::uintptr_t>(std::stoull(str, idx, base)));
     }
 };
 

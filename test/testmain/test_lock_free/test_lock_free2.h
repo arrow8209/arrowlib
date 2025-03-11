@@ -5,7 +5,7 @@
 #include "arrow/task/lock_free_queue.h"
 #include "arrow/task/lock_free_queue2.h"
 #include "arrow/task/lock_free_queue_mpsc.h"
-// #include "arrow/task/lock_free_queue_boost.h"
+// #include "arrow/task/lock_free_queueV3.h"
 
 class CTestLockFree2
 {
@@ -20,6 +20,7 @@ public:
 public:
     void Start(int n32PushThreadCount, int n32PopThreadCount)
     {
+        std::cout << "Start: " << n32PushThreadCount << " " << n32PopThreadCount << std::endl;
         m_bRun = true;
         m_n32PopThreadCount = n32PopThreadCount;
         m_n32PushThreadCount = n32PushThreadCount;
@@ -69,10 +70,10 @@ public:
         uint64_t u64Index = 0;
         while(m_bRun)
         {
-            if(m_LockFreeQueue.Size() > 10000)
-            {
-                std::this_thread::sleep_for(std::chrono::milliseconds(1));
-            }
+            // if(m_LockFreeQueue.Size() > 10000)
+            // {
+            //     std::this_thread::sleep_for(std::chrono::milliseconds(1));
+            // }
             m_tpLastPushTime = std::chrono::steady_clock::now();
             m_u64PushCount++;
             if(m_LockFreeQueue.Push(u64ThreadID, u64Index) == false)
@@ -271,18 +272,21 @@ private:
                 pair.second.erase(pair.second.begin(), it);
             }
 
-            std::cout << "MPMC TmpRecvIndex ThreadID:" << pair.first << " size:" << pair.second.size() << " value: ";
-            for (auto& index : pair.second)
-            {
-                std::cout << index << " ";
-            }
-            std::cout << std::endl;
+            // std::cout << "MPMC TmpRecvIndex ThreadID:" << pair.first << " size:" << pair.second.size() << " value: ";
+            // for (auto& index : pair.second)
+            // {
+            //     std::cout << index << " ";
+            // }
+            // std::cout << std::endl;
+
+            std::cout << "MPMC TmpRecvIndex ThreadID:" << pair.first << " size:" << pair.second.size() << std::endl;
         }
     }
 private:
     bool m_bRun = true;
-    // Arrow::Pattern::LockFreeQueueV2<32, 32, uint64_t, uint64_t> m_LockFreeQueue;
-    Arrow::Pattern::LockFreeQueueMPSC<uint64_t, uint64_t> m_LockFreeQueue;
+    Arrow::Pattern::LockFreeQueueV2<32, 32, uint64_t, uint64_t> m_LockFreeQueue;
+    // Arrow::Pattern::LockFreeQueueMPSC<uint64_t, uint64_t> m_LockFreeQueue;
+    // Arrow::Pattern::LockFreeQueueV3<uint64_t, uint64_t> m_LockFreeQueue;
     // Arrow::Pattern::SimpleLockQueue<uint64_t, uint64_t> m_LockFreeQueue;
     
     std::vector<std::thread> m_vecPopThreads;
@@ -343,7 +347,7 @@ void TestLockFree2B()
 {
     std::cout << "==========================================================" << std::endl;
     CTestLockFree2 testLockFree2;
-    testLockFree2.Start(4, 1);
+    testLockFree2.Start(8, 1);
     std::string strMsg = "Hello, world!";
     std::cin >> strMsg;
     testLockFree2.Stop();

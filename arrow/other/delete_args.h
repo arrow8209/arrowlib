@@ -46,6 +46,19 @@ struct DeleteArgsImpl<T*>
         delete pObj;
     }
 };
+
+template<typename T>
+struct DeleteArgsImpl<T[]>
+{
+    static void Del(T*& pObj)
+    {   
+        if (pObj != nullptr) 
+        {
+            delete[] pObj;
+            pObj = nullptr;
+        }
+    }
+};
 }
 
 template<typename ...Args>

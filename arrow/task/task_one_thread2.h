@@ -12,8 +12,6 @@
 #include <future>
 #include <vector>
 #include <assert.h>
-#include "lock_free_queue.h"
-#include "lock_queue.h"
 #include "simple_lock_queue.h"
 #include "../other/increment.h"
 #include "../other/delete_args.h"
