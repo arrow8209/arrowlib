@@ -1,5 +1,5 @@
 /*
- * @FilePath: arrow/pattern/state/state_context.h
+ * @FilePath: /arrowlib/arrow/pattern/state/state_context2.h
  * @Author: arrow arrow8209@foxmail.com
  * @Date: 2023-11-21 17:53:41
  * @Description: 同步状态模式 需配合静态工厂使用，需要使用通过Timer接口触发定时器
@@ -325,7 +325,7 @@ enum class LightMsg
     Down
 };
 
-// 定义状态进共享数据 [zhuyb 2024-10-22 11:06:00]
+// 定义状态间共享数据 [zhuyb 2024-10-22 11:06:00]
 struct LightData
 {
     int nDownCountToOn = 2; // 连续按2次按钮灯开 [zhuyb 2023-11-21 15:11:06]
