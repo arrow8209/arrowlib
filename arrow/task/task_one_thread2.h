@@ -296,7 +296,7 @@ private:
                 (*pFun)(false);
                 delete pFun;
             }
-        }
+        } 
     }
 
     template <typename TRunFun, typename TClearCacheFun, typename... Args>
