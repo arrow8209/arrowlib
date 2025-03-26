@@ -2,9 +2,11 @@
 
 function(load_boost root_dir)
     # 基本不用修改
-    IF(${CMAKE_BUILD_TYPE} STREQUAL "Debug")
+    if(NOT CMAKE_BUILD_TYPE)
+        SET(BOOST_ROOT "${root_dir}/release")
+    elseif(${CMAKE_BUILD_TYPE} STREQUAL "Debug")
         SET(BOOST_ROOT "${root_dir}/debug")
-    ELSE(${CMAKE_BUILD_TYPE})
+    else()
         SET(BOOST_ROOT "${root_dir}/release")
     ENDIF()
 
