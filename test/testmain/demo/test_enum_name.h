@@ -4,6 +4,7 @@
 #include <string>
 #include <iostream>
 #include "arrow/arrow.h"
+#include "arrow/typelist/type_name/enum_name_impl.h"
 
 enum class MyEnumA
 {
@@ -49,6 +50,7 @@ using MyEnumDStr = Arrow::EnumListToStr<MyEnumD, MyEnumD::MyEnumDItem0, MyEnumD:
 
 static void TestEnumName()
 {
+    std::cout << Arrow::EnumItemName<MyEnumA, MyEnumA::MyEnumAItem01>::Trace3() << std::endl;
     std::cout << __VERSION__ << std::endl;
     std::cout << MyEnumAStr::ItemStr(MyEnumA::MyEnumAItem01) << std::endl;
     std::cout << MyEnumAStr::ItemStr(MyEnumA::MyEnumAItem02) << std::endl;

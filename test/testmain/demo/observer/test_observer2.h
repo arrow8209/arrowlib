@@ -3,7 +3,7 @@
 #include <iostream>
 #include "arrow/arrow.h"
 
-using ISubject2Demo = Arrow::Pattern::Subject2<void, int>;
+using ISubject2Demo = Arrow::Pattern::Subject2<void, int, float, double>;
 
 class CSubject2 : public ISubject2Demo
 {
@@ -17,9 +17,9 @@ public:
 	{
     }
 
-    void Push(int i)
+    void Push(int i, float f, double d)
     {
-        ISubject2Demo::Notify(i);
+        ISubject2Demo::Notify(i, f, d);
     }
 };
 
@@ -75,5 +75,5 @@ void TestObserver2()
     ISubject2Demo::ObserverFunc pFun2 = std::bind(&CObserver2::Response3, &observer, std::placeholders::_1, 6);
     subject.Register(pFun2);
     
-    subject.Push(1);
+    subject.Push(1, 2.0f, 3.0);
 }

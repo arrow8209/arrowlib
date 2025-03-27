@@ -38,41 +38,30 @@ public:
         return LogImpl::init(args...);
     }
 
-    // template<EmLogLevel loglevel, typename TFileName, typename TFunName, int line>
-    // static void Log(const char* szInfo)
+    // template <EmLogLevel loglevel, typename TFileName, typename TFunName, int line, typename T>
+    // static void Log(const T& t)
     // {
-    //     LogImpl::template Log<loglevel, TFileName, TFunName, line>(szInfo);
+    //     LogImpl::template Log<loglevel, TFileName, TFunName, line, T>(t);
     // }
 
-    template <EmLogLevel loglevel, typename TFileName, typename TFunName, int line, typename T>
-    static void Log(const T& t)
-    {
-        LogImpl::template Log<loglevel, TFileName, TFunName, line, T>(t);
-    }
-
-    template <EmLogLevel loglevel, typename TFileName, typename TFunName, int line>
-    static void Log(const char* t)
-    {
-        LogImpl::template Log<loglevel, TFileName, TFunName, line, const char*>(t);
-    }
-
-    template <EmLogLevel loglevel, typename TFileName, typename TFunName, int line>
-    static void Log(char* t)
-    {
-        LogImpl::template Log<loglevel, TFileName, TFunName, line, char*>(t);
-    }
-
-    template <EmLogLevel loglevel, typename TFileName, typename TFunName, int line, typename TFmt, typename... Args>
-    static void Log(Args... args)
-    {
-        LogImpl::template Log<loglevel, TFileName, TFunName, line, TFmt, Args...>(args...);
-    }
-
-    // template <typename... Args>
-    // static void print(const char* fmt, Args... args)
+    // template <EmLogLevel loglevel, typename TFileName, typename TFunName, int line>
+    // static void Log(const char* t)
     // {
-    //     Log<LOG_PARAM(printLevel)>(fmt, args...);
+    //     LogImpl::template Log<loglevel, TFileName, TFunName, line, const char*>(t);
     // }
+
+    // template <EmLogLevel loglevel, typename TFileName, typename TFunName, int line>
+    // static void Log(char* t)
+    // {
+    //     LogImpl::template Log<loglevel, TFileName, TFunName, line, char*>(t);
+    // }
+
+    // template <EmLogLevel loglevel, typename TFileName, typename TFunName, int line, typename TFmt, typename... Args>
+    // static void Log(Args... args)
+    // {
+    //     LogImpl::template Log<loglevel, TFileName, TFunName, line, TFmt, Args...>(args...);
+    // }
+
 };
 
 } // namespace Log

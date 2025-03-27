@@ -22,26 +22,17 @@ public:
         return true;
     }
 
-    // template<EmLogLevel loglevel, typename TFileName, typename TFunName, int line>
-    // static void Log(const char* szInfo)
-    // {
-    //     LogImpl::template Log<loglevel, TFileName, TFunName, line>(szInfo);
-    // }
-
-    template <EmLogLevel loglevel, typename TFileName, typename TFunName, int line, typename T>
-    static void Log(const T& t)
-    {
-    }
-
-    template <EmLogLevel loglevel, typename TFileName, typename TFunName, int line, typename TFmt, typename... Args>
-    static void Log(Args... args)
-    {
-    }
-
-    // template <typename... Args>
-    // static void print(const char* fmt, Args... args)
+    // template <EmLogLevel loglevel, typename TFileName, typename TFunName, int line, typename T>
+    // static void Log(const T& t)
     // {
     // }
+
+    // template <EmLogLevel loglevel, typename TFileName, typename TFunName, int line, typename TFmt, typename... Args>
+    // static void Log(Args... args)
+    // {
+    // }
+
+
 };
 
 } // namespace Log

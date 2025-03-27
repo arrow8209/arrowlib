@@ -113,14 +113,9 @@ public:
     }
 
 private:
-    static constexpr decltype(EnumItemName<T, t>::ImplShorName()) shortName = EnumItemName<T, t>::ImplShorName();
-    static constexpr decltype(EnumItemName<T, t>::ImplLongName()) longNalue = EnumItemName<T, t>::ImplLongName();
+    static inline constexpr decltype(EnumItemName<T, t>::ImplShorName()) shortName = EnumItemName<T, t>::ImplShorName();
+    static inline constexpr decltype(EnumItemName<T, t>::ImplLongName()) longNalue = EnumItemName<T, t>::ImplLongName();
 };
-template <typename T, T t>
-constexpr decltype(EnumItemName<T, t>::ImplShorName()) EnumItemName<T, t>::shortName;
-template <typename T, T t>
-constexpr decltype(EnumItemName<T, t>::ImplLongName()) EnumItemName<T, t>::longNalue;
-
 
 namespace details {
 

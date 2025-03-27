@@ -58,10 +58,8 @@ struct TypeName<T, -1>
         return value.data;
     }
 
-    static constexpr decltype(TypeName<T>::Impl()) value = TypeName<T>::Impl();
+    static inline constexpr decltype(TypeName<T>::Impl()) value = TypeName<T>::Impl();
 };
-template <typename T>
-constexpr decltype(TypeName<T>::Impl()) TypeName<T>::value;
 
 template <typename T>
 constexpr const char* GetTypeName(T t)

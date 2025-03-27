@@ -36,30 +36,30 @@ public:
         return true;
     }
 
-    template <EmLogLevel loglevel, typename TFileName, typename TFunName, int line, typename T>
-    static void Log(const T& t)
-    {
-        Prefix<loglevel, TFileName, TFunName, line>();
-        std::cout << t << std::endl;
-    }
+//     template <EmLogLevel loglevel, typename TFileName, typename TFunName, int line, typename T>
+//     static void Log(const T& t)
+//     {
+//         Prefix<loglevel, TFileName, TFunName, line>();
+//         std::cout << t << std::endl;
+//     }
 
-    template <EmLogLevel loglevel, typename TFileName, typename TFunName, int line, typename TFmt,  typename... Args>
-    static void Log(Args... args)
-    {
-        Prefix<loglevel, TFileName, TFunName, line>();
-        printf(ValueListToData<TFmt>::data, args...);
-    }
+//     template <EmLogLevel loglevel, typename TFileName, typename TFunName, int line, typename TFmt,  typename... Args>
+//     static void Log(Args... args)
+//     {
+//         Prefix<loglevel, TFileName, TFunName, line>();
+//         printf(ValueListToData<TFmt>::data, args...);
+//     }
 
-protected:
-    template <EmLogLevel loglevel, typename TFileName, typename TFunName, int line>    
-    static void Prefix()
-    {
-        // 输出格式 [logvele][filename:line] [zhuyb 2022-08-12 09:42:38]
-        // std::cout<< "[" << Arrow::smap::get<Arrow::IntValueType<loglevel>, details_std::LogTypeStr>::Pair::value << "]"
-        std::cout<< "[" << details_std::LogTypeStr::get<Arrow::IntValueType<loglevel>>::value << "]"
-                    << "[" << ValueListToData<TFileName>::data << ":" << line << "]"
-                    << "[" << ValueListToData<TFunName>::data << "]";
-    }
+// protected:
+//     template <EmLogLevel loglevel, typename TFileName, typename TFunName, int line>    
+//     static void Prefix()
+//     {
+//         // 输出格式 [logvele][filename:line] [zhuyb 2022-08-12 09:42:38]
+//         // std::cout<< "[" << Arrow::smap::get<Arrow::IntValueType<loglevel>, details_std::LogTypeStr>::Pair::value << "]"
+//         std::cout<< "[" << details_std::LogTypeStr::get<Arrow::IntValueType<loglevel>>::value << "]"
+//                     << "[" << ValueListToData<TFileName>::data << ":" << line << "]"
+//                     << "[" << ValueListToData<TFunName>::data << "]";
+//     }
 };
 
 } // namespace Log

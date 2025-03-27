@@ -29,7 +29,7 @@ int main(int argc, char* argv[])
     std::string strTmp2 = boost::filesystem::current_path().string();
     std::cout << strTmp2 << std::endl;
     // ArrowLog::init(nullptr);
-    // TestEnumName();
+    TestEnumName();
     // State_Demo_2_H::StateDemo();
     // TestResponsibility1();
     // int* p = (int*)malloc(sizeof(int));
@@ -39,7 +39,7 @@ int main(int argc, char* argv[])
     // DemoTask1();
     // TestBoostFreeLock();
     // TestLockFree2A();
-    TestLockFree2B();
+    // TestLockFree2B();
 
     return 1;
 }

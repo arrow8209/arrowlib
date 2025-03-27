@@ -137,49 +137,49 @@ public:
         return true;
     }
 
-    template <EmLogLevel loglevel, typename TFileName, typename TFunName, int line, typename T>
-    static void Log(const T& t)
-    {
-        do
-        {
-            // const int& log4cplus_loglevel = Arrow::smap::get<Arrow::IntValueType<loglevel>, details_log4::Log4Type>::Pair::value;
-            const int& log4cplus_loglevel = details_log4::Log4Type::get<Arrow::IntValueType<loglevel>>::value;
-            log4cplus::Logger const& _l = log4cplus::detail::macros_get_logger("");
+    // template <EmLogLevel loglevel, typename TFileName, typename TFunName, int line, typename T>
+    // static void Log(const T& t)
+    // {
+    //     do
+    //     {
+    //         // const int& log4cplus_loglevel = Arrow::smap::get<Arrow::IntValueType<loglevel>, details_log4::Log4Type>::Pair::value;
+    //         const int& log4cplus_loglevel = details_log4::Log4Type::get<Arrow::IntValueType<loglevel>>::value;
+    //         log4cplus::Logger const& _l = log4cplus::detail::macros_get_logger("");
             
-            if (LOG4CPLUS_UNLIKELY(_l.isEnabledFor(log4cplus_loglevel)))
-            {
-                LOG4CPLUS_MACRO_INSTANTIATE_OSTRINGSTREAM(_log4cplus_buf);
-                _log4cplus_buf << t;
-                log4cplus::detail::macro_forced_log(_l,
-                                                    log4cplus_loglevel, _log4cplus_buf.str(),
-                                                    ValueListToData<TFileName>::data, 
-                                                    line,
-                                                    ValueListToData<TFunName>::data);
-            }
-        } while (0);
-    }
+    //         if (LOG4CPLUS_UNLIKELY(_l.isEnabledFor(log4cplus_loglevel)))
+    //         {
+    //             LOG4CPLUS_MACRO_INSTANTIATE_OSTRINGSTREAM(_log4cplus_buf);
+    //             _log4cplus_buf << t;
+    //             log4cplus::detail::macro_forced_log(_l,
+    //                                                 log4cplus_loglevel, _log4cplus_buf.str(),
+    //                                                 ValueListToData<TFileName>::data, 
+    //                                                 line,
+    //                                                 ValueListToData<TFunName>::data);
+    //         }
+    //     } while (0);
+    // }
 
-    template <EmLogLevel loglevel, typename TFileName, typename TFunName, int line, typename TFmt, typename... Args>
-    static void Log(Args... args)
-    {
-        do
-        {
-            // const int& log4cplus_loglevel = Arrow::smap::get<Arrow::IntValueType<loglevel>, details_log4::Log4Type>::Pair::value;
-            const int& log4cplus_loglevel = details_log4::Log4Type::get<Arrow::IntValueType<loglevel>>::value;
-            log4cplus::Logger const& _l = log4cplus::detail::macros_get_logger("");
-            if (LOG4CPLUS_UNLIKELY(_l.isEnabledFor(log4cplus_loglevel)))
-            {
-                LOG4CPLUS_MACRO_INSTANTIATE_SNPRINTF_BUF(_snpbuf);
-                log4cplus::tchar const* _logEvent = _snpbuf.print(ValueListToData<TFmt>::data, args...);
-                log4cplus::detail::macro_forced_log(_l,
-                                                    log4cplus_loglevel,
-                                                    _logEvent,
-                                                    ValueListToData<TFileName>::data,
-                                                    line,
-                                                    ValueListToData<TFunName>::data);
-            }
-        } while (0);
-    }
+    // template <EmLogLevel loglevel, typename TFileName, typename TFunName, int line, typename TFmt, typename... Args>
+    // static void Log(Args... args)
+    // {
+    //     do
+    //     {
+    //         // const int& log4cplus_loglevel = Arrow::smap::get<Arrow::IntValueType<loglevel>, details_log4::Log4Type>::Pair::value;
+    //         const int& log4cplus_loglevel = details_log4::Log4Type::get<Arrow::IntValueType<loglevel>>::value;
+    //         log4cplus::Logger const& _l = log4cplus::detail::macros_get_logger("");
+    //         if (LOG4CPLUS_UNLIKELY(_l.isEnabledFor(log4cplus_loglevel)))
+    //         {
+    //             LOG4CPLUS_MACRO_INSTANTIATE_SNPRINTF_BUF(_snpbuf);
+    //             log4cplus::tchar const* _logEvent = _snpbuf.print(ValueListToData<TFmt>::data, args...);
+    //             log4cplus::detail::macro_forced_log(_l,
+    //                                                 log4cplus_loglevel,
+    //                                                 _logEvent,
+    //                                                 ValueListToData<TFileName>::data,
+    //                                                 line,
+    //                                                 ValueListToData<TFunName>::data);
+    //         }
+    //     } while (0);
+    // }
 
 protected:
 
