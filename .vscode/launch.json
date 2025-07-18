@@ -5,18 +5,10 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "lldb",
-            "type": "lldb",
-            "request": "launch",
-            "program": "${workspaceFolder}/bin/x64/testmain",
-            "args": [],
-            "cwd": "${workspaceFolder}"
-        },
-        {
             "name": "gdb",
             "type": "cppdbg",
             "request": "launch",
-            "program": "${workspaceFolder}/bin/x64/testmain",
+            "program": "${workspaceFolder}/bin/x64/test_enum3_exec",
             "cwd": "${workspaceFolder}/bin/x64",
             "args": [],
             "stopAtEntry": false,

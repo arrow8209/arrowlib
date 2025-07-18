@@ -33,10 +33,12 @@ ENDIF()
 # set(CMAKE_SHARED_LINKER_FLAGS_DEBUG "${CMAKE_SHARED_LINKER_FLAGS_DEBUG} -fsanitize=address")
 # set(CMAKE_EXE_LINKER_FLAGS_DEBUG "${CMAKE_EXE_LINKER_FLAGS_DEBUG} -fsanitize=address -rdynamic")
 
-#插件编译(主要都是用来测试的插件)
-ADD_SUBDIRECTORY(test/testmain testmain)
+# #插件编译(主要都是用来测试的插件)
+# ADD_SUBDIRECTORY(test/testmain testmain)
 
-ADD_SUBDIRECTORY(test/testlib1 testlib1)
+# ADD_SUBDIRECTORY(test/testlib1 testlib1)
 
-ADD_SUBDIRECTORY(test/testlib2 testlib2)
+# ADD_SUBDIRECTORY(test/testlib2 testlib2)
 
+ADD_SUBDIRECTORY(test/test_enum2 test_enum2)
+ADD_SUBDIRECTORY(test/test_enum3 test_enum3)

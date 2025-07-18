@@ -40,3 +40,6 @@ arrow/.scannerwork/
 version.h
 sonar-project.properties
 .cache/
+CMakeLists copy.txt
+enum_to_string_auto.h.bak
+
